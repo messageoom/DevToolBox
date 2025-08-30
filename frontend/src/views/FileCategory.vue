@@ -1,86 +1,94 @@
 <template>
-  <div class="file-category-page">
-    <el-card>
-      <template #header>
-        <div class="page-header">
-          <el-button @click="goBack" size="small" type="text">
-            <el-icon><ArrowLeft /></el-icon>
-            返回
-          </el-button>
-          <h2>{{ categoryTitle }}</h2>
-          <span class="file-count">共 {{ filteredFiles.length }} 个文件</span>
-        </div>
-      </template>
-
-      <!-- 搜索和筛选区域 -->
-      <div class="search-section">
-        <el-input
-          v-model="searchText"
-          placeholder="搜索文件名..."
-          clearable
-          prefix-icon="Search"
-          style="width: 300px; margin-right: 20px;"
-        />
-        <el-select v-model="sortBy" placeholder="排序方式" style="width: 120px;">
-          <el-option label="按名称" value="name" />
-          <el-option label="按大小" value="size" />
-          <el-option label="按时间" value="time" />
-        </el-select>
-        <el-select v-model="sortOrder" placeholder="排序顺序" style="width: 120px; margin-left: 10px;">
-          <el-option label="升序" value="asc" />
-          <el-option label="降序" value="desc" />
-        </el-select>
-      </div>
-
-      <!-- 文件列表 -->
-      <div class="file-list" v-if="filteredFiles.length > 0">
-        <div class="file-item" v-for="file in paginatedFiles" :key="file.name">
-          <div class="file-icon-section">
-            <div class="file-icon">{{ getFileIcon(file.name) }}</div>
+  <div>
+    <!-- 桌面端布局 -->
+    <div class="file-category-page" v-if="!isMobile">
+      <el-card>
+        <template #header>
+          <div class="page-header">
+            <el-button @click="goBack" size="small" type="text">
+              <el-icon><ArrowLeft /></el-icon>
+              返回
+            </el-button>
+            <h2>{{ categoryTitle }}</h2>
+            <span class="file-count">共 {{ filteredFiles.length }} 个文件</span>
           </div>
+        </template>
 
-          <div class="file-info-section">
-            <div class="file-name" :title="file.name">{{ file.name }}</div>
-            <div class="file-details">
-              <span class="file-size">{{ formatFileSize(file.size) }}</span>
-              <span class="file-date">{{ formatDate(file.modified) }}</span>
+        <!-- 搜索和筛选区域 -->
+        <div class="search-section">
+          <el-input
+            v-model="searchText"
+            placeholder="搜索文件名..."
+            clearable
+            prefix-icon="Search"
+            style="width: 300px; margin-right: 20px;"
+          />
+          <el-select v-model="sortBy" placeholder="排序方式" style="width: 120px;">
+            <el-option label="按名称" value="name" />
+            <el-option label="按大小" value="size" />
+            <el-option label="按时间" value="time" />
+          </el-select>
+          <el-select v-model="sortOrder" placeholder="排序顺序" style="width: 120px; margin-left: 10px;">
+            <el-option label="升序" value="asc" />
+            <el-option label="降序" value="desc" />
+          </el-select>
+        </div>
+
+        <!-- 文件列表 -->
+        <div class="file-list" v-if="filteredFiles.length > 0">
+          <div class="file-item" v-for="file in paginatedFiles" :key="file.name">
+            <div class="file-icon-section">
+              <div class="file-icon">{{ getFileIcon(file.name) }}</div>
+            </div>
+
+            <div class="file-info-section">
+              <div class="file-name" :title="file.name">{{ file.name }}</div>
+              <div class="file-details">
+                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                <span class="file-date">{{ formatDate(file.modified) }}</span>
+              </div>
+            </div>
+
+            <div class="file-actions-section">
+              <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
+                <el-icon><Download /></el-icon>
+                下载
+              </el-button>
+              <el-button size="small" type="danger" @click="deleteFile(file.name)">
+                <el-icon><Delete /></el-icon>
+                删除
+              </el-button>
             </div>
           </div>
-
-          <div class="file-actions-section">
-            <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-              <el-icon><Download /></el-icon>
-              下载
-            </el-button>
-            <el-button size="small" type="danger" @click="deleteFile(file.name)">
-              <el-icon><Delete /></el-icon>
-              删除
-            </el-button>
-          </div>
         </div>
-      </div>
 
-      <!-- 分页 -->
-      <div class="pagination-section" v-if="totalPages > 1">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="filteredFiles.length"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+        <!-- 分页 -->
+        <div class="pagination-section" v-if="totalPages > 1">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="filteredFiles.length"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
 
-      <!-- 空状态 -->
-      <div v-else class="empty-state">
-        <el-empty
-          :description="`暂无${categoryTitle}`"
-          :image-size="80"
-        />
-      </div>
-    </el-card>
+        <!-- 空状态 -->
+        <div v-else class="empty-state">
+          <el-empty
+            :description="`暂无${categoryTitle}`"
+            :image-size="80"
+          />
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 移动端布局 -->
+    <div v-else>
+      <MobileFileCategory />
+    </div>
   </div>
 </template>
 
@@ -88,6 +96,7 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Search, Download, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
+import MobileFileCategory from './MobileFileCategory.vue'
 
 export default {
   name: 'FileCategory',
@@ -95,7 +104,8 @@ export default {
     ArrowLeft,
     Search,
     Download,
-    Delete
+    Delete,
+    MobileFileCategory
   },
   data() {
     return {
@@ -105,7 +115,8 @@ export default {
       sortOrder: 'desc',
       currentPage: 1,
       pageSize: 20,
-      allFiles: []
+      allFiles: [],
+      isMobile: false
     }
   },
   computed: {
@@ -176,13 +187,23 @@ export default {
 
   mounted() {
     this.category = this.$route.params.category
+    this.checkDevice()
     this.loadFiles()
+    window.addEventListener('resize', this.checkDevice)
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkDevice)
   },
 
   methods: {
+    checkDevice() {
+      this.isMobile = window.innerWidth <= 768
+    },
+
     async loadFiles() {
       try {
-        const response = await axios.get('http://localhost:5000/api/file-upload/files')
+        const response = await axios.get('/api/file-upload/files')
         if (response.data.files) {
           // 根据分类过滤文件
           this.allFiles = this.filterFilesByCategory(response.data.files, this.category)
@@ -254,7 +275,7 @@ export default {
           }
         )
 
-        const response = await axios.delete(`http://localhost:5000/api/file-upload/files/${filename}`)
+        const response = await axios.delete(`/api/file-upload/files/${filename}`)
         if (response.data.message) {
           ElMessage.success(response.data.message)
           this.loadFiles()

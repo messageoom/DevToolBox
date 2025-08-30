@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, send_from_directory
 from flask_cors import CORS
 import os
 
@@ -45,12 +45,23 @@ def create_app():
     app.register_blueprint(url_tools_bp, url_prefix='/api/url-tools')
     app.register_blueprint(markdown_tools_bp, url_prefix='/api/markdown-tools')
 
-    @app.route('/')
-    def index():
-        return {'message': 'DevToolBox - 开发工具箱 API 服务', 'version': '1.0.0'}
+    # 为前端静态文件提供服务
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        frontend_dir = os.path.join(app.root_path, 'static', 'frontend')
+        if path != "" and os.path.exists(os.path.join(frontend_dir, path)):
+            return send_from_directory(os.path.join(frontend_dir), path)
+        else:
+            return send_from_directory(os.path.join(frontend_dir), 'index.html')
 
     return app
 
 if __name__ == '__main__':
     app = create_app()
+    # 获取本机IP地址
+    import socket
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    print(f"本机IP地址: {local_ip}")
     app.run(host='0.0.0.0', port=5000, debug=True)

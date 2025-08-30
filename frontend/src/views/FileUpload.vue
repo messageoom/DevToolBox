@@ -263,7 +263,7 @@ export default {
   },
   data() {
     return {
-      uploadUrl: 'http://localhost:5000/api/file-upload/upload',
+      uploadUrl: '/api/file-upload/upload',
       fileList: [],
       uploadedFiles: [],
       uploading: false,
@@ -461,7 +461,7 @@ export default {
 
     async loadUploadedFiles() {
       try {
-        const response = await axios.get('http://localhost:5000/api/file-upload/files')
+        const response = await axios.get('/api/file-upload/files')
         if (response.data.files) {
           this.uploadedFiles = response.data.files
         }
@@ -482,7 +482,7 @@ export default {
           }
         )
 
-        const response = await axios.delete(`http://localhost:5000/api/file-upload/files/${filename}`)
+        const response = await axios.delete(`/api/file-upload/files/${filename}`)
         if (response.data.message) {
           ElMessage.success(response.data.message)
           this.loadUploadedFiles()

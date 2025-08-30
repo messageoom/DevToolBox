@@ -1,12 +1,33 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
+# DevToolBox 后端打包配置
 a = Analysis(
-    ['app.py'],
-    pathex=[],
+    ['backend/app.py'],
+    pathex=['backend'],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('uploads', 'uploads')],
-    hiddenimports=[],
+    datas=[
+        ('backend/templates', 'templates'),
+        ('backend/static', 'static'),
+        ('uploads', 'uploads'),
+        ('frontend/dist', 'frontend/dist'),
+    ],
+    hiddenimports=[
+        'modules.file_upload',
+        'modules.json_tools',
+        'modules.yaml_tools',
+        'modules.markdown_tools',
+        'modules.base64_tools',
+        'modules.hash_tools',
+        'modules.url_tools',
+        'modules.timestamp_tools',
+        'flask_cors',
+        'yaml',
+        'markdown',
+        'bcrypt',
+        'pytz',
+        'tzlocal',
+        'bs4',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -22,7 +43,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='app',
+    name='DevToolBox',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,4 +56,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+
 )
