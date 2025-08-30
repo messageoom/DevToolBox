@@ -1,14 +1,26 @@
 from flask import Flask, Blueprint
 from flask_cors import CORS
 import os
-from modules.file_upload import file_upload_bp
-from modules.json_tools import json_tools_bp
-from modules.yaml_tools import yaml_tools_bp
-from modules.timestamp_tools import timestamp_tools_bp
-from modules.base64_tools import base64_tools_bp
-from modules.hash_tools import hash_tools_bp
-from modules.url_tools import url_tools_bp
-from modules.markdown_tools import markdown_tools_bp
+
+# 兼容处理导入，支持从不同目录运行
+try:
+    from .modules.file_upload import file_upload_bp
+    from .modules.json_tools import json_tools_bp
+    from .modules.yaml_tools import yaml_tools_bp
+    from .modules.timestamp_tools import timestamp_tools_bp
+    from .modules.base64_tools import base64_tools_bp
+    from .modules.hash_tools import hash_tools_bp
+    from .modules.url_tools import url_tools_bp
+    from .modules.markdown_tools import markdown_tools_bp
+except ImportError:
+    from modules.file_upload import file_upload_bp
+    from modules.json_tools import json_tools_bp
+    from modules.yaml_tools import yaml_tools_bp
+    from modules.timestamp_tools import timestamp_tools_bp
+    from modules.base64_tools import base64_tools_bp
+    from modules.hash_tools import hash_tools_bp
+    from modules.url_tools import url_tools_bp
+    from modules.markdown_tools import markdown_tools_bp
 
 def create_app():
     app = Flask(__name__)
