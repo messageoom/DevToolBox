@@ -1,0 +1,10 @@
+Flask==2.3.2
+Werkzeug==2.3.6
+pycryptodome==3.23.0
+flask-cors==4.0.0
+PyYAML==6.0.1
+bcrypt==4.1.2
+pytz==2023.3
+tzlocal==5.0.1
+Markdown==3.5.1
+beautifulsoup4==4.12.2
