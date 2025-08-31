@@ -9,3 +9,4 @@ pytz==2023.3
 tzlocal==5.0.1
 Markdown==3.5.1
 beautifulsoup4==4.12.2
+requests==2.31.0

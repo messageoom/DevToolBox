@@ -14,8 +14,8 @@ class DevToolBoxGUI:
     def __init__(self, root, backend_port=5000, frontend_port=5173):
         self.root = root
         self.root.title("DevToolBox - 开发工具箱")
-        self.root.geometry("700x500")
-        self.root.minsize(600, 400)
+        self.root.geometry("700x550")
+        self.root.minsize(600, 450)
 
         # 设置窗口图标（如果有的话）
         try:
@@ -31,7 +31,7 @@ class DevToolBoxGUI:
         self.backend_port = backend_port
         self.frontend_port = frontend_port
         self.backend_address = f"http://{self.local_ip}:{self.backend_port}"
-        self.frontend_address = f"http://localhost:{self.frontend_port}"
+        self.frontend_address = f"http://{self.local_ip}:{self.frontend_port}"
 
         # 服务进程
         self.backend_process = None
@@ -118,12 +118,20 @@ class DevToolBoxGUI:
         service_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 20))
         service_frame.columnconfigure(1, weight=1)
         
+        # 后端地址（注释掉）
+        # backend_label = ttk.Label(service_frame, text="后端地址:", style="Section.TLabel")
+        # backend_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+
+        # self.backend_address_var = tk.StringVar(value=self.backend_address)
+        # backend_entry = ttk.Entry(service_frame, textvariable=self.backend_address_var, state="readonly", font=("Consolas", 10))
+        # backend_entry.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
+
         # 服务地址
-        service_label = ttk.Label(service_frame, text="后端地址:", style="Section.TLabel")
+        service_label = ttk.Label(service_frame, text="服务地址:", style="Section.TLabel")
         service_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
 
-        self.service_address_var = tk.StringVar(value=self.backend_address)
-        service_entry = ttk.Entry(service_frame, textvariable=self.service_address_var, state="readonly", font=("Consolas", 10))
+        self.frontend_address_var = tk.StringVar(value=self.frontend_address)
+        service_entry = ttk.Entry(service_frame, textvariable=self.frontend_address_var, state="readonly", font=("Consolas", 10))
         service_entry.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # 文件存储地址框架
