@@ -41,6 +41,7 @@
             <el-menu-item index="/json-tools">JSON工具</el-menu-item>
             <el-menu-item index="/yaml-tools">YAML工具</el-menu-item>
             <el-menu-item index="/markdown-tools">Markdown工具</el-menu-item>
+            <el-menu-item index="/markdown-editor" @click="handleMarkdownEditorClick">Markdown编辑器</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu index="encoding-tools">
@@ -150,6 +151,12 @@ export default {
     },
     toggleMobileMenu() {
       this.mobileMenuVisible = true
+    },
+    handleMarkdownEditorClick() {
+      // 点击Markdown编辑器菜单时自动收起侧边栏
+      this.isCollapse = true
+      // 导航到Markdown编辑器页面
+      this.$router.push('/markdown-editor')
     },
     checkDevice() {
       // 检测设备类型

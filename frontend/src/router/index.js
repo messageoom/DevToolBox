@@ -10,6 +10,7 @@ import UrlTools from '../views/UrlTools.vue'
 import TimestampTools from '../views/TimestampTools.vue'
 import TimeCalculator from '../views/TimeCalculator.vue'
 import MarkdownTools from '../views/MarkdownTools.vue'
+import MarkdownEditor from '../views/MarkdownEditor.vue'
 
 const routes = [
   {
@@ -67,6 +68,11 @@ const routes = [
     path: '/markdown-tools',
     name: 'MarkdownTools',
     component: MarkdownTools
+  },
+  {
+    path: '/markdown-editor',
+    name: 'MarkdownEditor',
+    component: MarkdownEditor
   }
 ]
 
