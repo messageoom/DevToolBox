@@ -10,3 +10,9 @@ tzlocal==5.0.1
 Markdown==3.5.1
 beautifulsoup4==4.12.2
 requests==2.31.0
+qrcode==7.4.2
+Pillow==10.3.0
+html2text==2020.1.16
+PyMuPDF==1.23.8
+reportlab==4.0.7
+lxml==4.9.3

@@ -11,6 +11,8 @@ import TimestampTools from '../views/TimestampTools.vue'
 import TimeCalculator from '../views/TimeCalculator.vue'
 import MarkdownTools from '../views/MarkdownTools.vue'
 import MarkdownEditor from '../views/MarkdownEditor.vue'
+import DataConversion from '../views/DataConversion.vue'
+import QrTools from '../views/QrTools.vue'
 
 const routes = [
   {
@@ -73,6 +75,16 @@ const routes = [
     path: '/markdown-editor',
     name: 'MarkdownEditor',
     component: MarkdownEditor
+  },
+  {
+    path: '/data-conversion',
+    name: 'DataConversion',
+    component: DataConversion
+  },
+  {
+    path: '/qr-tools',
+    name: 'QrTools',
+    component: QrTools
   }
 ]
 

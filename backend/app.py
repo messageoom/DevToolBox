@@ -12,6 +12,8 @@ try:
     from .modules.hash_tools import hash_tools_bp
     from .modules.url_tools import url_tools_bp
     from .modules.markdown_tools import markdown_tools_bp
+    from .modules.data_conversion import data_conversion_bp
+    from .modules.qr_tools import qr_tools_bp
 except ImportError:
     from modules.file_upload import file_upload_bp
     from modules.json_tools import json_tools_bp
@@ -21,6 +23,8 @@ except ImportError:
     from modules.hash_tools import hash_tools_bp
     from modules.url_tools import url_tools_bp
     from modules.markdown_tools import markdown_tools_bp
+    from modules.data_conversion import data_conversion_bp
+    from modules.qr_tools import qr_tools_bp
 
 def create_app():
     app = Flask(__name__)
@@ -44,6 +48,8 @@ def create_app():
     app.register_blueprint(hash_tools_bp, url_prefix='/api/hash-tools')
     app.register_blueprint(url_tools_bp, url_prefix='/api/url-tools')
     app.register_blueprint(markdown_tools_bp, url_prefix='/api/markdown-tools')
+    app.register_blueprint(data_conversion_bp, url_prefix='/api/data-conversion')
+    app.register_blueprint(qr_tools_bp, url_prefix='/api/qr-tools')
 
     # 为前端静态文件提供服务
     @app.route('/', defaults={'path': ''})

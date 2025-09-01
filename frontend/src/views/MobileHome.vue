@@ -82,6 +82,17 @@
           <span>时间计算器</span>
         </div>
       </el-collapse-item>
+
+      <el-collapse-item title="其他工具" name="6">
+        <template #title>
+          <el-icon class="card-icon"><Crop /></el-icon>
+          <span>其他工具</span>
+        </template>
+        <div class="tool-item" @click="$router.push('/qr-tools')">
+          <el-icon><Crop /></el-icon>
+          <span>二维码工具</span>
+        </div>
+      </el-collapse-item>
     </el-collapse>
   </div>
 </template>
@@ -101,7 +112,8 @@ import {
   Unlock,
   Link,
   Timer,
-  Calendar
+  Calendar,
+  Crop
 } from '@element-plus/icons-vue'
 
 export default {
@@ -120,7 +132,8 @@ export default {
     Unlock,
     Link,
     Timer,
-    Calendar
+    Calendar,
+    Crop
   },
   data() {
     return {

@@ -104,14 +104,14 @@
           <el-card class="tool-card">
             <template #header>
               <div class="card-header">
-                <el-icon class="card-icon"><Setting /></el-icon>
-                <span>更多功能</span>
+                <el-icon class="card-icon"><Crop /></el-icon>
+                <span>二维码工具</span>
               </div>
             </template>
             <ul>
-              <li>持续更新中...</li>
-              <li>更多实用工具</li>
-              <li>性能优化</li>
+              <li>二维码生成</li>
+              <li>二维码美化</li>
+              <li>自定义样式</li>
             </ul>
           </el-card>
         </el-col>
@@ -133,7 +133,7 @@ import {
   Key,
   Lock,
   Clock,
-  Setting
+  Crop
 } from '@element-plus/icons-vue'
 import MobileHome from './MobileHome.vue'
 
@@ -146,7 +146,7 @@ export default {
     Key,
     Lock,
     Clock,
-    Setting,
+    Crop,
     MobileHome
   },
   data() {

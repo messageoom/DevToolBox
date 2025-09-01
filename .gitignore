@@ -16,6 +16,11 @@ __pycache__/
 *.log
 logs/
 
+# Debug
+*debug
+debug*
+*debug*
+
 # Build outputs
 dist/
 build/
@@ -37,6 +42,8 @@ Thumbs.db
 
 # Test files (if temporary or generated)
 test*
+*test
+*test*
 
 # GitHub Releases files
 Releases/

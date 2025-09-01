@@ -33,6 +33,7 @@
         <el-menu-item index="/json-tools">JSON工具</el-menu-item>
         <el-menu-item index="/yaml-tools">YAML工具</el-menu-item>
         <el-menu-item index="/markdown-tools">Markdown工具</el-menu-item>
+        <el-menu-item index="/data-conversion">数据互转</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="encoding-tools">
@@ -60,6 +61,14 @@
         <el-menu-item index="/timestamp-tools">时间戳工具</el-menu-item>
         <el-menu-item index="/time-calculator">时间计算器</el-menu-item>
       </el-sub-menu>
+
+      <el-sub-menu index="other-tools">
+        <template #title>
+          <el-icon><Crop /></el-icon>
+          <span>其他工具</span>
+        </template>
+        <el-menu-item index="/qr-tools">二维码工具</el-menu-item>
+      </el-sub-menu>
     </el-menu>
   </el-drawer>
 </template>
@@ -71,7 +80,8 @@ import {
   DocumentCopy,
   Key,
   Lock,
-  Clock
+  Clock,
+  Crop
 } from '@element-plus/icons-vue'
 
 export default {
@@ -82,7 +92,8 @@ export default {
     DocumentCopy,
     Key,
     Lock,
-    Clock
+    Clock,
+    Crop
   },
   props: {
     drawer: {
