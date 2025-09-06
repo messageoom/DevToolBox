@@ -2,6 +2,33 @@ from flask import Blueprint, request, jsonify
 import hashlib
 import hmac
 
+# 尝试导入额外的哈希库
+try:
+    import blake3
+    HAS_BLAKE3 = True
+except ImportError:
+    blake3 = None
+    HAS_BLAKE3 = False
+
+# 尝试另一种方式导入blake3
+if not HAS_BLAKE3:
+    try:
+        from blake3 import blake3 as b3_function
+        HAS_BLAKE3 = True
+        blake3 = type('blake3', (), {'blake3': b3_function})
+    except ImportError:
+        HAS_BLAKE3 = False
+        blake3 = None
+
+try:
+    HAS_SM3 = 'sm3' in hashlib.algorithms_available
+except:
+    HAS_SM3 = False
+
+print(f"HAS_BLAKE3: {HAS_BLAKE3}")
+print(f"blake3 module: {blake3}")
+print(f"HAS_SM3: {HAS_SM3}")
+
 hash_tools_bp = Blueprint('hash_tools', __name__)
 
 # 支持的哈希算法
@@ -19,6 +46,21 @@ SUPPORTED_ALGORITHMS = {
     'blake2b': hashlib.blake2b,
     'blake2s': hashlib.blake2s
 }
+
+# 动态添加SM3算法（如果可用）
+if HAS_SM3:
+    SUPPORTED_ALGORITHMS['sm3'] = lambda: hashlib.new('sm3')
+    print("Added SM3 to SUPPORTED_ALGORITHMS")
+
+# 动态添加BLAKE3算法（如果可用）
+print(f"Adding BLAKE3: HAS_BLAKE3={HAS_BLAKE3}, blake3 is not None={blake3 is not None}")
+if HAS_BLAKE3 and blake3 is not None:
+    SUPPORTED_ALGORITHMS['blake3'] = lambda: blake3.blake3()
+    print("Added BLAKE3 to SUPPORTED_ALGORITHMS")
+else:
+    print("BLAKE3 not added to SUPPORTED_ALGORITHMS")
+
+print(f"Final SUPPORTED_ALGORITHMS keys: {list(SUPPORTED_ALGORITHMS.keys())}")
 
 @hash_tools_bp.route('/algorithms', methods=['GET'])
 def get_algorithms():
@@ -39,6 +81,11 @@ def generate_hash():
         text = data['text']
         algorithm = data.get('algorithm', 'sha256').lower()
         encoding = data.get('encoding', 'utf-8')
+
+        # 调试信息
+        print(f"Requested algorithm: {algorithm}")
+        print(f"Supported algorithms: {list(SUPPORTED_ALGORITHMS.keys())}")
+        print(f"Algorithm in supported: {algorithm in SUPPORTED_ALGORITHMS}")
 
         if algorithm not in SUPPORTED_ALGORITHMS:
             return jsonify({'error': f'不支持的算法: {algorithm}'}), 400

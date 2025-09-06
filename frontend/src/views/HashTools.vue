@@ -20,21 +20,30 @@
           />
         </div>
 
+        <!-- 卡片式算法选择器 -->
+        <HashAlgorithmCardSelector 
+          v-model="algorithm" 
+          :algorithms="availableAlgorithms"
+          class="algorithm-selector"
+        />
+
         <div class="config-section">
           <el-row :gutter="20">
-            <el-col :span="12">
-              <el-select v-model="algorithm" placeholder="选择哈希算法">
-                <el-option label="MD5" value="md5" />
-                <el-option label="SHA-1" value="sha1" />
-                <el-option label="SHA-256" value="sha256" />
-                <el-option label="SHA-384" value="sha384" />
-                <el-option label="SHA-512" value="sha512" />
-              </el-select>
-            </el-col>
-            <el-col :span="12">
-              <el-button type="primary" @click="generateHash" :loading="generating" style="width: 100%;">
-                生成哈希
-              </el-button>
+            <el-col :span="24">
+              <div class="action-buttons">
+                <el-button type="primary" @click="generateHash" :loading="generating">
+                  生成哈希
+                </el-button>
+                <el-button @click="verifyHash" :loading="verifying">
+                  验证哈希
+                </el-button>
+                <el-button @click="generateHMAC" :loading="generatingHMAC">
+                  生成HMAC
+                </el-button>
+                <el-button @click="generatePasswordHash" :loading="generatingPassword">
+                  生成密码哈希
+                </el-button>
+              </div>
             </el-col>
           </el-row>
         </div>
@@ -45,6 +54,8 @@
             v-model="hashResult"
             readonly
             placeholder="哈希结果将显示在这里..."
+            type="textarea"
+            :rows="4"
           />
         </div>
       </div>
@@ -56,18 +67,35 @@
 import { ElMessage } from 'element-plus'
 import { Lock } from '@element-plus/icons-vue'
 import axios from 'axios'
+import HashAlgorithmCardSelector from '@/components/HashAlgorithmCardSelector.vue'
 
 export default {
   name: 'HashTools',
   components: {
-    Lock
+    Lock,
+    HashAlgorithmCardSelector
   },
   data() {
     return {
       inputText: '',
       algorithm: 'sha256',
       hashResult: '',
-      generating: false
+      generating: false,
+      verifying: false,
+      generatingHMAC: false,
+      generatingPassword: false,
+      availableAlgorithms: []
+    }
+  },
+  async mounted() {
+    // 获取支持的算法列表
+    try {
+      const response = await axios.get('/api/hash-tools/algorithms')
+      if (response.data.success) {
+        this.availableAlgorithms = response.data.algorithms
+      }
+    } catch (error) {
+      console.error('获取算法列表失败:', error)
     }
   },
   methods: {
@@ -91,10 +119,19 @@ export default {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('哈希生成失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error('哈希生成失败: ' + (error.response?.data?.error || error.message))
       } finally {
         this.generating = false
       }
+    },
+    async verifyHash() {
+      ElMessage.info('验证哈希功能待实现')
+    },
+    async generateHMAC() {
+      ElMessage.info('生成HMAC功能待实现')
+    },
+    async generatePasswordHash() {
+      ElMessage.info('生成密码哈希功能待实现')
     }
   }
 }
@@ -127,6 +164,17 @@ export default {
   border-radius: 8px;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.action-buttons .el-button {
+  flex: 1;
+  min-width: 120px;
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -139,5 +187,9 @@ export default {
 
 .card-header span {
   font-weight: bold;
+}
+
+.algorithm-selector {
+  margin-bottom: 20px;
 }
 </style>

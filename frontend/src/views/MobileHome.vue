@@ -8,92 +8,32 @@
         </div>
       </template>
       <p>这是一个功能强大的开发工具集合，包含文件处理、数据格式转换、编码解码、加密哈希等多种实用工具。</p>
-      <p>点击左上角菜单按钮选择工具开始使用。</p>
+      <p>点击下方工具卡片选择工具开始使用。</p>
     </el-card>
 
-    <el-collapse v-model="activeNames" style="margin-top: 20px;">
-      <el-collapse-item title="文件工具" name="1">
-        <template #title>
-          <el-icon class="card-icon"><FolderOpened /></el-icon>
-          <span>文件工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/file-upload')">
-          <el-icon><Upload /></el-icon>
-          <span>文件上传</span>
-        </div>
-      </el-collapse-item>
-
-      <el-collapse-item title="数据工具" name="2">
-        <template #title>
-          <el-icon class="card-icon"><DocumentCopy /></el-icon>
-          <span>数据工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/json-tools')">
-          <el-icon><Document /></el-icon>
-          <span>JSON工具</span>
-        </div>
-        <div class="tool-item" @click="$router.push('/yaml-tools')">
-          <el-icon><Files /></el-icon>
-          <span>YAML工具</span>
-        </div>
-        <div class="tool-item" @click="$router.push('/markdown-tools')">
-          <el-icon><DocumentChecked /></el-icon>
-          <span>Markdown工具</span>
-        </div>
-      </el-collapse-item>
-
-      <el-collapse-item title="编码工具" name="3">
-        <template #title>
-          <el-icon class="card-icon"><Key /></el-icon>
-          <span>编码工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/base64-tools')">
-          <el-icon><Unlock /></el-icon>
-          <span>Base64工具</span>
-        </div>
-        <div class="tool-item" @click="$router.push('/url-tools')">
-          <el-icon><Link /></el-icon>
-          <span>URL工具</span>
-        </div>
-      </el-collapse-item>
-
-      <el-collapse-item title="加密工具" name="4">
-        <template #title>
-          <el-icon class="card-icon"><Lock /></el-icon>
-          <span>加密工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/hash-tools')">
-          <el-icon><Key /></el-icon>
-          <span>哈希工具</span>
-        </div>
-      </el-collapse-item>
-
-      <el-collapse-item title="时间工具" name="5">
-        <template #title>
-          <el-icon class="card-icon"><Clock /></el-icon>
-          <span>时间工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/timestamp-tools')">
-          <el-icon><Timer /></el-icon>
-          <span>时间戳工具</span>
-        </div>
-        <div class="tool-item" @click="$router.push('/time-calculator')">
-          <el-icon><Calendar /></el-icon>
-          <span>时间计算器</span>
-        </div>
-      </el-collapse-item>
-
-      <el-collapse-item title="其他工具" name="6">
-        <template #title>
-          <el-icon class="card-icon"><Crop /></el-icon>
-          <span>其他工具</span>
-        </template>
-        <div class="tool-item" @click="$router.push('/qr-tools')">
-          <el-icon><Crop /></el-icon>
-          <span>二维码工具</span>
-        </div>
-      </el-collapse-item>
-    </el-collapse>
+    <!-- 移动端工具卡片 -->
+    <div class="mobile-tool-grid">
+      <el-row :gutter="10">
+        <el-col 
+          v-for="category in toolCategories" 
+          :key="category.id" 
+          :span="12" 
+          class="tool-col"
+        >
+          <el-card class="mobile-tool-card" @click="goToCategory(category.route)">
+            <div class="card-content">
+              <el-icon class="tool-icon" :size="24">
+                <component :is="category.icon" />
+              </el-icon>
+              <div class="tool-info">
+                <h3 class="tool-name">{{ category.name }}</h3>
+                <p class="tool-description">{{ category.description }}</p>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 
@@ -137,7 +77,56 @@ export default {
   },
   data() {
     return {
-      activeNames: []
+      activeNames: [],
+      toolCategories: [
+        {
+          id: 'file',
+          name: '文件工具',
+          description: '文件上传、管理与处理',
+          icon: 'FolderOpened',
+          route: '/file-upload'
+        },
+        {
+          id: 'crypto',
+          name: '加密工具',
+          description: '哈希算法、对称与非对称加密',
+          icon: 'Key',
+          route: '/crypto-main-menu'
+        },
+        {
+          id: 'data',
+          name: '数据工具',
+          description: '数据格式转换与处理',
+          icon: 'DocumentCopy',
+          route: '/json-tools'
+        },
+        {
+          id: 'encoding',
+          name: '编码工具',
+          description: '各种编码解码工具',
+          icon: 'Lock',
+          route: '/base64-tools'
+        },
+        {
+          id: 'time',
+          name: '时间工具',
+          description: '时间戳与日期时间处理',
+          icon: 'Clock',
+          route: '/timestamp-tools'
+        },
+        {
+          id: 'other',
+          name: '其他工具',
+          description: '二维码生成等其他实用工具',
+          icon: 'Crop',
+          route: '/qr-tools'
+        }
+      ]
+    }
+  },
+  methods: {
+    goToCategory(route) {
+      this.$router.push(route)
     }
   }
 }
@@ -172,25 +161,49 @@ export default {
   font-weight: bold;
 }
 
-.tool-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  border-bottom: 1px solid #f0f0f0;
+.mobile-tool-grid {
+  margin-top: 20px;
+}
+
+.tool-col {
+  margin-bottom: 15px;
+}
+
+.mobile-tool-card {
   cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
 }
 
-.tool-item:last-child {
-  border-bottom: none;
+.mobile-tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.tool-item:hover {
-  background-color: #f5f5f5;
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 15px 10px;
 }
 
-.tool-item el-icon {
-  margin-right: 10px;
-  font-size: 18px;
+.tool-icon {
   color: #409eff;
+  margin-bottom: 10px;
+}
+
+.tool-name {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.tool-description {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
 }
 </style>

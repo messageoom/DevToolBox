@@ -32,7 +32,6 @@
         </template>
         <el-menu-item index="/json-tools">JSON工具</el-menu-item>
         <el-menu-item index="/yaml-tools">YAML工具</el-menu-item>
-        <el-menu-item index="/markdown-tools">Markdown工具</el-menu-item>
         <el-menu-item index="/data-conversion">数据互转</el-menu-item>
       </el-sub-menu>
 
@@ -51,6 +50,7 @@
           <span>加密工具</span>
         </template>
         <el-menu-item index="/hash-tools">哈希工具</el-menu-item>
+        <el-menu-item index="/crypto-tools">加密工具</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="time-tools">

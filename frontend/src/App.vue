@@ -60,6 +60,7 @@
               <span>加密工具</span>
             </template>
             <el-menu-item index="/hash-tools">哈希工具</el-menu-item>
+            <el-menu-item index="/crypto-tools">加密工具</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu index="time-tools">

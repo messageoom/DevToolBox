@@ -13,6 +13,9 @@ import MarkdownTools from '../views/MarkdownTools.vue'
 import MarkdownEditor from '../views/MarkdownEditor.vue'
 import DataConversion from '../views/DataConversion.vue'
 import QrTools from '../views/QrTools.vue'
+import CryptoTools from '../views/CryptoTools.vue'
+import CryptoMainMenu from '../views/CryptoMainMenu.vue'
+import TestCryptoAPI from '../views/TestCryptoAPI.vue'
 // 导入PDF帮助页面
 import PdfHelp from '../views/PdfHelp.vue'
 
@@ -87,6 +90,21 @@ const routes = [
     path: '/qr-tools',
     name: 'QrTools',
     component: QrTools
+  },
+  {
+    path: '/crypto-tools',
+    name: 'CryptoTools',
+    component: CryptoTools
+  },
+  {
+    path: '/crypto-main-menu',
+    name: 'CryptoMainMenu',
+    component: CryptoMainMenu
+  },
+  {
+    path: '/test-crypto-api',
+    name: 'TestCryptoAPI',
+    component: TestCryptoAPI
   },
   // 添加PDF帮助页面路由
   {

@@ -14,6 +14,7 @@ try:
     from .modules.markdown_tools import markdown_tools_bp
     from .modules.data_conversion import data_conversion_bp
     from .modules.qr_tools import qr_tools_bp
+    from .modules.crypto_tools import crypto_tools_bp
 except ImportError:
     from modules.file_upload import file_upload_bp
     from modules.json_tools import json_tools_bp
@@ -25,6 +26,7 @@ except ImportError:
     from modules.markdown_tools import markdown_tools_bp
     from modules.data_conversion import data_conversion_bp
     from modules.qr_tools import qr_tools_bp
+    from modules.crypto_tools import crypto_tools_bp
 
 def create_app():
     app = Flask(__name__)
@@ -32,12 +34,6 @@ def create_app():
 
     # 配置
     app.config['SECRET_KEY'] = 'your-secret-key-here'
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
-    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024  # 1GB - 进一步增加上传大小限制
-
-    # 确保上传目录存在
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
 
     # 注册蓝图
     app.register_blueprint(file_upload_bp, url_prefix='/api/file-upload')
@@ -50,16 +46,7 @@ def create_app():
     app.register_blueprint(markdown_tools_bp, url_prefix='/api/markdown-tools')
     app.register_blueprint(data_conversion_bp, url_prefix='/api/data-conversion')
     app.register_blueprint(qr_tools_bp, url_prefix='/api/qr-tools')
-
-    # 为前端静态文件提供服务
-    @app.route('/', defaults={'path': ''})
-    @app.route('/<path:path>')
-    def serve_frontend(path):
-        frontend_dir = os.path.join(app.root_path, 'static', 'frontend')
-        if path != "" and os.path.exists(os.path.join(frontend_dir, path)):
-            return send_from_directory(os.path.join(frontend_dir), path)
-        else:
-            return send_from_directory(os.path.join(frontend_dir), 'index.html')
+    app.register_blueprint(crypto_tools_bp, url_prefix='/api/crypto-tools')
 
     return app
 
