@@ -1894,4 +1894,90 @@ export default {
   color: #333;
   font-weight: bold;
 }
+
+html.dark .key-display h4 {
+  color: #e5eaf3;
+}
+
+/* 暗黑主题下的表单标签颜色 */
+html.dark :deep(.el-form-item__label) {
+  color: #e5eaf3;
+}
+
+/* 暗黑主题下的输入框背景色 */
+html.dark :deep(.el-textarea__inner) {
+  background-color: #2d2d2d;
+  color: #e5eaf3;
+  border-color: #434343;
+}
+
+html.dark :deep(.el-input__inner) {
+  background-color: #2d2d2d;
+  color: #e5eaf3;
+  border-color: #434343;
+}
+
+/* 暗黑主题下的卡片背景色 */
+html.dark :deep(.el-card) {
+  background-color: #1d1e1f;
+  border-color: #434343;
+}
+
+html.dark :deep(.el-card__header) {
+  background-color: #2d2d2d;
+  border-color: #434343;
+}
+
+/* 暗黑主题下的标签页 */
+html.dark :deep(.el-tabs__item) {
+  color: #a3a6ad;
+}
+
+html.dark :deep(.el-tabs__item.is-active) {
+  color: #409eff;
+}
+
+html.dark :deep(.el-tabs__nav-wrap::after) {
+  background-color: #434343;
+}
+
+html.dark :deep(.el-tabs__active-bar) {
+  background-color: #409eff;
+}
+
+/* 暗黑主题下的按钮 */
+html.dark :deep(.el-button) {
+  background-color: #2d2d2d;
+  border-color: #434343;
+  color: #e5eaf3;
+}
+
+html.dark :deep(.el-button:hover) {
+  background-color: #3d3d3d;
+  border-color: #535353;
+  color: #e5eaf3;
+}
+
+/* 暗黑主题下的选择器 */
+html.dark :deep(.el-select) {
+  background-color: #2d2d2d;
+}
+
+html.dark :deep(.el-select .el-input__inner) {
+  background-color: #2d2d2d;
+}
+
+/* 暗黑主题下的警告框 */
+html.dark :deep(.el-alert) {
+  background-color: #2d2d2d;
+  border-color: #434343;
+}
+
+html.dark :deep(.el-alert__title) {
+  color: #e5eaf3;
+}
+
+html.dark :deep(.el-alert__description) {
+  color: #a3a6ad;
+}
 </style>

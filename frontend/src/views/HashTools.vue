@@ -158,10 +158,18 @@ export default {
   font-weight: bold;
 }
 
+html.dark .input-section h4, html.dark .output-section h4 {
+  color: #e5eaf3;
+}
+
 .config-section {
   padding: 20px;
   background-color: #f8f9fa;
   border-radius: 8px;
+}
+
+html.dark .config-section {
+  background-color: #2d2d2d;
 }
 
 .action-buttons {
@@ -191,5 +199,54 @@ export default {
 
 .algorithm-selector {
   margin-bottom: 20px;
+}
+
+/* 暗黑主题下的卡片背景色 */
+html.dark :deep(.el-card) {
+  background-color: #1d1e1f;
+  border-color: #434343;
+}
+
+html.dark :deep(.el-card__header) {
+  background-color: #2d2d2d;
+  border-color: #434343;
+  color: #e5eaf3;
+}
+
+/* 暗黑主题下的输入框 */
+html.dark :deep(.el-textarea__inner) {
+  background-color: #2d2d2d;
+  color: #e5eaf3;
+  border-color: #434343;
+}
+
+html.dark :deep(.el-input__inner) {
+  background-color: #2d2d2d;
+  color: #e5eaf3;
+  border-color: #434343;
+}
+
+/* 暗黑主题下的按钮 */
+html.dark :deep(.el-button) {
+  background-color: #2d2d2d;
+  border-color: #434343;
+  color: #e5eaf3;
+}
+
+html.dark :deep(.el-button:hover) {
+  background-color: #3d3d3d;
+  border-color: #535353;
+  color: #e5eaf3;
+}
+
+html.dark :deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: #ffffff;
+}
+
+html.dark :deep(.el-button--primary:hover) {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
 }
 </style>
