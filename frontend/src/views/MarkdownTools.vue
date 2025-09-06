@@ -36,13 +36,21 @@
                 readonly
                 style="width: 100%;"
               />
+              <div class="action-section" style="margin-top: 10px;">
+                <el-button type="success" @click="downloadHtml" :disabled="!fullHtmlOutput">
+                  📥 下载完整HTML文件
+                </el-button>
+              </div>
               <div class="stats" v-if="conversionStats">
-                <el-descriptions :column="2" size="small" border>
+                <el-descriptions :column="3" size="small" border>
                   <el-descriptions-item label="原始长度">
                     {{ conversionStats.original_length }} 字符
                   </el-descriptions-item>
-                  <el-descriptions-item label="输出长度">
+                  <el-descriptions-item label="HTML长度">
                     {{ conversionStats.html_length }} 字符
+                  </el-descriptions-item>
+                  <el-descriptions-item label="完整HTML长度">
+                    {{ conversionStats.full_html_length }} 字符
                   </el-descriptions-item>
                 </el-descriptions>
               </div>
@@ -395,6 +403,7 @@ export default {
       // 转换相关
       markdownInput: '',
       htmlOutput: '',
+      fullHtmlOutput: '',
       plainOutput: '',
       converting: false,
       conversionStats: null,
@@ -441,9 +450,11 @@ export default {
 
         if (response.data.success) {
           this.htmlOutput = response.data.html
+          this.fullHtmlOutput = response.data.full_html
           this.conversionStats = {
             original_length: response.data.original_length,
-            html_length: response.data.html_length
+            html_length: response.data.html_length,
+            full_html_length: response.data.full_html_length
           }
           ElMessage.success('转换成功')
         } else {
@@ -670,9 +681,53 @@ export default {
       }
     },
 
+    downloadHtml() {
+      if (!this.fullHtmlOutput) {
+        ElMessage.warning('没有可下载的HTML内容')
+        return
+      }
+
+      try {
+        // 创建Blob对象
+        const blob = new Blob([this.fullHtmlOutput], { type: 'text/html;charset=utf-8' })
+
+        // 创建下载链接
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+
+        // 生成文件名（从第一个标题提取或使用默认名称）
+        let filename = 'markdown-document.html'
+        const lines = this.markdownInput.split('\n')
+        for (const line of lines) {
+          if (line.trim().startsWith('# ')) {
+            const title = line.trim().substring(2).trim()
+            // 清理文件名中的特殊字符
+            filename = title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\-_]/g, '-').substring(0, 50) + '.html'
+            break
+          }
+        }
+
+        link.download = filename
+
+        // 触发下载
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // 释放URL对象
+        URL.revokeObjectURL(url)
+
+        ElMessage.success('HTML文件下载成功')
+      } catch (error) {
+        ElMessage.error('下载失败: ' + error.message)
+      }
+    },
+
     clearAll() {
       this.markdownInput = ''
       this.htmlOutput = ''
+      this.fullHtmlOutput = ''
       this.plainOutput = ''
       this.escapeInput = ''
       this.escapedOutput = ''

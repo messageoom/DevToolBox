@@ -13,6 +13,8 @@ import MarkdownTools from '../views/MarkdownTools.vue'
 import MarkdownEditor from '../views/MarkdownEditor.vue'
 import DataConversion from '../views/DataConversion.vue'
 import QrTools from '../views/QrTools.vue'
+// 导入PDF帮助页面
+import PdfHelp from '../views/PdfHelp.vue'
 
 const routes = [
   {
@@ -85,6 +87,12 @@ const routes = [
     path: '/qr-tools',
     name: 'QrTools',
     component: QrTools
+  },
+  // 添加PDF帮助页面路由
+  {
+    path: '/pdf-help',
+    name: 'PdfHelp',
+    component: PdfHelp
   }
 ]
 
