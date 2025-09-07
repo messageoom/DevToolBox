@@ -6,7 +6,6 @@ import uuid
 file_upload_bp = Blueprint('file_upload', __name__)
 
 # 配置
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'uploads')
 ALLOWED_EXTENSIONS = {
     # 图片格式
     'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico',
@@ -22,9 +21,21 @@ ALLOWED_EXTENSIONS = {
     'exe', 'dll', 'iso', 'torrent'
 }
 
-# 确保存在上传目录
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+def get_upload_folder():
+    """获取上传文件夹路径"""
+    # 优先使用Flask应用配置的UPLOAD_FOLDER
+    from flask import current_app
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+    
+    # 如果没有配置，则使用默认路径
+    if not upload_folder:
+        upload_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'uploads')
+    
+    # 确保存在上传目录
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+    
+    return upload_folder
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -34,11 +45,15 @@ def allowed_file(filename):
 def upload_files():
     """上传文件"""
     try:
+        # 获取上传文件夹路径
+        UPLOAD_FOLDER = get_upload_folder()
+        
         # 调试信息
         print("Received request files:", request.files)
         print("Request form:", request.form)
         print("Request method:", request.method)
         print("Content-Type:", request.content_type)
+        print("Upload folder:", UPLOAD_FOLDER)
 
         # 检查是否有文件被提交
         if not request.files:
@@ -172,6 +187,7 @@ def upload_files():
 def get_uploaded_files():
     """获取已上传的文件列表"""
     try:
+        UPLOAD_FOLDER = get_upload_folder()
         files = os.listdir(UPLOAD_FOLDER)
         file_list = []
 
@@ -199,6 +215,7 @@ def get_uploaded_files():
 def get_file(filename):
     """获取文件"""
     try:
+        UPLOAD_FOLDER = get_upload_folder()
         return send_from_directory(UPLOAD_FOLDER, filename)
     except Exception as e:
         return jsonify({'error': '文件不存在'}), 404
@@ -207,6 +224,7 @@ def get_file(filename):
 def delete_file(filename):
     """删除文件"""
     try:
+        UPLOAD_FOLDER = get_upload_folder()
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         if os.path.exists(file_path):
             os.remove(file_path)
