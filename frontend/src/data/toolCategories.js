@@ -55,10 +55,10 @@ export const toolCategories = [
   },
   {
     id: 'generator',
-    name: '生成器',
-    description: 'UUID、密码、API Key生成',
+    name: '生成与调试',
+    description: 'UUID、密码、API Key生成及开发调试工具',
     icon: 'MagicStick',
     route: '/uuid-tools',
-    tools: ['UUID生成', '密码生成', 'API Key生成']
+    tools: ['UUID生成', '密码生成', 'API Key生成', 'JWT调试', '文本对比']
   }
 ]

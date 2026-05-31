@@ -133,6 +133,7 @@ import {
   Expand,
   Fold,
   Crop,
+  MagicStick,
   Sunny,
   Moon,
 } from '@element-plus/icons-vue'
@@ -190,6 +191,13 @@ const sidebarCategories = computed(() => {
     other: [
       { label: '二维码工具', route: '/qr-tools' },
     ],
+    generator: [
+      { label: 'UUID生成器', route: '/uuid-tools' },
+      { label: '密码生成器', route: '/password-tools' },
+      { label: 'API Key生成器', route: '/apikey-tools' },
+      { label: 'JWT调试器', route: '/jwt-debugger' },
+      { label: '文本对比', route: '/diff-tool' },
+    ],
   }
 
   return toolCategories.map((cat) => ({
@@ -206,8 +214,9 @@ const mobileNavTabs = [
   { label: '首页', route: '/', icon: HomeFilled, matchPrefix: '' },
   { label: '数据', route: '/json-tools', icon: DocumentCopy, matchPrefix: '/json-tools,/yaml-tools,/markdown-tools,/data-conversion,/markdown-editor' },
   { label: '编码', route: '/base64-tools', icon: Lock, matchPrefix: '/base64-tools,/url-tools' },
-  { label: '加密', route: '/hash-tools', icon: Key, matchPrefix: '/hash-tools,/crypto-tools,/crypto-main-menu' },
+  { label: '加密', route: '/hash-tools', icon: Key, matchPrefix: '/hash-tools,/crypto-tools' },
   { label: '时间', route: '/timestamp-tools', icon: Clock, matchPrefix: '/timestamp-tools,/time-calculator' },
+  { label: '生成', route: '/uuid-tools', icon: MagicStick, matchPrefix: '/uuid-tools,/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
 ]
 
 // --- Methods ---

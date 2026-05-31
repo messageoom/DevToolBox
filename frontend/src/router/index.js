@@ -25,6 +25,9 @@ const UuidTools = () => import(/* webpackChunkName: "generator-tools" */ '../vie
 const PasswordTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/PasswordTools.vue')
 const ApiKeyTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/ApiKeyTools.vue')
 
+const JwtDebugger = () => import(/* webpackChunkName: "dev-tools" */ '../views/JwtDebugger.vue')
+const DiffTool = () => import(/* webpackChunkName: "dev-tools" */ '../views/DiffTool.vue')
+
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/file-upload', name: 'FileUpload', component: FileUpload },
@@ -44,6 +47,8 @@ const routes = [
   { path: '/uuid-tools', name: 'UuidTools', component: UuidTools },
   { path: '/password-tools', name: 'PasswordTools', component: PasswordTools },
   { path: '/apikey-tools', name: 'ApiKeyTools', component: ApiKeyTools },
+  { path: '/jwt-debugger', name: 'JwtDebugger', component: JwtDebugger },
+  { path: '/diff-tool', name: 'DiffTool', component: DiffTool },
 ]
 
 const router = createRouter({
