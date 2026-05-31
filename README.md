@@ -1,6 +1,13 @@
 # DevToolBox
 
-一个面向开发者的全能工具箱，基于 Flask + Vue 3 构建，提供文件处理、数据转换、编码解码、加密解密、时间处理等一站式开发工具。
+一个面向开发者的**本地化安全工具箱**，基于 Flask + Vue 3 构建。所有数据处理均在本地完成，不上传、不外发、不留痕——你的数据永远不会离开你的电脑。
+
+## 核心理念
+
+- **本地处理**：所有计算在浏览器/本地服务完成，无需联网
+- **隐私优先**：不上传任何数据到外部服务器，无用户追踪
+- **开箱即用**：双击 exe 即可运行，无需安装 Python 或 Node.js
+- **响应式设计**：桌面、平板、手机自适应布局
 
 ## 功能一览
 
@@ -10,14 +17,20 @@
 | 数据工具 | JSON | 格式化、压缩、验证、转义 |
 | 数据工具 | YAML | 格式化、压缩、验证、JSON 互转 |
 | 数据工具 | Markdown 编辑器 | 实时预览、多主题、导出 HTML/PDF |
+| 数据工具 | Markdown 工具 | 转 HTML、提取纯文本、语法验证、文档统计 |
 | 数据工具 | 数据转换 | Markdown/HTML/PDF 互转 |
-| 编码工具 | Base64 | 文本/文件编解码、URL 安全编码 |
-| 编码工具 | URL | 编解码、解析、构建、HAR 转换、Curl 执行 |
-| 编码工具 | 二维码 | 生成、美化 |
-| 加密工具 | 哈希 | MD5/SHA/HMAC/PBKDF2/bcrypt/Blake3 |
+| 编码工具 | Base64 | 文本/文件编解码、URL 安全编码、校验 |
+| 编码工具 | URL | 编解码、解析、构建、验证、链接提取、Query 编解码 |
+| 加密工具 | 哈希 | MD5/SHA/HMAC/bcrypt/PBKDF2/Blake3 |
 | 加密工具 | 加密解密 | RSA/ECC/Ed25519/AES/ChaCha20/SM2/SM4 |
-| 时间工具 | 时间戳 | 转换、多时区、批量计算 |
+| 时间工具 | 时间戳 | 转换、多时区、时间加减、批量计算、格式参考 |
 | 时间工具 | 时间计算 | 日期差、工作日计算 |
+| 其他工具 | 二维码 | 生成、美化 |
+| 生成与调试 | UUID 生成器 | v1/v3/v4/v5 生成、验证、解析 |
+| 生成与调试 | 密码生成器 | 自定义规则生成、强度检测、助记密码 |
+| 生成与调试 | API Key 生成器 | 多格式生成、格式验证、Key 哈希 |
+| 生成与调试 | JWT 调试器 | 解码 Header/Payload/Signature、过期检测 |
+| 生成与调试 | 文本对比 | 统一视图、并排视图、差异统计 |
 
 ## 快速开始
 
@@ -36,14 +49,26 @@ cd DevToolBox
 # 安装后端依赖
 pip install -r requirements.txt
 
-# 安装前端依赖
-cd frontend && npm install && cd ..
+# 安装前端依赖并构建
+cd frontend && npm install && npm run build && cd ..
 
-# 启动（同时启动前后端）
-python app.py
+# 启动
+python backend/app.py
 ```
 
-访问 http://localhost:5173 即可使用。
+访问 http://localhost:5000 即可使用。
+
+### 开发模式
+
+```bash
+# 终端 1：启动后端
+python backend/app.py
+
+# 终端 2：启动前端开发服务器
+cd frontend && npm run dev
+```
+
+前端开发服务器访问 http://localhost:5173，支持热更新。
 
 ### 环境变量
 
@@ -51,7 +76,6 @@ python app.py
 |------|------|--------|
 | `SECRET_KEY` | Flask 会话密钥 | 随机生成 |
 | `FLASK_DEBUG` | 启用调试模式 | `false` |
-| `FLASK_HOST` | 后端监听地址 | `127.0.0.1` |
 | `CORS_ORIGINS` | 允许的前端源（逗号分隔） | `http://localhost:5173,http://127.0.0.1:5173` |
 
 ### 一键启动（Windows）
@@ -64,7 +88,7 @@ python app.py
 DevToolBox/
 ├── backend/
 │   ├── app.py                          # Flask 应用工厂
-│   ├── modules/                        # 功能模块（11 个）
+│   ├── modules/                        # 功能模块（14 个）
 │   │   ├── file_upload.py              # 文件上传
 │   │   ├── json_tools.py               # JSON 处理
 │   │   ├── yaml_tools.py               # YAML 处理
@@ -76,6 +100,9 @@ DevToolBox/
 │   │   ├── timestamp_tools.py          # 时间戳工具
 │   │   ├── data_conversion.py          # 数据转换
 │   │   ├── qr_tools.py                 # 二维码
+│   │   ├── uuid_tools.py               # UUID 生成器
+│   │   ├── password_tools.py           # 密码生成器
+│   │   ├── apikey_tools.py             # API Key 生成器
 │   │   └── data_conversion_styles.py   # 转换样式模板
 │   └── utils/                          # 安全工具
 │       ├── ssrf_protection.py          # SSRF 防护
@@ -83,21 +110,20 @@ DevToolBox/
 │       └── error_handler.py            # 错误脱敏
 ├── frontend/
 │   └── src/
-│       ├── api/                        # 统一 API 层（11 个模块）
 │       ├── stores/                     # Pinia 状态管理
 │       │   ├── theme.js                # 暗黑模式
 │       │   └── device.js               # 设备检测
-│       ├── styles/                     # 全局样式
-│       │   └── dark-theme.css          # 暗黑主题
+│       ├── styles/                     # 全局样式 + 暗黑主题
 │       ├── data/                       # 共享数据
 │       │   └── toolCategories.js       # 工具分类
-│       ├── views/                      # 页面组件（17 个）
+│       ├── views/                      # 页面组件（20 个）
 │       ├── components/                 # 通用组件
 │       ├── composables/                # 组合式函数
 │       └── router/                     # 路由（懒加载）
-├── .github/workflows/ci.yml            # CI/CD 配置
 ├── requirements.txt                    # Python 依赖
-└── app.py                              # 启动入口
+├── app.spec                            # PyInstaller 打包配置
+├── build.py                            # 构建脚本
+└── README.md
 ```
 
 ## 技术栈
@@ -121,20 +147,30 @@ DevToolBox/
 | JSON | POST | `/json-tools/format` | 格式化 |
 | | POST | `/json-tools/minify` | 压缩 |
 | | POST | `/json-tools/validate` | 验证 |
+| | POST | `/json-tools/escape` | 转义 |
 | YAML | POST | `/yaml-tools/format` | 格式化 |
 | | POST | `/yaml-tools/to-json` | YAML → JSON |
+| | POST | `/yaml-tools/validate` | 验证 |
 | Base64 | POST | `/base64-tools/encode` | 编码 |
 | | POST | `/base64-tools/decode` | 解码 |
+| | POST | `/base64-tools/url-safe-encode` | URL 安全编码 |
+| | POST | `/base64-tools/url-safe-decode` | URL 安全解码 |
+| | POST | `/base64-tools/validate` | 校验 |
+| | POST | `/base64-tools/encode-file` | 文件编码 |
+| | POST | `/base64-tools/decode-file` | 文件解码 |
 | URL | POST | `/url-tools/encode` | URL 编码 |
 | | POST | `/url-tools/decode` | URL 解码 |
-| | POST | `/url-tools/send-request` | 发送 HTTP 请求 |
-| | POST | `/url-tools/parse-curl` | 解析 Curl |
-| | POST | `/url-tools/execute-curl` | 执行 Curl |
-| | POST | `/url-tools/to-har` | URL → HAR |
+| | POST | `/url-tools/parse` | 解析 URL |
+| | POST | `/url-tools/build` | 构建 URL |
+| | POST | `/url-tools/validate` | 验证 URL |
+| | POST | `/url-tools/extract-links` | 提取链接 |
+| | POST | `/url-tools/query-encode` | Query 编码 |
+| | POST | `/url-tools/query-decode` | Query 解码 |
 | 哈希 | POST | `/hash-tools/generate` | 生成哈希 |
 | | POST | `/hash-tools/verify` | 验证哈希 |
-| | POST | `/hash-tools/pbkdf2` | PBKDF2 密钥派生 |
+| | POST | `/hash-tools/hmac` | HMAC |
 | | POST | `/hash-tools/bcrypt` | bcrypt 哈希 |
+| | POST | `/hash-tools/pbkdf2` | PBKDF2 密钥派生 |
 | 加密 | POST | `/crypto-tools/{algo}/generate` | 生成密钥对 |
 | | POST | `/crypto-tools/{algo}/encrypt` | 加密 |
 | | POST | `/crypto-tools/{algo}/decrypt` | 解密 |
@@ -143,16 +179,27 @@ DevToolBox/
 | 时间戳 | GET | `/timestamp-tools/current` | 当前时间戳 |
 | | POST | `/timestamp-tools/convert` | 时间戳转换 |
 | | POST | `/timestamp-tools/calculate` | 时间计算 |
+| | POST | `/timestamp-tools/batch` | 批量计算 |
+| | POST | `/timestamp-tools/add-time` | 时间加减 |
 | 数据转换 | POST | `/data-conversion/md-to-html` | Markdown → HTML |
 | | POST | `/data-conversion/md-to-pdf` | Markdown → PDF |
 | | POST | `/data-conversion/html-to-md` | HTML → Markdown |
 | | POST | `/data-conversion/pdf-to-md` | PDF → Markdown |
-| 二维码 | POST | `/qr-tools/generate` | 生成二维码 |
-| | POST | `/qr-tools/beautify` | 美化二维码 |
 | Markdown | POST | `/markdown-tools/to-html` | 转 HTML |
 | | POST | `/markdown-tools/to-plain` | 提取纯文本 |
 | | POST | `/markdown-tools/validate` | 语法验证 |
 | | POST | `/markdown-tools/stats` | 文档统计 |
+| 二维码 | POST | `/qr-tools/generate` | 生成二维码 |
+| | POST | `/qr-tools/beautify` | 美化二维码 |
+| UUID | POST | `/uuid-tools/generate` | 生成 UUID |
+| | POST | `/uuid-tools/validate` | 验证 UUID |
+| | POST | `/uuid-tools/parse` | 解析 UUID |
+| 密码 | POST | `/password-tools/generate` | 生成密码 |
+| | POST | `/password-tools/strength` | 密码强度检测 |
+| | POST | `/password-tools/passphrase` | 生成助记密码 |
+| API Key | POST | `/apikey-tools/generate` | 生成 API Key |
+| | POST | `/apikey-tools/validate` | 验证 API Key |
+| | POST | `/apikey-tools/hash-key` | Key 哈希 |
 
 ## 贡献
 

@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import logging
 
-__version__ = '1.0.1'
+__version__ = '2.0.0'
 
 # 兼容处理导入，支持从不同目录运行
 try:
