@@ -60,10 +60,22 @@ jobs:
           retention-days: 7
 
   build-release:
-    name: Build Release
+    name: Build (${{ matrix.os }})
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [backend-check, frontend-build]
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: DevToolBox-windows
+            pattern: dist/CLI/DevToolBox*.exe
+          - os: macos-latest
+            artifact: DevToolBox-macos
+            pattern: dist/CLI/DevToolBox*
+          - os: ubuntu-latest
+            artifact: DevToolBox-linux
+            pattern: dist/CLI/DevToolBox*
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
     steps:
@@ -80,6 +92,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpango1.0-dev libharfbuzz-dev libffi-dev libjpeg-dev zlib1g-dev
 
       - name: Install frontend dependencies
         run: cd frontend && npm ci
@@ -98,11 +116,11 @@ jobs:
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DevToolBox-windows
+          name: ${{ matrix.artifact }}
           path: dist/CLI/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/CLI/DevToolBox*.exe
+          files: ${{ matrix.pattern }}
           generate_release_notes: true
