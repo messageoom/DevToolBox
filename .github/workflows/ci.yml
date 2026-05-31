@@ -92,15 +92,17 @@ jobs:
 
       - name: Build executable
         run: python build.py
+        env:
+          PYTHONUTF8: 1
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: DevToolBox-windows
-          path: dist/
+          path: dist/CLI/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/DevToolBox*.exe
+          files: dist/CLI/DevToolBox*.exe
           generate_release_notes: true

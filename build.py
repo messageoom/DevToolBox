@@ -22,7 +22,14 @@ python build.py --version v1.0.0   # 带版本号打包到 dist_v1.0.0 目录
 
 import os
 import sys
+import io
 import subprocess
+
+# Fix Windows console encoding for emoji/CJK output
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 import shutil
 import time
 import argparse
