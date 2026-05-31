@@ -1,87 +1,80 @@
 <template>
-  <div class="base64-tools">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><Key /></el-icon>
-          <span>Base64工具</span>
-        </div>
-      </template>
+  <ToolPage title="Base64工具" :icon="Key">
+    <el-tabs v-model="activeTab">
+      <el-tab-pane label="编码" name="encode">
+        <ToolSection
+          input-label="输入文本"
+          output-label="Base64结果"
+          action-text="编码"
+          :loading="encoding"
+          @submit="encodeBase64"
+        >
+          <template #input>
+            <el-input
+              v-model="encodeInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入要编码的文本..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="encodeOutput"
+              type="textarea"
+              :rows="8"
+              readonly
+              placeholder="编码结果将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
 
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="编码" name="encode">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入文本</h4>
-              <el-input
-                v-model="encodeInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入要编码的文本..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="encodeBase64" :loading="encoding">
-                编码
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>Base64结果</h4>
-              <el-input
-                v-model="encodeOutput"
-                type="textarea"
-                :rows="8"
-                readonly
-                placeholder="编码结果将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <el-tab-pane label="解码" name="decode">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入Base64</h4>
-              <el-input
-                v-model="decodeInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入Base64字符串..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="decodeBase64" :loading="decoding">
-                解码
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>解码结果</h4>
-              <el-input
-                v-model="decodeOutput"
-                type="textarea"
-                :rows="8"
-                readonly
-                placeholder="解码结果将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-    </el-card>
-  </div>
+      <el-tab-pane label="解码" name="decode">
+        <ToolSection
+          input-label="输入Base64"
+          output-label="解码结果"
+          action-text="解码"
+          :loading="decoding"
+          @submit="decodeBase64"
+        >
+          <template #input>
+            <el-input
+              v-model="decodeInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入Base64字符串..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="decodeOutput"
+              type="textarea"
+              :rows="8"
+              readonly
+              placeholder="解码结果将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+    </el-tabs>
+  </ToolPage>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
 import { Key } from '@element-plus/icons-vue'
 import axios from 'axios'
+import ToolPage from '@/components/ToolPage.vue'
+import ToolSection from '@/components/ToolSection.vue'
 
 export default {
   name: 'Base64Tools',
   components: {
-    Key
+    Key,
+    ToolPage,
+    ToolSection
   },
   data() {
     return {
@@ -147,43 +140,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.base64-tools {
-  padding: 20px;
-}
-
-.tool-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input-section, .output-section {
-  flex: 1;
-}
-
-.input-section h4, .output-section h4 {
-  margin-bottom: 10px;
-  color: #333;
-  font-weight: bold;
-}
-
-.action-section {
-  text-align: center;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-}
-
-.card-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.card-header span {
-  font-weight: bold;
-}
-</style>

@@ -1,6 +1,9 @@
 import { createApp } from 'vue'
 import 'element-plus/dist/index.css'
-import 'element-plus/theme-chalk/dark/css-vars.css' // 添加暗黑主题支持
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import './styles/variables.css'
+import './styles/tool-layout.css'
+import './styles/dark-theme.css'
 import App from './App.vue'
 import { createPinia } from 'pinia'
 import router from './router'

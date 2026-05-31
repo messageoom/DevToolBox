@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <!-- 桌面端布局 -->
-    <div class="file-category-page" v-if="!isMobile">
+  <div class="file-category-page">
       <el-card>
         <template #header>
           <div class="page-header">
@@ -83,12 +81,6 @@
           />
         </div>
       </el-card>
-    </div>
-
-    <!-- 移动端布局 -->
-    <div v-else>
-      <MobileFileCategory />
-    </div>
   </div>
 </template>
 
@@ -96,7 +88,6 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Search, Download, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
-import MobileFileCategory from './MobileFileCategory.vue'
 
 export default {
   name: 'FileCategory',
@@ -104,8 +95,7 @@ export default {
     ArrowLeft,
     Search,
     Download,
-    Delete,
-    MobileFileCategory
+    Delete
   },
   data() {
     return {

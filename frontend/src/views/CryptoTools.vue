@@ -1,38 +1,35 @@
 <template>
   <div class="crypto-tools">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><Key /></el-icon>
-          <span>加密工具</span>
-        </div>
-      </template>
-
+    <ToolPage title="加密解密工具" :icon="Key">
       <div class="tool-section">
-        <!-- 算法分类说明 -->
-        <div class="algorithm-info">
-          <el-alert
-            title="支持的加密算法"
-            type="info"
-            description="本工具支持多种国际标准和国密算法，包括非对称加密、对称加密"
-            show-icon
-            closable
-            style="margin-bottom: 20px;"
-          />
+        <el-alert
+          title="支持的加密算法"
+          type="info"
+          description="本工具支持多种国际标准和国密算法，包括非对称加密、对称加密和哈希算法"
+          show-icon
+          closable
+          style="margin-bottom: 20px;"
+        />
+
+        <!-- 顶部切换: 加密解密 / 哈希 -->
+        <div class="top-tabs">
+          <el-tabs v-model="activeMenu">
+            <el-tab-pane label="加密解密" name="encryption" />
+            <el-tab-pane label="哈希工具" name="hash" />
+          </el-tabs>
         </div>
 
-        <!-- 加密解密工具 -->
+        <!-- ============ 加密解密工具 ============ -->
         <div v-if="activeMenu === 'encryption'">
-          <!-- 卡片式算法选择器 -->
-          <AlgorithmCardSelector 
-            v-model="selectedAlgorithm" 
+          <AlgorithmCardSelector
+            v-model="selectedAlgorithm"
             v-model:category="selectedCategory"
             :algorithms="availableAlgorithms"
             @category-change="onCategoryChange"
             class="algorithm-selector"
           />
 
-          <!-- RSA工具 -->
+          <!-- RSA -->
           <div v-if="selectedAlgorithm === 'RSA'" class="algorithm-section">
             <el-tabs v-model="rsaActiveTab">
               <el-tab-pane label="生成密钥对" name="generate">
@@ -50,118 +47,27 @@
                     </el-button>
                   </el-form-item>
                 </el-form>
-              
-                <div v-if="rsaKeys.privateKey || rsaKeys.publicKey" class="key-display">
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <h4>私钥</h4>
-                      <el-input 
-                        v-model="rsaKeys.privateKey" 
-                        type="textarea" 
-                        :rows="8" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(rsaKeys.privateKey)" size="small" style="margin-top: 10px;">
-                        复制私钥
-                      </el-button>
-                    </el-col>
-                    <el-col :span="12">
-                      <h4>公钥</h4>
-                      <el-input 
-                        v-model="rsaKeys.publicKey" 
-                        type="textarea" 
-                        :rows="8" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(rsaKeys.publicKey)" size="small" style="margin-top: 10px;">
-                        复制公钥
-                      </el-button>
-                    </el-col>
-                  </el-row>
-                </div>
+                <KeyPairDisplay
+                  :private-key="rsaKeys.privateKey"
+                  :public-key="rsaKeys.publicKey"
+                />
               </el-tab-pane>
-            
+
               <el-tab-pane label="加密/解密" name="encryptDecrypt">
-                <el-tabs v-model="rsaCryptoTab">
-                  <el-tab-pane label="加密" name="encrypt">
-                    <el-form :model="rsaEncryptForm" label-width="120px">
-                      <el-form-item label="明文">
-                        <el-input 
-                          v-model="rsaEncryptForm.plaintext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要加密的文本..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="公钥">
-                        <el-input 
-                          v-model="rsaEncryptForm.publicKey" 
-                          type="textarea" 
-                          :rows="6" 
-                          placeholder="请输入公钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="rsaEncrypt" :loading="encrypting">
-                          RSA加密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="rsaEncryptResult" label="密文">
-                        <el-input 
-                          v-model="rsaEncryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(rsaEncryptResult)" size="small" style="margin-top: 10px;">
-                          复制密文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="解密" name="decrypt">
-                    <el-form :model="rsaDecryptForm" label-width="120px">
-                      <el-form-item label="密文">
-                        <el-input 
-                          v-model="rsaDecryptForm.ciphertext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要解密的密文..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="私钥">
-                        <el-input 
-                          v-model="rsaDecryptForm.privateKey" 
-                          type="textarea" 
-                          :rows="6" 
-                          placeholder="请输入私钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="rsaDecrypt" :loading="decrypting">
-                          RSA解密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="rsaDecryptResult" label="明文">
-                        <el-input 
-                          v-model="rsaDecryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(rsaDecryptResult)" size="small" style="margin-top: 10px;">
-                          复制明文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
+                <PublicKeyCryptoPanel
+                  algorithm="RSA"
+                  :encrypting="encrypting"
+                  :decrypting="decrypting"
+                  :encrypt-result="rsaEncryptResult"
+                  :decrypt-result="rsaDecryptResult"
+                  @encrypt="rsaEncrypt"
+                  @decrypt="rsaDecrypt"
+                />
               </el-tab-pane>
             </el-tabs>
           </div>
 
-          <!-- ECC工具 -->
+          <!-- ECC -->
           <div v-else-if="selectedAlgorithm === 'ECC'" class="algorithm-section">
             <el-tabs v-model="eccActiveTab">
               <el-tab-pane label="生成密钥对" name="generate">
@@ -179,40 +85,15 @@
                     </el-button>
                   </el-form-item>
                 </el-form>
-              
-                <div v-if="eccKeys.privateKey || eccKeys.publicKey" class="key-display">
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <h4>私钥</h4>
-                      <el-input 
-                        v-model="eccKeys.privateKey" 
-                        type="textarea" 
-                        :rows="8" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(eccKeys.privateKey)" size="small" style="margin-top: 10px;">
-                        复制私钥
-                      </el-button>
-                    </el-col>
-                    <el-col :span="12">
-                      <h4>公钥</h4>
-                      <el-input 
-                        v-model="eccKeys.publicKey" 
-                        type="textarea" 
-                        :rows="8" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(eccKeys.publicKey)" size="small" style="margin-top: 10px;">
-                        复制公钥
-                      </el-button>
-                    </el-col>
-                  </el-row>
-                </div>
+                <KeyPairDisplay
+                  :private-key="eccKeys.privateKey"
+                  :public-key="eccKeys.publicKey"
+                />
               </el-tab-pane>
             </el-tabs>
           </div>
 
-          <!-- Ed25519工具 -->
+          <!-- Ed25519 -->
           <div v-else-if="selectedAlgorithm === 'Ed25519'" class="algorithm-section">
             <el-tabs v-model="ed25519ActiveTab">
               <el-tab-pane label="生成密钥对" name="generate">
@@ -223,346 +104,71 @@
                     </el-button>
                   </el-form-item>
                 </el-form>
-              
-                <div v-if="ed25519Keys.privateKey || ed25519Keys.publicKey" class="key-display">
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <h4>私钥</h4>
-                      <el-input 
-                        v-model="ed25519Keys.privateKey" 
-                        type="textarea" 
-                        :rows="4" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(ed25519Keys.privateKey)" size="small" style="margin-top: 10px;">
-                        复制私钥
-                      </el-button>
-                    </el-col>
-                    <el-col :span="12">
-                      <h4>公钥</h4>
-                      <el-input 
-                        v-model="ed25519Keys.publicKey" 
-                        type="textarea" 
-                        :rows="4" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(ed25519Keys.publicKey)" size="small" style="margin-top: 10px;">
-                        复制公钥
-                      </el-button>
-                    </el-col>
-                  </el-row>
-                </div>
+                <KeyPairDisplay
+                  :private-key="ed25519Keys.privateKey"
+                  :public-key="ed25519Keys.publicKey"
+                  :rows="4"
+                />
               </el-tab-pane>
-            
+
               <el-tab-pane label="签名/验证" name="signVerify">
-                <el-tabs v-model="ed25519SignTab">
-                  <el-tab-pane label="签名" name="sign">
-                    <el-form :model="ed25519SignForm" label-width="120px">
-                      <el-form-item label="消息">
-                        <el-input 
-                          v-model="ed25519SignForm.message" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要签名的消息..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="私钥">
-                        <el-input 
-                          v-model="ed25519SignForm.privateKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入私钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="ed25519Sign" :loading="signing">
-                          Ed25519签名
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="ed25519SignResult" label="签名">
-                        <el-input 
-                          v-model="ed25519SignResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(ed25519SignResult)" size="small" style="margin-top: 10px;">
-                          复制签名
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="验证" name="verify">
-                    <el-form :model="ed25519VerifyForm" label-width="120px">
-                      <el-form-item label="消息">
-                        <el-input 
-                          v-model="ed25519VerifyForm.message" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要验证的消息..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="签名">
-                        <el-input 
-                          v-model="ed25519VerifyForm.signature" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入签名..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="公钥">
-                        <el-input 
-                          v-model="ed25519VerifyForm.publicKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入公钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="ed25519Verify" :loading="verifying">
-                          Ed25519验证
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="ed25519VerifyResult !== null" label="验证结果">
-                        <el-tag :type="ed25519VerifyResult ? 'success' : 'danger'">
-                          {{ ed25519VerifyResult ? '签名有效' : '签名无效' }}
-                        </el-tag>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
+                <SignVerifyPanel
+                  algorithm="Ed25519"
+                  :signing="signing"
+                  :verifying="verifying"
+                  :sign-result="ed25519SignResult"
+                  :verify-result="ed25519VerifyResult"
+                  @sign="ed25519Sign"
+                  @verify="ed25519Verify"
+                />
               </el-tab-pane>
             </el-tabs>
           </div>
 
-          <!-- AES工具 -->
+          <!-- AES -->
           <div v-else-if="selectedAlgorithm === 'AES'" class="algorithm-section">
-            <el-tabs v-model="aesActiveTab">
-              <el-tab-pane label="加密/解密" name="encryptDecrypt">
-                <el-tabs v-model="aesCryptoTab">
-                  <el-tab-pane label="加密" name="encrypt">
-                    <el-form :model="aesEncryptForm" label-width="120px">
-                      <el-form-item label="明文">
-                        <el-input 
-                          v-model="aesEncryptForm.plaintext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要加密的文本..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="aesEncryptForm.key" 
-                          type="textarea" 
-                          :rows="3" 
-                          placeholder="请输入Base64编码的密钥..."
-                        />
-                        <div style="margin-top: 5px;">
-                          <el-button @click="generateAESKey" size="small">生成密钥</el-button>
-                        </div>
-                      </el-form-item>
-                      <el-form-item label="模式">
-                        <el-select v-model="aesEncryptForm.mode">
-                          <el-option label="CBC" value="CBC" />
-                          <el-option label="ECB" value="ECB" />
-                          <el-option label="CFB" value="CFB" />
-                          <el-option label="OFB" value="OFB" />
-                        </el-select>
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="aesEncrypt" :loading="encrypting">
-                          AES加密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="aesEncryptResult" label="密文">
-                        <el-input 
-                          v-model="aesEncryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(aesEncryptResult)" size="small" style="margin-top: 10px;">
-                          复制密文
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="aesEncryptIV" label="IV">
-                        <el-input 
-                          v-model="aesEncryptIV" 
-                          type="textarea" 
-                          :rows="2" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(aesEncryptIV)" size="small" style="margin-top: 10px;">
-                          复制IV
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="解密" name="decrypt">
-                    <el-form :model="aesDecryptForm" label-width="120px">
-                      <el-form-item label="密文">
-                        <el-input 
-                          v-model="aesDecryptForm.ciphertext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要解密的密文..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="aesDecryptForm.key" 
-                          type="textarea" 
-                          :rows="3" 
-                          placeholder="请输入Base64编码的密钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="模式">
-                        <el-select v-model="aesDecryptForm.mode">
-                          <el-option label="CBC" value="CBC" />
-                          <el-option label="ECB" value="ECB" />
-                          <el-option label="CFB" value="CFB" />
-                          <el-option label="OFB" value="OFB" />
-                        </el-select>
-                      </el-form-item>
-                      <el-form-item label="IV" v-if="aesDecryptForm.mode !== 'ECB'">
-                        <el-input 
-                          v-model="aesDecryptForm.iv" 
-                          type="textarea" 
-                          :rows="2" 
-                          placeholder="请输入Base64编码的IV..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="aesDecrypt" :loading="decrypting">
-                          AES解密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="aesDecryptResult" label="明文">
-                        <el-input 
-                          v-model="aesDecryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(aesDecryptResult)" size="small" style="margin-top: 10px;">
-                          复制明文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
-              </el-tab-pane>
-            </el-tabs>
+            <SymmetricCryptoPanel
+              algorithm="AES"
+              :modes="aesModes"
+              :encrypting="encrypting"
+              :decrypting="decrypting"
+              :encrypt-result="aesEncryptResult"
+              :decrypt-result="aesDecryptResult"
+              :encrypt-i-v="aesEncryptIV"
+              :show-key-generate="true"
+              key-placeholder="请输入Base64编码的密钥..."
+              :key-rows="3"
+              default-mode="CBC"
+              :generated-key="aesGeneratedKeyValue"
+              @generate-key="generateAESKey"
+              @encrypt="aesEncrypt"
+              @decrypt="aesDecrypt"
+            />
           </div>
 
-          <!-- ChaCha20工具 -->
+          <!-- ChaCha20 -->
           <div v-else-if="selectedAlgorithm === 'ChaCha20'" class="algorithm-section">
-            <el-tabs v-model="chacha20ActiveTab">
-              <el-tab-pane label="加密/解密" name="encryptDecrypt">
-                <el-tabs v-model="chacha20CryptoTab">
-                  <el-tab-pane label="加密" name="encrypt">
-                    <el-form :model="chacha20EncryptForm" label-width="120px">
-                      <el-form-item label="明文">
-                        <el-input 
-                          v-model="chacha20EncryptForm.plaintext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要加密的文本..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="chacha20EncryptForm.key" 
-                          type="textarea" 
-                          :rows="3" 
-                          placeholder="请输入Base64编码的32字节密钥..."
-                        />
-                        <div style="margin-top: 5px;">
-                          <el-button @click="generateChaCha20Key" size="small">生成密钥</el-button>
-                        </div>
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="chacha20Encrypt" :loading="encrypting">
-                          ChaCha20加密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="chacha20EncryptResult" label="密文">
-                        <el-input 
-                          v-model="chacha20EncryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(chacha20EncryptResult)" size="small" style="margin-top: 10px;">
-                          复制密文
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="chacha20EncryptNonce" label="Nonce">
-                        <el-input 
-                          v-model="chacha20EncryptNonce" 
-                          type="textarea" 
-                          :rows="2" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(chacha20EncryptNonce)" size="small" style="margin-top: 10px;">
-                          复制Nonce
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="解密" name="decrypt">
-                    <el-form :model="chacha20DecryptForm" label-width="120px">
-                      <el-form-item label="密文">
-                        <el-input 
-                          v-model="chacha20DecryptForm.ciphertext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要解密的密文..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="chacha20DecryptForm.key" 
-                          type="textarea" 
-                          :rows="3" 
-                          placeholder="请输入Base64编码的32字节密钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="Nonce">
-                        <el-input 
-                          v-model="chacha20DecryptForm.nonce" 
-                          type="textarea" 
-                          :rows="2" 
-                          placeholder="请输入Base64编码的16字节Nonce..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="chacha20Decrypt" :loading="decrypting">
-                          ChaCha20解密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="chacha20DecryptResult" label="明文">
-                        <el-input 
-                          v-model="chacha20DecryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(chacha20DecryptResult)" size="small" style="margin-top: 10px;">
-                          复制明文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
-              </el-tab-pane>
-            </el-tabs>
+            <SymmetricCryptoPanel
+              algorithm="ChaCha20"
+              :encrypting="encrypting"
+              :decrypting="decrypting"
+              :encrypt-result="chacha20EncryptResult"
+              :decrypt-result="chacha20DecryptResult"
+              :encrypt-i-v="chacha20EncryptNonce"
+              :show-key-generate="true"
+              key-placeholder="请输入Base64编码的32字节密钥..."
+              :key-rows="3"
+              :has-nonce="true"
+              iv-label="Nonce"
+              iv-placeholder="请输入Base64编码的16字节Nonce..."
+              :generated-key="chacha20GeneratedKeyValue"
+              @generate-key="generateChaCha20Key"
+              @encrypt="chacha20Encrypt"
+              @decrypt="chacha20Decrypt"
+            />
           </div>
 
-          <!-- SM2工具 -->
+          <!-- SM2 -->
           <div v-else-if="selectedAlgorithm === 'SM2'" class="algorithm-section">
             <el-tabs v-model="sm2ActiveTab">
               <el-tab-pane label="生成密钥对" name="generate">
@@ -573,324 +179,64 @@
                     </el-button>
                   </el-form-item>
                 </el-form>
-              
-                <div v-if="sm2Keys.privateKey || sm2Keys.publicKey" class="key-display">
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <h4>私钥</h4>
-                      <el-input 
-                        v-model="sm2Keys.privateKey" 
-                        type="textarea" 
-                        :rows="4" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(sm2Keys.privateKey)" size="small" style="margin-top: 10px;">
-                        复制私钥
-                      </el-button>
-                    </el-col>
-                    <el-col :span="12">
-                      <h4>公钥</h4>
-                      <el-input 
-                        v-model="sm2Keys.publicKey" 
-                        type="textarea" 
-                        :rows="4" 
-                        readonly 
-                      />
-                      <el-button @click="copyToClipboard(sm2Keys.publicKey)" size="small" style="margin-top: 10px;">
-                        复制公钥
-                      </el-button>
-                    </el-col>
-                  </el-row>
-                </div>
+                <KeyPairDisplay
+                  :private-key="sm2Keys.privateKey"
+                  :public-key="sm2Keys.publicKey"
+                  :rows="4"
+                />
               </el-tab-pane>
-            
+
               <el-tab-pane label="加密/解密" name="encryptDecrypt">
-                <el-tabs v-model="sm2CryptoTab">
-                  <el-tab-pane label="加密" name="encrypt">
-                    <el-form :model="sm2EncryptForm" label-width="120px">
-                      <el-form-item label="明文">
-                        <el-input 
-                          v-model="sm2EncryptForm.plaintext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要加密的文本..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="公钥">
-                        <el-input 
-                          v-model="sm2EncryptForm.publicKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入公钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm2Encrypt" :loading="encrypting">
-                          SM2加密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm2EncryptResult" label="密文">
-                        <el-input 
-                          v-model="sm2EncryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm2EncryptResult)" size="small" style="margin-top: 10px;">
-                          复制密文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="解密" name="decrypt">
-                    <el-form :model="sm2DecryptForm" label-width="120px">
-                      <el-form-item label="密文">
-                        <el-input 
-                          v-model="sm2DecryptForm.ciphertext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要解密的密文..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="私钥">
-                        <el-input 
-                          v-model="sm2DecryptForm.privateKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入私钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="公钥">
-                        <el-input 
-                          v-model="sm2DecryptForm.publicKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入公钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm2Decrypt" :loading="decrypting">
-                          SM2解密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm2DecryptResult" label="明文">
-                        <el-input 
-                          v-model="sm2DecryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm2DecryptResult)" size="small" style="margin-top: 10px;">
-                          复制明文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
+                <PublicKeyCryptoPanel
+                  algorithm="SM2"
+                  :encrypting="encrypting"
+                  :decrypting="decrypting"
+                  :encrypt-result="sm2EncryptResult"
+                  :decrypt-result="sm2DecryptResult"
+                  :show-decrypt-public-key="true"
+                  @encrypt="sm2Encrypt"
+                  @decrypt="sm2Decrypt"
+                />
               </el-tab-pane>
-            
+
               <el-tab-pane label="签名/验证" name="signVerify">
-                <el-tabs v-model="sm2SignTab">
-                  <el-tab-pane label="签名" name="sign">
-                    <el-form :model="sm2SignForm" label-width="120px">
-                      <el-form-item label="消息">
-                        <el-input 
-                          v-model="sm2SignForm.message" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要签名的消息..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="私钥">
-                        <el-input 
-                          v-model="sm2SignForm.privateKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入私钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm2Sign" :loading="signing">
-                          SM2签名
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm2SignResult" label="签名">
-                        <el-input 
-                          v-model="sm2SignResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm2SignResult)" size="small" style="margin-top: 10px;">
-                          复制签名
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="验证" name="verify">
-                    <el-form :model="sm2VerifyForm" label-width="120px">
-                      <el-form-item label="消息">
-                        <el-input 
-                          v-model="sm2VerifyForm.message" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要验证的消息..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="签名">
-                        <el-input 
-                          v-model="sm2VerifyForm.signature" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入签名..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="公钥">
-                        <el-input 
-                          v-model="sm2VerifyForm.publicKey" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入公钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm2Verify" :loading="verifying">
-                          SM2验证
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm2VerifyResult !== null" label="验证结果">
-                        <el-tag :type="sm2VerifyResult ? 'success' : 'danger'">
-                          {{ sm2VerifyResult ? '签名有效' : '签名无效' }}
-                        </el-tag>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
+                <SignVerifyPanel
+                  algorithm="SM2"
+                  :signing="signing"
+                  :verifying="verifying"
+                  :sign-result="sm2SignResult"
+                  :verify-result="sm2VerifyResult"
+                  @sign="sm2Sign"
+                  @verify="sm2Verify"
+                />
               </el-tab-pane>
             </el-tabs>
           </div>
 
-          <!-- SM4工具 -->
+          <!-- SM4 -->
           <div v-else-if="selectedAlgorithm === 'SM4'" class="algorithm-section">
-            <el-tabs v-model="sm4ActiveTab">
-              <el-tab-pane label="加密/解密" name="encryptDecrypt">
-                <el-tabs v-model="sm4CryptoTab">
-                  <el-tab-pane label="加密" name="encrypt">
-                    <el-form :model="sm4EncryptForm" label-width="120px">
-                      <el-form-item label="明文">
-                        <el-input 
-                          v-model="sm4EncryptForm.plaintext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要加密的文本..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="sm4EncryptForm.key" 
-                          type="textarea" 
-                          :rows="2" 
-                          placeholder="请输入32字符的十六进制密钥..."
-                        />
-                        <div style="margin-top: 5px;">
-                          <el-button @click="generateSM4Key" size="small">生成密钥</el-button>
-                        </div>
-                      </el-form-item>
-                      <el-form-item label="模式">
-                        <el-select v-model="sm4EncryptForm.mode">
-                          <el-option label="ECB" value="ECB" />
-                          <el-option label="CBC" value="CBC" />
-                        </el-select>
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm4Encrypt" :loading="encrypting">
-                          SM4加密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm4EncryptResult" label="密文">
-                        <el-input 
-                          v-model="sm4EncryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm4EncryptResult)" size="small" style="margin-top: 10px;">
-                          复制密文
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm4EncryptIV" label="IV">
-                        <el-input 
-                          v-model="sm4EncryptIV" 
-                          type="textarea" 
-                          :rows="2" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm4EncryptIV)" size="small" style="margin-top: 10px;">
-                          复制IV
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                
-                  <el-tab-pane label="解密" name="decrypt">
-                    <el-form :model="sm4DecryptForm" label-width="120px">
-                      <el-form-item label="密文">
-                        <el-input 
-                          v-model="sm4DecryptForm.ciphertext" 
-                          type="textarea" 
-                          :rows="4" 
-                          placeholder="请输入要解密的密文..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="密钥">
-                        <el-input 
-                          v-model="sm4DecryptForm.key" 
-                          type="textarea" 
-                          :rows="2" 
-                          placeholder="请输入32字符的十六进制密钥..."
-                        />
-                      </el-form-item>
-                      <el-form-item label="模式">
-                        <el-select v-model="sm4DecryptForm.mode">
-                          <el-option label="ECB" value="ECB" />
-                          <el-option label="CBC" value="CBC" />
-                        </el-select>
-                      </el-form-item>
-                      <el-form-item label="IV" v-if="sm4DecryptForm.mode === 'CBC'">
-                        <el-input 
-                          v-model="sm4DecryptForm.iv" 
-                          type="textarea" 
-                          :rows="2" 
-                          placeholder="请输入32字符的十六进制IV..."
-                        />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="sm4Decrypt" :loading="decrypting">
-                          SM4解密
-                        </el-button>
-                      </el-form-item>
-                      <el-form-item v-if="sm4DecryptResult" label="明文">
-                        <el-input 
-                          v-model="sm4DecryptResult" 
-                          type="textarea" 
-                          :rows="4" 
-                          readonly 
-                        />
-                        <el-button @click="copyToClipboard(sm4DecryptResult)" size="small" style="margin-top: 10px;">
-                          复制明文
-                        </el-button>
-                      </el-form-item>
-                    </el-form>
-                  </el-tab-pane>
-                </el-tabs>
-              </el-tab-pane>
-            </el-tabs>
+            <SymmetricCryptoPanel
+              algorithm="SM4"
+              :modes="sm4Modes"
+              :encrypting="encrypting"
+              :decrypting="decrypting"
+              :encrypt-result="sm4EncryptResult"
+              :decrypt-result="sm4DecryptResult"
+              :encrypt-i-v="sm4EncryptIV"
+              :show-key-generate="true"
+              key-placeholder="请输入32字符的十六进制密钥..."
+              :key-rows="2"
+              default-mode="ECB"
+              iv-placeholder="请输入32字符的十六进制IV..."
+              :generated-key="sm4GeneratedKeyValue"
+              @generate-key="generateSM4Key"
+              @encrypt="sm4Encrypt"
+              @decrypt="sm4Decrypt"
+            />
           </div>
         </div>
 
-        <!-- 哈希工具 -->
+        <!-- ============ 哈希工具 ============ -->
         <div v-else-if="activeMenu === 'hash'" class="hash-tools-section">
           <div class="input-section">
             <h4>输入文本</h4>
@@ -903,9 +249,8 @@
             />
           </div>
 
-          <!-- 哈希算法卡片选择器 -->
-          <HashAlgorithmCardSelector 
-            v-model="hashAlgorithm" 
+          <HashAlgorithmCardSelector
+            v-model="hashAlgorithm"
             :algorithms="availableHashAlgorithms"
             class="hash-algorithm-selector"
           />
@@ -914,10 +259,10 @@
             <el-row :gutter="20">
               <el-col :span="24">
                 <div class="action-buttons">
-                  <el-button type="primary" @click="generateHash" :loading="hashGenerating">
+                  <el-button type="primary" @click="handleGenerateHash" :loading="hashGenerating">
                     生成哈希
                   </el-button>
-                  <el-button @click="verifyHash" :loading="hashVerifying">
+                  <el-button @click="handleVerifyHash" :loading="hashVerifying">
                     验证哈希
                   </el-button>
                 </div>
@@ -937,929 +282,596 @@
           </div>
         </div>
       </div>
-    </el-card>
+    </ToolPage>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Key } from '@element-plus/icons-vue'
 import axios from 'axios'
-import AlgorithmCardSelector from '@/components/AlgorithmCardSelector.vue'
 
-export default {
-  name: 'CryptoTools',
-  components: {
-    Key,
-    AlgorithmCardSelector
-  },
-  data() {
-    return {
-      activeMenu: 'encryption', // 默认显示加密解密工具
-      selectedCategory: 'asymmetric',
-      selectedAlgorithm: 'RSA',
-      availableAlgorithms: {
-        asymmetric: ['RSA', 'ECC', 'Ed25519', 'SM2'],
-        symmetric: ['AES', 'ChaCha20', 'SM4']
-      },
-      hasCryptography: true,
-      hasGmssl: true,
-      
-      // 哈希工具数据
-      hashInputText: '',
-      hashAlgorithm: 'sha256',
-      hashResult: '',
-      hashGenerating: false,
-      hashVerifying: false,
-      availableHashAlgorithms: [],
-      
-      // RSA相关数据
-      rsaActiveTab: 'generate',
-      rsaCryptoTab: 'encrypt',
-      rsaGenerateForm: {
-        keySize: 2048
-      },
-      rsaEncryptForm: {
-        plaintext: '',
-        publicKey: ''
-      },
-      rsaDecryptForm: {
-        ciphertext: '',
-        privateKey: ''
-      },
-      rsaKeys: {
-        privateKey: '',
-        publicKey: ''
-      },
-      rsaEncryptResult: '',
-      rsaDecryptResult: '',
-      generating: false,
-      encrypting: false,
-      decrypting: false,
-      
-      // ECC相关数据
-      eccActiveTab: 'generate',
-      eccGenerateForm: {
-        curve: 'secp256r1'
-      },
-      eccKeys: {
-        privateKey: '',
-        publicKey: ''
-      },
-      
-      // Ed25519相关数据
-      ed25519ActiveTab: 'generate',
-      ed25519SignTab: 'sign',
-      ed25519Keys: {
-        privateKey: '',
-        publicKey: ''
-      },
-      ed25519SignForm: {
-        message: '',
-        privateKey: ''
-      },
-      ed25519VerifyForm: {
-        message: '',
-        signature: '',
-        publicKey: ''
-      },
-      ed25519SignResult: '',
-      ed25519VerifyResult: null,
-      signing: false,
-      verifying: false,
-      
-      // AES相关数据
-      aesActiveTab: 'encryptDecrypt',
-      aesCryptoTab: 'encrypt',
-      aesEncryptForm: {
-        plaintext: '',
-        key: '',
-        mode: 'CBC'
-      },
-      aesDecryptForm: {
-        ciphertext: '',
-        key: '',
-        mode: 'CBC',
-        iv: ''
-      },
-      aesEncryptResult: '',
-      aesDecryptResult: '',
-      aesEncryptIV: '',
-      
-      // ChaCha20相关数据
-      chacha20ActiveTab: 'encryptDecrypt',
-      chacha20CryptoTab: 'encrypt',
-      chacha20EncryptForm: {
-        plaintext: '',
-        key: ''
-      },
-      chacha20DecryptForm: {
-        ciphertext: '',
-        key: '',
-        nonce: ''
-      },
-      chacha20EncryptResult: '',
-      chacha20DecryptResult: '',
-      chacha20EncryptNonce: '',
-      
-      // SM2相关数据
-      sm2ActiveTab: 'generate',
-      sm2CryptoTab: 'encrypt',
-      sm2SignTab: 'sign',
-      sm2Keys: {
-        privateKey: '',
-        publicKey: ''
-      },
-      sm2EncryptForm: {
-        plaintext: '',
-        publicKey: ''
-      },
-      sm2DecryptForm: {
-        ciphertext: '',
-        privateKey: '',
-        publicKey: ''
-      },
-      sm2SignForm: {
-        message: '',
-        privateKey: ''
-      },
-      sm2VerifyForm: {
-        message: '',
-        signature: '',
-        publicKey: ''
-      },
-      sm2EncryptResult: '',
-      sm2DecryptResult: '',
-      sm2SignResult: '',
-      sm2VerifyResult: null,
-      
-      // SM4相关数据
-      sm4ActiveTab: 'encryptDecrypt',
-      sm4CryptoTab: 'encrypt',
-      sm4EncryptForm: {
-        plaintext: '',
-        key: '',
-        mode: 'ECB'
-      },
-      sm4DecryptForm: {
-        ciphertext: '',
-        key: '',
-        mode: 'ECB',
-        iv: ''
-      },
-      sm4EncryptResult: '',
-      sm4DecryptResult: '',
-      sm4EncryptIV: '',
-      
-      // 哈希相关数据
-      activeMenu: 'encryption',
-      hashActiveTab: 'sha256',
-      sha256Form: {
-        input: ''
-      },
-      sha512Form: {
-        input: ''
-      },
-      sm3Form: {
-        input: ''
-      },
-      sha256Result: '',
-      sha512Result: '',
-      sm3Result: '',
-      hashing: false
-    }
-  },
-  async mounted() {
-    // 获取支持的算法列表
-    try {
-      const response = await axios.get('/api/crypto-tools/algorithms')
-      if (response.data.success) {
-        this.availableAlgorithms = response.data.algorithms
-        this.hasCryptography = response.data.has_cryptography
-        this.hasGmssl = response.data.has_gmssl
-        
-        // 设置默认算法
-        if (this.availableAlgorithms.asymmetric && this.availableAlgorithms.asymmetric.length > 0) {
-          this.selectedAlgorithm = this.availableAlgorithms.asymmetric[0]
-        } else if (this.availableAlgorithms.symmetric && this.availableAlgorithms.symmetric.length > 0) {
-          this.selectedAlgorithm = this.availableAlgorithms.symmetric[0]
-        }
-        console.log('获取到的算法列表:', this.availableAlgorithms)
-      }
-    } catch (error) {
-      console.error('获取算法列表失败:', error)
-      ElMessage.error('获取算法列表失败: ' + (error.response?.data?.error || error.message))
-    }
-    
-    // 获取哈希算法列表
-    try {
-      const response = await axios.get('/api/hash-tools/algorithms')
-      if (response.data.success) {
-        this.availableHashAlgorithms = response.data.algorithms
-      }
-    } catch (error) {
-      console.error('获取哈希算法列表失败:', error)
-    }
-  },
-  methods: {
-    handleMenuSelect(index) {
-      this.activeMenu = index;
-    },
-    
-    onCategoryChange() {
-      // 当切换类别时，选择该类别下的第一个算法
-      if (this.availableAlgorithms[this.selectedCategory].length > 0) {
-        this.selectedAlgorithm = this.availableAlgorithms[this.selectedCategory][0]
-      }
-    },
-    
-    async generateRSAKeyPair() {
-      if (!this.rsaGenerateForm.keySize) {
-        ElMessage.warning('请选择密钥长度')
-        return
-      }
-      
-      this.generating = true
-      try {
-        const response = await axios.post('/api/crypto-tools/rsa/generate', {
-          key_size: this.rsaGenerateForm.keySize
-        })
-        
-        if (response.data.success) {
-          this.rsaKeys.privateKey = response.data.private_key
-          this.rsaKeys.publicKey = response.data.public_key
-          ElMessage.success('RSA密钥对生成成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('RSA密钥对生成失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.generating = false
-      }
-    },
-    
-    async rsaEncrypt() {
-      if (!this.rsaEncryptForm.plaintext.trim()) {
-        ElMessage.warning('请输入要加密的文本')
-        return
-      }
-      
-      if (!this.rsaEncryptForm.publicKey.trim()) {
-        ElMessage.warning('请输入公钥')
-        return
-      }
-      
-      this.encrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/rsa/encrypt', {
-          plaintext: this.rsaEncryptForm.plaintext,
-          public_key: this.rsaEncryptForm.publicKey
-        })
-        
-        if (response.data.success) {
-          this.rsaEncryptResult = response.data.ciphertext
-          ElMessage.success('RSA加密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('RSA加密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.encrypting = false
-      }
-    },
-    
-    async rsaDecrypt() {
-      if (!this.rsaDecryptForm.ciphertext.trim()) {
-        ElMessage.warning('请输入要解密的密文')
-        return
-      }
-      
-      if (!this.rsaDecryptForm.privateKey.trim()) {
-        ElMessage.warning('请输入私钥')
-        return
-      }
-      
-      this.decrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/rsa/decrypt', {
-          ciphertext: this.rsaDecryptForm.ciphertext,
-          private_key: this.rsaDecryptForm.privateKey
-        })
-        
-        if (response.data.success) {
-          this.rsaDecryptResult = response.data.plaintext
-          ElMessage.success('RSA解密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('RSA解密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.decrypting = false
-      }
-    },
-    
-    async generateECCKeyPair() {
-      this.generating = true
-      try {
-        const response = await axios.post('/api/crypto-tools/ecc/generate', {
-          curve: this.eccGenerateForm.curve
-        })
-        
-        if (response.data.success) {
-          this.eccKeys.privateKey = response.data.private_key
-          this.eccKeys.publicKey = response.data.public_key
-          ElMessage.success('ECC密钥对生成成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('ECC密钥对生成失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.generating = false
-      }
-    },
-    
-    async generateEd25519KeyPair() {
-      this.generating = true
-      try {
-        const response = await axios.post('/api/crypto-tools/ed25519/generate')
-        
-        if (response.data.success) {
-          this.ed25519Keys.privateKey = response.data.private_key
-          this.ed25519Keys.publicKey = response.data.public_key
-          ElMessage.success('Ed25519密钥对生成成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('Ed25519密钥对生成失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.generating = false
-      }
-    },
-    
-    async ed25519Sign() {
-      if (!this.ed25519SignForm.message.trim()) {
-        ElMessage.warning('请输入要签名的消息')
-        return
-      }
-      
-      if (!this.ed25519SignForm.privateKey.trim()) {
-        ElMessage.warning('请输入私钥')
-        return
-      }
-      
-      this.signing = true
-      try {
-        const response = await axios.post('/api/crypto-tools/ed25519/sign', {
-          message: this.ed25519SignForm.message,
-          private_key: this.ed25519SignForm.privateKey
-        })
-        
-        if (response.data.success) {
-          this.ed25519SignResult = response.data.signature
-          ElMessage.success('Ed25519签名成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('Ed25519签名失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.signing = false
-      }
-    },
-    
-    async ed25519Verify() {
-      if (!this.ed25519VerifyForm.message.trim()) {
-        ElMessage.warning('请输入要验证的消息')
-        return
-      }
-      
-      if (!this.ed25519VerifyForm.signature.trim()) {
-        ElMessage.warning('请输入签名')
-        return
-      }
-      
-      if (!this.ed25519VerifyForm.publicKey.trim()) {
-        ElMessage.warning('请输入公钥')
-        return
-      }
-      
-      this.verifying = true
-      try {
-        const response = await axios.post('/api/crypto-tools/ed25519/verify', {
-          message: this.ed25519VerifyForm.message,
-          signature: this.ed25519VerifyForm.signature,
-          public_key: this.ed25519VerifyForm.publicKey
-        })
-        
-        if (response.data.success) {
-          this.ed25519VerifyResult = response.data.valid
-          ElMessage.success('Ed25519验证完成')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('Ed25519验证失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.verifying = false
-      }
-    },
-    
-    async generateAESKey() {
-      try {
-        // 生成随机的256位密钥（32字节）
-        const keyBytes = new Uint8Array(32)
-        window.crypto.getRandomValues(keyBytes)
-        const keyBase64 = btoa(String.fromCharCode(...keyBytes))
-        this.aesEncryptForm.key = keyBase64
-        ElMessage.success('AES密钥生成成功')
-      } catch (error) {
-        ElMessage.error('AES密钥生成失败: ' + error.message)
-      }
-    },
-    
-    async aesEncrypt() {
-      if (!this.aesEncryptForm.plaintext.trim()) {
-        ElMessage.warning('请输入要加密的文本')
-        return
-      }
-      
-      if (!this.aesEncryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      this.encrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/aes/encrypt', {
-          plaintext: this.aesEncryptForm.plaintext,
-          key: this.aesEncryptForm.key,
-          mode: this.aesEncryptForm.mode
-        })
-        
-        if (response.data.success) {
-          this.aesEncryptResult = response.data.ciphertext
-          this.aesEncryptIV = response.data.iv || ''
-          ElMessage.success('AES加密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('AES加密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.encrypting = false
-      }
-    },
-    
-    async aesDecrypt() {
-      if (!this.aesDecryptForm.ciphertext.trim()) {
-        ElMessage.warning('请输入要解密的密文')
-        return
-      }
-      
-      if (!this.aesDecryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      // 对于需要IV的模式，检查IV是否提供
-      if (this.aesDecryptForm.mode !== 'ECB' && !this.aesDecryptForm.iv.trim()) {
-        ElMessage.warning('请输入IV')
-        return
-      }
-      
-      this.decrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/aes/decrypt', {
-          ciphertext: this.aesDecryptForm.ciphertext,
-          key: this.aesDecryptForm.key,
-          mode: this.aesDecryptForm.mode,
-          iv: this.aesDecryptForm.iv
-        })
-        
-        if (response.data.success) {
-          this.aesDecryptResult = response.data.plaintext
-          ElMessage.success('AES解密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('AES解密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.decrypting = false
-      }
-    },
-    
-    async generateChaCha20Key() {
-      try {
-        // 生成随机的256位密钥（32字节）
-        const keyBytes = new Uint8Array(32)
-        window.crypto.getRandomValues(keyBytes)
-        const keyBase64 = btoa(String.fromCharCode(...keyBytes))
-        this.chacha20EncryptForm.key = keyBase64
-        ElMessage.success('ChaCha20密钥生成成功')
-      } catch (error) {
-        ElMessage.error('ChaCha20密钥生成失败: ' + error.message)
-      }
-    },
-    
-    async chacha20Encrypt() {
-      if (!this.chacha20EncryptForm.plaintext.trim()) {
-        ElMessage.warning('请输入要加密的文本')
-        return
-      }
-      
-      if (!this.chacha20EncryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      this.encrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/chacha20/encrypt', {
-          plaintext: this.chacha20EncryptForm.plaintext,
-          key: this.chacha20EncryptForm.key
-        })
-        
-        if (response.data.success) {
-          this.chacha20EncryptResult = response.data.ciphertext
-          this.chacha20EncryptNonce = response.data.nonce
-          ElMessage.success('ChaCha20加密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('ChaCha20加密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.encrypting = false
-      }
-    },
-    
-    async chacha20Decrypt() {
-      if (!this.chacha20DecryptForm.ciphertext.trim()) {
-        ElMessage.warning('请输入要解密的密文')
-        return
-      }
-      
-      if (!this.chacha20DecryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      if (!this.chacha20DecryptForm.nonce.trim()) {
-        ElMessage.warning('请输入Nonce')
-        return
-      }
-      
-      this.decrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/chacha20/decrypt', {
-          ciphertext: this.chacha20DecryptForm.ciphertext,
-          key: this.chacha20DecryptForm.key,
-          nonce: this.chacha20DecryptForm.nonce
-        })
-        
-        if (response.data.success) {
-          this.chacha20DecryptResult = response.data.plaintext
-          ElMessage.success('ChaCha20解密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('ChaCha20解密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.decrypting = false
-      }
-    },
-    
-    async generateSM2KeyPair() {
-      this.generating = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm2/generate')
-        
-        if (response.data.success) {
-          this.sm2Keys.privateKey = response.data.private_key
-          this.sm2Keys.publicKey = response.data.public_key
-          ElMessage.success('SM2密钥对生成成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM2密钥对生成失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.generating = false
-      }
-    },
-    
-    async sm2Encrypt() {
-      if (!this.sm2EncryptForm.plaintext.trim()) {
-        ElMessage.warning('请输入要加密的文本')
-        return
-      }
-      
-      if (!this.sm2EncryptForm.publicKey.trim()) {
-        ElMessage.warning('请输入公钥')
-        return
-      }
-      
-      this.encrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm2/encrypt', {
-          plaintext: this.sm2EncryptForm.plaintext,
-          public_key: this.sm2EncryptForm.publicKey
-        })
-        
-        if (response.data.success) {
-          this.sm2EncryptResult = response.data.ciphertext
-          ElMessage.success('SM2加密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM2加密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.encrypting = false
-      }
-    },
-    
-    async sm2Decrypt() {
-      if (!this.sm2DecryptForm.ciphertext.trim()) {
-        ElMessage.warning('请输入要解密的密文')
-        return
-      }
-      
-      if (!this.sm2DecryptForm.privateKey.trim()) {
-        ElMessage.warning('请输入私钥')
-        return
-      }
-      
-      if (!this.sm2DecryptForm.publicKey.trim()) {
-        ElMessage.warning('请输入公钥')
-        return
-      }
-      
-      this.decrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm2/decrypt', {
-          ciphertext: this.sm2DecryptForm.ciphertext,
-          private_key: this.sm2DecryptForm.privateKey,
-          public_key: this.sm2DecryptForm.publicKey
-        })
-        
-        if (response.data.success) {
-          this.sm2DecryptResult = response.data.plaintext
-          ElMessage.success('SM2解密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM2解密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.decrypting = false
-      }
-    },
-    
-    async sm2Sign() {
-      if (!this.sm2SignForm.message.trim()) {
-        ElMessage.warning('请输入要签名的消息')
-        return
-      }
-      
-      if (!this.sm2SignForm.privateKey.trim()) {
-        ElMessage.warning('请输入私钥')
-        return
-      }
-      
-      this.signing = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm2/sign', {
-          message: this.sm2SignForm.message,
-          private_key: this.sm2SignForm.privateKey
-        })
-        
-        if (response.data.success) {
-          this.sm2SignResult = response.data.signature
-          ElMessage.success('SM2签名成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM2签名失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.signing = false
-      }
-    },
-    
-    async sm2Verify() {
-      if (!this.sm2VerifyForm.message.trim()) {
-        ElMessage.warning('请输入要验证的消息')
-        return
-      }
-      
-      if (!this.sm2VerifyForm.signature.trim()) {
-        ElMessage.warning('请输入签名')
-        return
-      }
-      
-      if (!this.sm2VerifyForm.publicKey.trim()) {
-        ElMessage.warning('请输入公钥')
-        return
-      }
-      
-      this.verifying = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm2/verify', {
-          message: this.sm2VerifyForm.message,
-          signature: this.sm2VerifyForm.signature,
-          public_key: this.sm2VerifyForm.publicKey
-        })
-        
-        if (response.data.success) {
-          this.sm2VerifyResult = response.data.valid
-          ElMessage.success('SM2验证完成')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM2验证失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.verifying = false
-      }
-    },
-    
-    async generateSM4Key() {
-      try {
-        // 生成随机的128位密钥（16字节），转换为32字符的十六进制字符串
-        const keyBytes = new Uint8Array(16)
-        window.crypto.getRandomValues(keyBytes)
-        const keyHex = Array.from(keyBytes).map(b => b.toString(16).padStart(2, '0')).join('')
-        this.sm4EncryptForm.key = keyHex
-        ElMessage.success('SM4密钥生成成功')
-      } catch (error) {
-        ElMessage.error('SM4密钥生成失败: ' + error.message)
-      }
-    },
-    
-    async sm4Encrypt() {
-      if (!this.sm4EncryptForm.plaintext.trim()) {
-        ElMessage.warning('请输入要加密的文本')
-        return
-      }
-      
-      if (!this.sm4EncryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      this.encrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm4/encrypt', {
-          plaintext: this.sm4EncryptForm.plaintext,
-          key: this.sm4EncryptForm.key,
-          mode: this.sm4EncryptForm.mode
-        })
-        
-        if (response.data.success) {
-          this.sm4EncryptResult = response.data.ciphertext
-          this.sm4EncryptIV = response.data.iv || ''
-          ElMessage.success('SM4加密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM4加密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.encrypting = false
-      }
-    },
-    
-    async sm4Decrypt() {
-      if (!this.sm4DecryptForm.ciphertext.trim()) {
-        ElMessage.warning('请输入要解密的密文')
-        return
-      }
-      
-      if (!this.sm4DecryptForm.key.trim()) {
-        ElMessage.warning('请输入密钥')
-        return
-      }
-      
-      // 对于CBC模式，检查IV是否提供
-      if (this.sm4DecryptForm.mode === 'CBC' && !this.sm4DecryptForm.iv.trim()) {
-        ElMessage.warning('请输入IV')
-        return
-      }
-      
-      this.decrypting = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm4/decrypt', {
-          ciphertext: this.sm4DecryptForm.ciphertext,
-          key: this.sm4DecryptForm.key,
-          mode: this.sm4DecryptForm.mode,
-          iv: this.sm4DecryptForm.iv
-        })
-        
-        if (response.data.success) {
-          this.sm4DecryptResult = response.data.plaintext
-          ElMessage.success('SM4解密成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM4解密失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.decrypting = false
-      }
-    },
-    
-    async sha256Hash() {
-      if (!this.sha256Form.input.trim()) {
-        ElMessage.warning('请输入要哈希的文本')
-        return
-      }
-      
-      this.hashing = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sha256', {
-          input: this.sha256Form.input
-        })
-        
-        if (response.data.success) {
-          this.sha256Result = response.data.output
-          ElMessage.success('SHA-256哈希成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SHA-256哈希失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.hashing = false
-      }
-    },
-    
-    async sha512Hash() {
-      if (!this.sha512Form.input.trim()) {
-        ElMessage.warning('请输入要哈希的文本')
-        return
-      }
-      
-      this.hashing = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sha512', {
-          input: this.sha512Form.input
-        })
-        
-        if (response.data.success) {
-          this.sha512Result = response.data.output
-          ElMessage.success('SHA-512哈希成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SHA-512哈希失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.hashing = false
-      }
-    },
-    
-    async sm3Hash() {
-      if (!this.sm3Form.input.trim()) {
-        ElMessage.warning('请输入要哈希的文本')
-        return
-      }
-      
-      this.hashing = true
-      try {
-        const response = await axios.post('/api/crypto-tools/sm3', {
-          input: this.sm3Form.input
-        })
-        
-        if (response.data.success) {
-          this.sm3Result = response.data.output
-          ElMessage.success('SM3哈希成功')
-        } else {
-          ElMessage.error(response.data.error)
-        }
-      } catch (error) {
-        ElMessage.error('SM3哈希失败: ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.hashing = false
-      }
-    },
-    
-    copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success('已复制到剪贴板')
-      }).catch(() => {
-        ElMessage.error('复制失败')
-      })
-    }
+import ToolPage from '@/components/ToolPage.vue'
+import AlgorithmCardSelector from '@/components/AlgorithmCardSelector.vue'
+import HashAlgorithmCardSelector from '@/components/HashAlgorithmCardSelector.vue'
+import KeyPairDisplay from '@/components/crypto/KeyPairDisplay.vue'
+import SymmetricCryptoPanel from '@/components/crypto/SymmetricCryptoPanel.vue'
+import SignVerifyPanel from '@/components/crypto/SignVerifyPanel.vue'
+import PublicKeyCryptoPanel from '@/components/crypto/PublicKeyCryptoPanel.vue'
+
+// ---- Top-level navigation ----
+const activeMenu = ref('encryption')
+
+// ---- Algorithm selection ----
+const selectedCategory = ref('asymmetric')
+const selectedAlgorithm = ref('RSA')
+const availableAlgorithms = ref({
+  asymmetric: ['RSA', 'ECC', 'Ed25519', 'SM2'],
+  symmetric: ['AES', 'ChaCha20', 'SM4']
+})
+
+function onCategoryChange() {
+  const list = availableAlgorithms.value[selectedCategory.value]
+  if (list && list.length > 0) {
+    selectedAlgorithm.value = list[0]
   }
 }
+
+// ---- Shared loading flags ----
+const generating = ref(false)
+const encrypting = ref(false)
+const decrypting = ref(false)
+const signing = ref(false)
+const verifying = ref(false)
+
+// ---- AES mode options ----
+const aesModes = [
+  { label: 'CBC', value: 'CBC' },
+  { label: 'ECB', value: 'ECB' },
+  { label: 'CFB', value: 'CFB' },
+  { label: 'OFB', value: 'OFB' }
+]
+
+// ---- SM4 mode options ----
+const sm4Modes = [
+  { label: 'ECB', value: 'ECB' },
+  { label: 'CBC', value: 'CBC' }
+]
+
+// ==================== RSA ====================
+const rsaActiveTab = ref('generate')
+const rsaGenerateForm = reactive({ keySize: 2048 })
+const rsaKeys = reactive({ privateKey: '', publicKey: '' })
+const rsaEncryptResult = ref('')
+const rsaDecryptResult = ref('')
+
+async function generateRSAKeyPair() {
+  if (!rsaGenerateForm.keySize) {
+    ElMessage.warning('请选择密钥长度')
+    return
+  }
+  generating.value = true
+  try {
+    const { data } = await axios.post('/api/crypto-tools/rsa/generate', {
+      key_size: rsaGenerateForm.keySize
+    })
+    if (data.success) {
+      rsaKeys.privateKey = data.private_key
+      rsaKeys.publicKey = data.public_key
+      ElMessage.success('RSA密钥对生成成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  } catch (error) {
+    ElMessage.error('RSA密钥对生成失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    generating.value = false
+  }
+}
+
+function rsaEncrypt(form) {
+  encrypting.value = true
+  axios.post('/api/crypto-tools/rsa/encrypt', {
+    plaintext: form.plaintext,
+    public_key: form.publicKey
+  }).then(({ data }) => {
+    if (data.success) {
+      rsaEncryptResult.value = data.ciphertext
+      ElMessage.success('RSA加密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('RSA加密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    encrypting.value = false
+  })
+}
+
+function rsaDecrypt(form) {
+  decrypting.value = true
+  axios.post('/api/crypto-tools/rsa/decrypt', {
+    ciphertext: form.ciphertext,
+    private_key: form.privateKey
+  }).then(({ data }) => {
+    if (data.success) {
+      rsaDecryptResult.value = data.plaintext
+      ElMessage.success('RSA解密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('RSA解密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    decrypting.value = false
+  })
+}
+
+// ==================== ECC ====================
+const eccActiveTab = ref('generate')
+const eccGenerateForm = reactive({ curve: 'secp256r1' })
+const eccKeys = reactive({ privateKey: '', publicKey: '' })
+
+async function generateECCKeyPair() {
+  generating.value = true
+  try {
+    const { data } = await axios.post('/api/crypto-tools/ecc/generate', {
+      curve: eccGenerateForm.curve
+    })
+    if (data.success) {
+      eccKeys.privateKey = data.private_key
+      eccKeys.publicKey = data.public_key
+      ElMessage.success('ECC密钥对生成成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  } catch (error) {
+    ElMessage.error('ECC密钥对生成失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    generating.value = false
+  }
+}
+
+// ==================== Ed25519 ====================
+const ed25519ActiveTab = ref('generate')
+const ed25519Keys = reactive({ privateKey: '', publicKey: '' })
+const ed25519SignResult = ref('')
+const ed25519VerifyResult = ref(null)
+
+async function generateEd25519KeyPair() {
+  generating.value = true
+  try {
+    const { data } = await axios.post('/api/crypto-tools/ed25519/generate')
+    if (data.success) {
+      ed25519Keys.privateKey = data.private_key
+      ed25519Keys.publicKey = data.public_key
+      ElMessage.success('Ed25519密钥对生成成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  } catch (error) {
+    ElMessage.error('Ed25519密钥对生成失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    generating.value = false
+  }
+}
+
+function ed25519Sign(form) {
+  signing.value = true
+  axios.post('/api/crypto-tools/ed25519/sign', {
+    message: form.message,
+    private_key: form.privateKey
+  }).then(({ data }) => {
+    if (data.success) {
+      ed25519SignResult.value = data.signature
+      ElMessage.success('Ed25519签名成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('Ed25519签名失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    signing.value = false
+  })
+}
+
+function ed25519Verify(form) {
+  verifying.value = true
+  axios.post('/api/crypto-tools/ed25519/verify', {
+    message: form.message,
+    signature: form.signature,
+    public_key: form.publicKey
+  }).then(({ data }) => {
+    if (data.success) {
+      ed25519VerifyResult.value = data.valid
+      ElMessage.success('Ed25519验证完成')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('Ed25519验证失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    verifying.value = false
+  })
+}
+
+// ==================== AES ====================
+const aesEncryptResult = ref('')
+const aesDecryptResult = ref('')
+const aesEncryptIV = ref('')
+
+function generateAESKey() {
+  try {
+    const keyBytes = new Uint8Array(32)
+    window.crypto.getRandomValues(keyBytes)
+    // We set the key on the SymmetricCryptoPanel's encrypt form via a trick:
+    // SymmetricCryptoPanel manages its own form internally, so we use a ref approach.
+    // Since the panel emits generateKey and manages its own encryptForm.key,
+    // we need a different approach - use a provide/inject or just emit a value.
+    // Simplest: expose a method or use a key ref that the panel watches.
+    // For now, we store the generated key and pass it via a prop/event.
+    aesGeneratedKeyValue.value = btoa(String.fromCharCode(...keyBytes))
+    ElMessage.success('AES密钥生成成功')
+  } catch (error) {
+    ElMessage.error('AES密钥生成失败: ' + error.message)
+  }
+}
+
+const aesGeneratedKeyValue = ref('')
+
+function aesEncrypt(form) {
+  encrypting.value = true
+  axios.post('/api/crypto-tools/aes/encrypt', {
+    plaintext: form.plaintext,
+    key: form.key,
+    mode: form.mode
+  }).then(({ data }) => {
+    if (data.success) {
+      aesEncryptResult.value = data.ciphertext
+      aesEncryptIV.value = data.iv || ''
+      ElMessage.success('AES加密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('AES加密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    encrypting.value = false
+  })
+}
+
+function aesDecrypt(form) {
+  decrypting.value = true
+  axios.post('/api/crypto-tools/aes/decrypt', {
+    ciphertext: form.ciphertext,
+    key: form.key,
+    mode: form.mode,
+    iv: form.iv
+  }).then(({ data }) => {
+    if (data.success) {
+      aesDecryptResult.value = data.plaintext
+      ElMessage.success('AES解密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('AES解密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    decrypting.value = false
+  })
+}
+
+// ==================== ChaCha20 ====================
+const chacha20EncryptResult = ref('')
+const chacha20DecryptResult = ref('')
+const chacha20EncryptNonce = ref('')
+const chacha20GeneratedKeyValue = ref('')
+
+function generateChaCha20Key() {
+  try {
+    const keyBytes = new Uint8Array(32)
+    window.crypto.getRandomValues(keyBytes)
+    chacha20GeneratedKeyValue.value = btoa(String.fromCharCode(...keyBytes))
+    ElMessage.success('ChaCha20密钥生成成功')
+  } catch (error) {
+    ElMessage.error('ChaCha20密钥生成失败: ' + error.message)
+  }
+}
+
+function chacha20Encrypt(form) {
+  encrypting.value = true
+  axios.post('/api/crypto-tools/chacha20/encrypt', {
+    plaintext: form.plaintext,
+    key: form.key
+  }).then(({ data }) => {
+    if (data.success) {
+      chacha20EncryptResult.value = data.ciphertext
+      chacha20EncryptNonce.value = data.nonce
+      ElMessage.success('ChaCha20加密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('ChaCha20加密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    encrypting.value = false
+  })
+}
+
+function chacha20Decrypt(form) {
+  decrypting.value = true
+  axios.post('/api/crypto-tools/chacha20/decrypt', {
+    ciphertext: form.ciphertext,
+    key: form.key,
+    nonce: form.nonce
+  }).then(({ data }) => {
+    if (data.success) {
+      chacha20DecryptResult.value = data.plaintext
+      ElMessage.success('ChaCha20解密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('ChaCha20解密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    decrypting.value = false
+  })
+}
+
+// ==================== SM2 ====================
+const sm2ActiveTab = ref('generate')
+const sm2Keys = reactive({ privateKey: '', publicKey: '' })
+const sm2EncryptResult = ref('')
+const sm2DecryptResult = ref('')
+const sm2SignResult = ref('')
+const sm2VerifyResult = ref(null)
+
+async function generateSM2KeyPair() {
+  generating.value = true
+  try {
+    const { data } = await axios.post('/api/crypto-tools/sm2/generate')
+    if (data.success) {
+      sm2Keys.privateKey = data.private_key
+      sm2Keys.publicKey = data.public_key
+      ElMessage.success('SM2密钥对生成成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  } catch (error) {
+    ElMessage.error('SM2密钥对生成失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    generating.value = false
+  }
+}
+
+function sm2Encrypt(form) {
+  encrypting.value = true
+  axios.post('/api/crypto-tools/sm2/encrypt', {
+    plaintext: form.plaintext,
+    public_key: form.publicKey
+  }).then(({ data }) => {
+    if (data.success) {
+      sm2EncryptResult.value = data.ciphertext
+      ElMessage.success('SM2加密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM2加密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    encrypting.value = false
+  })
+}
+
+function sm2Decrypt(form) {
+  decrypting.value = true
+  axios.post('/api/crypto-tools/sm2/decrypt', {
+    ciphertext: form.ciphertext,
+    private_key: form.privateKey,
+    public_key: form.publicKey
+  }).then(({ data }) => {
+    if (data.success) {
+      sm2DecryptResult.value = data.plaintext
+      ElMessage.success('SM2解密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM2解密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    decrypting.value = false
+  })
+}
+
+function sm2Sign(form) {
+  signing.value = true
+  axios.post('/api/crypto-tools/sm2/sign', {
+    message: form.message,
+    private_key: form.privateKey
+  }).then(({ data }) => {
+    if (data.success) {
+      sm2SignResult.value = data.signature
+      ElMessage.success('SM2签名成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM2签名失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    signing.value = false
+  })
+}
+
+function sm2Verify(form) {
+  verifying.value = true
+  axios.post('/api/crypto-tools/sm2/verify', {
+    message: form.message,
+    signature: form.signature,
+    public_key: form.publicKey
+  }).then(({ data }) => {
+    if (data.success) {
+      sm2VerifyResult.value = data.valid
+      ElMessage.success('SM2验证完成')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM2验证失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    verifying.value = false
+  })
+}
+
+// ==================== SM4 ====================
+const sm4EncryptResult = ref('')
+const sm4DecryptResult = ref('')
+const sm4EncryptIV = ref('')
+const sm4GeneratedKeyValue = ref('')
+
+function generateSM4Key() {
+  try {
+    const keyBytes = new Uint8Array(16)
+    window.crypto.getRandomValues(keyBytes)
+    sm4GeneratedKeyValue.value = Array.from(keyBytes).map(b => b.toString(16).padStart(2, '0')).join('')
+    ElMessage.success('SM4密钥生成成功')
+  } catch (error) {
+    ElMessage.error('SM4密钥生成失败: ' + error.message)
+  }
+}
+
+function sm4Encrypt(form) {
+  encrypting.value = true
+  axios.post('/api/crypto-tools/sm4/encrypt', {
+    plaintext: form.plaintext,
+    key: form.key,
+    mode: form.mode
+  }).then(({ data }) => {
+    if (data.success) {
+      sm4EncryptResult.value = data.ciphertext
+      sm4EncryptIV.value = data.iv || ''
+      ElMessage.success('SM4加密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM4加密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    encrypting.value = false
+  })
+}
+
+function sm4Decrypt(form) {
+  decrypting.value = true
+  axios.post('/api/crypto-tools/sm4/decrypt', {
+    ciphertext: form.ciphertext,
+    key: form.key,
+    mode: form.mode,
+    iv: form.iv
+  }).then(({ data }) => {
+    if (data.success) {
+      sm4DecryptResult.value = data.plaintext
+      ElMessage.success('SM4解密成功')
+    } else {
+      ElMessage.error(data.error)
+    }
+  }).catch(error => {
+    ElMessage.error('SM4解密失败: ' + (error.response?.data?.error || error.message))
+  }).finally(() => {
+    decrypting.value = false
+  })
+}
+
+// ==================== Hash ====================
+const hashInputText = ref('')
+const hashAlgorithm = ref('sha256')
+const hashResult = ref('')
+const hashGenerating = ref(false)
+const hashVerifying = ref(false)
+const availableHashAlgorithms = ref([])
+
+async function handleGenerateHash() {
+  if (!hashInputText.value.trim()) {
+    ElMessage.warning('请输入要生成哈希的文本')
+    return
+  }
+  hashGenerating.value = true
+  try {
+    const { data } = await axios.post('/api/hash-tools/generate', {
+      text: hashInputText.value,
+      algorithm: hashAlgorithm.value
+    })
+    if (data.success) {
+      hashResult.value = data.hash
+      ElMessage.success('哈希生成成功')
+    } else {
+      ElMessage.error(data.error || '哈希生成失败')
+    }
+  } catch (error) {
+    ElMessage.error('哈希生成失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    hashGenerating.value = false
+  }
+}
+
+async function handleVerifyHash() {
+  if (!hashInputText.value.trim()) {
+    ElMessage.warning('请输入要验证的文本')
+    return
+  }
+  if (!hashResult.value.trim()) {
+    ElMessage.warning('请先生成哈希或输入预期哈希值')
+    return
+  }
+  hashVerifying.value = true
+  try {
+    const { data } = await axios.post('/api/hash-tools/verify', {
+      text: hashInputText.value,
+      expected_hash: hashResult.value,
+      algorithm: hashAlgorithm.value
+    })
+    if (data.success) {
+      if (data.valid) {
+        ElMessage.success('哈希验证通过')
+      } else {
+        ElMessage.error('哈希验证失败：哈希值不匹配')
+      }
+    } else {
+      ElMessage.error(data.error || '哈希验证失败')
+    }
+  } catch (error) {
+    ElMessage.error('哈希验证失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    hashVerifying.value = false
+  }
+}
+
+// ==================== Init ====================
+onMounted(async () => {
+  try {
+    const { data } = await axios.get('/api/crypto-tools/algorithms')
+    if (data.success) {
+      availableAlgorithms.value = data.algorithms
+      if (availableAlgorithms.value.asymmetric?.length > 0) {
+        selectedAlgorithm.value = availableAlgorithms.value.asymmetric[0]
+      } else if (availableAlgorithms.value.symmetric?.length > 0) {
+        selectedAlgorithm.value = availableAlgorithms.value.symmetric[0]
+      }
+    }
+  } catch (error) {
+    console.error('获取算法列表失败:', error)
+    ElMessage.error('获取算法列表失败: ' + (error.response?.data?.error || error.message))
+  }
+
+  try {
+    const { data } = await axios.get('/api/hash-tools/algorithms')
+    if (data.success) {
+      availableHashAlgorithms.value = data.algorithms
+    }
+  } catch (error) {
+    console.error('获取哈希算法列表失败:', error)
+  }
+})
 </script>
 
 <style scoped>
@@ -1867,31 +879,42 @@ export default {
   padding: 20px;
 }
 
-.algorithm-info {
+.algorithm-selector {
   margin-bottom: 20px;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
+.hash-tools-section {
+  margin-top: 10px;
 }
 
-.card-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.card-header span {
+.hash-tools-section h4 {
+  margin-bottom: 10px;
+  color: var(--dt-text-primary, #333);
   font-weight: bold;
 }
 
-.key-display {
+.input-section {
+  margin-bottom: 20px;
+}
+
+.hash-algorithm-selector {
+  margin-bottom: 20px;
+}
+
+.config-section {
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.output-section {
   margin-top: 20px;
 }
 
-.key-display h4 {
-  margin-bottom: 10px;
-  color: #333;
-  font-weight: bold;
+.top-tabs {
+  margin-bottom: 16px;
 }
 </style>

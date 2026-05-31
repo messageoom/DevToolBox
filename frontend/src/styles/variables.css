@@ -1,0 +1,101 @@
+/* DevToolBox Design System - CSS Custom Properties */
+
+:root {
+  /* Primary */
+  --dt-primary: #409eff;
+  --dt-primary-light: #ecf5ff;
+  --dt-primary-dark: #337ecc;
+
+  /* Semantic */
+  --dt-success: #67c23a;
+  --dt-success-light: #f0f9eb;
+  --dt-warning: #e6a23c;
+  --dt-warning-light: #fdf6ec;
+  --dt-danger: #f56c6c;
+  --dt-danger-light: #fef0f0;
+  --dt-info: #909399;
+
+  /* Text */
+  --dt-text-primary: #303133;
+  --dt-text-regular: #606266;
+  --dt-text-secondary: #909399;
+  --dt-text-placeholder: #c0c4cc;
+  --dt-text-disabled: #c0c4cc;
+
+  /* Background */
+  --dt-bg-page: #f5f7fa;
+  --dt-bg-card: #ffffff;
+  --dt-bg-section: #f8f9fa;
+  --dt-bg-input: #ffffff;
+  --dt-bg-hover: #f5f7fa;
+
+  /* Border */
+  --dt-border-base: #dcdfe6;
+  --dt-border-light: #e4e7ed;
+  --dt-border-lighter: #ebeef5;
+
+  /* Shadow */
+  --dt-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --dt-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --dt-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* Spacing */
+  --dt-spacing-xs: 4px;
+  --dt-spacing-sm: 8px;
+  --dt-spacing-md: 16px;
+  --dt-spacing-lg: 20px;
+  --dt-spacing-xl: 24px;
+  --dt-spacing-2xl: 32px;
+
+  /* Radius */
+  --dt-radius-sm: 4px;
+  --dt-radius-md: 8px;
+  --dt-radius-lg: 12px;
+  --dt-radius-xl: 16px;
+
+  /* Font */
+  --dt-font-size-xs: 12px;
+  --dt-font-size-sm: 13px;
+  --dt-font-size-base: 14px;
+  --dt-font-size-lg: 16px;
+  --dt-font-size-xl: 18px;
+  --dt-font-size-2xl: 20px;
+
+  /* Layout */
+  --dt-sidebar-width: 200px;
+  --dt-sidebar-collapsed: 64px;
+  --dt-header-height: 56px;
+  --dt-content-max-width: 1200px;
+
+  /* Transition */
+  --dt-transition-fast: 0.15s ease;
+  --dt-transition-base: 0.3s ease;
+}
+
+html.dark {
+  --dt-primary-light: #1a3a5c;
+
+  --dt-text-primary: #e5eaf3;
+  --dt-text-regular: #cfd3dc;
+  --dt-text-secondary: #a3a6ad;
+  --dt-text-placeholder: #6c6e72;
+  --dt-text-disabled: #6c6e72;
+
+  --dt-bg-page: #141414;
+  --dt-bg-card: #1d1e1f;
+  --dt-bg-section: #252526;
+  --dt-bg-input: #1d1e1f;
+  --dt-bg-hover: #2d2d2d;
+
+  --dt-border-base: #434343;
+  --dt-border-light: #363637;
+  --dt-border-lighter: #2e2e2f;
+
+  --dt-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --dt-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --dt-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  --dt-success-light: #1a3a1a;
+  --dt-warning-light: #3a2f1a;
+  --dt-danger-light: #3a1a1a;
+}

@@ -1,0 +1,162 @@
+/* DevToolBox - Shared Tool Page Layout Styles */
+
+/* ===== Tool Page Container ===== */
+.tool-page {
+  padding: var(--dt-spacing-lg);
+  max-width: var(--dt-content-max-width);
+  margin: 0 auto;
+}
+
+/* ===== Card Header ===== */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-sm);
+}
+
+.card-icon {
+  font-size: var(--dt-font-size-xl);
+  color: var(--dt-primary);
+}
+
+.card-header span {
+  font-weight: 600;
+  font-size: var(--dt-font-size-lg);
+  color: var(--dt-text-primary);
+}
+
+/* ===== Tool Section (input → action → output) ===== */
+.tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-lg);
+}
+
+.input-section,
+.output-section {
+  flex: 1;
+}
+
+.section-title {
+  margin-bottom: var(--dt-spacing-sm);
+  color: var(--dt-text-primary);
+  font-weight: 600;
+  font-size: var(--dt-font-size-base);
+}
+
+.action-section {
+  display: flex;
+  justify-content: center;
+  gap: var(--dt-spacing-sm);
+  padding: var(--dt-spacing-sm) 0;
+}
+
+/* ===== Config Section (background panel) ===== */
+.config-section {
+  padding: var(--dt-spacing-lg);
+  background: var(--dt-bg-section);
+  border-radius: var(--dt-radius-md);
+}
+
+.config-section h4 {
+  color: var(--dt-text-primary);
+  font-weight: 600;
+  margin-bottom: var(--dt-spacing-sm);
+}
+
+/* ===== Filter Section ===== */
+.filter-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dt-spacing-md);
+  padding: var(--dt-spacing-md);
+  background: var(--dt-bg-section);
+  border-radius: var(--dt-radius-md);
+  margin-bottom: var(--dt-spacing-md);
+}
+
+.filter-label {
+  color: var(--dt-text-secondary);
+  font-size: var(--dt-font-size-sm);
+  white-space: nowrap;
+}
+
+/* ===== Result Display ===== */
+.result-display {
+  padding: var(--dt-spacing-md);
+  background: var(--dt-bg-section);
+  border-radius: var(--dt-radius-md);
+  border: 1px solid var(--dt-border-light);
+}
+
+.result-display pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: var(--dt-font-size-sm);
+  color: var(--dt-text-regular);
+}
+
+/* ===== Stats Row ===== */
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dt-spacing-md);
+  margin-top: var(--dt-spacing-sm);
+}
+
+.stat-item {
+  font-size: var(--dt-font-size-sm);
+  color: var(--dt-text-secondary);
+}
+
+.stat-item strong {
+  color: var(--dt-primary);
+}
+
+/* ===== Copy Button ===== */
+.copy-wrapper {
+  position: relative;
+}
+
+.copy-wrapper .el-button {
+  position: absolute;
+  top: var(--dt-spacing-sm);
+  right: var(--dt-spacing-sm);
+  z-index: 1;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .tool-page {
+    padding: var(--dt-spacing-md);
+  }
+
+  .tool-section {
+    gap: var(--dt-spacing-md);
+  }
+
+  .config-section {
+    padding: var(--dt-spacing-md);
+  }
+
+  .action-section {
+    flex-wrap: wrap;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: var(--dt-spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-page {
+    padding: var(--dt-spacing-sm);
+  }
+
+  .card-header span {
+    font-size: var(--dt-font-size-base);
+  }
+}

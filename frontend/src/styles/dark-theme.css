@@ -1,149 +1,21 @@
 /*
- * Centralized Dark Theme Overrides for DevToolBox
+ * DevToolBox Dark Theme
  *
- * All dark mode CSS rules consolidated from individual components.
- * Activated when <html> has the "dark" class.
+ * Most dark mode styling is handled by CSS variables in variables.css.
+ * This file only contains overrides for elements that cannot use variables.
+ * Element Plus components are handled by element-plus/theme-chalk/dark/css-vars.css.
  */
 
-/* ========================================
-   Element Plus Component Overrides
-   ======================================== */
-
-/* --- el-card --- */
-html.dark .el-card {
-  background-color: #1d1e1f;
-  border-color: #434343;
-}
-
-html.dark .el-card__header {
-  background-color: #2d2d2d;
-  border-color: #434343;
-  color: #e5eaf3;
-}
-
-/* --- el-textarea --- */
-html.dark .el-textarea__inner {
-  background-color: #2d2d2d;
-  color: #e5eaf3;
-  border-color: #434343;
-}
-
-/* --- el-input --- */
-html.dark .el-input__inner {
-  background-color: #2d2d2d;
-  color: #e5eaf3;
-  border-color: #434343;
-}
-
-/* --- el-button --- */
-html.dark .el-button {
-  background-color: #2d2d2d;
-  border-color: #434343;
-  color: #e5eaf3;
-}
-
-html.dark .el-button:hover {
-  background-color: #3d3d3d;
-  border-color: #535353;
-  color: #e5eaf3;
-}
-
-html.dark .el-button--primary {
-  background-color: #409eff;
-  border-color: #409eff;
-  color: #ffffff;
-}
-
-html.dark .el-button--primary:hover {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
-}
-
-/* --- el-tabs --- */
-html.dark .el-tabs__item {
-  color: #a3a6ad;
-}
-
-html.dark .el-tabs__item.is-active {
-  color: #409eff;
-}
-
-html.dark .el-tabs__nav-wrap::after {
-  background-color: #434343;
-}
-
-html.dark .el-tabs__active-bar {
-  background-color: #409eff;
-}
-
-/* --- el-select --- */
-html.dark .el-select {
-  background-color: #2d2d2d;
-}
-
-html.dark .el-select .el-input__inner {
-  background-color: #2d2d2d;
-}
-
-/* --- el-form --- */
-html.dark .el-form-item__label {
-  color: #e5eaf3;
-}
-
-/* --- el-alert --- */
-html.dark .el-alert {
-  background-color: #2d2d2d;
-  border-color: #434343;
-}
-
-html.dark .el-alert__title {
-  color: #e5eaf3;
-}
-
-html.dark .el-alert__description {
-  color: #a3a6ad;
-}
-
-/* ========================================
-   Layout / Section Overrides
-   ======================================== */
-
-/* --- tool-section, input-section, output-section (CryptoTools / HashTools) --- */
-html.dark .key-display h4 {
-  color: #e5eaf3;
-}
-
-html.dark .input-section h4,
-html.dark .output-section h4 {
-  color: #e5eaf3;
-}
-
-html.dark .config-section {
-  background-color: #2d2d2d;
-}
-
-/* ========================================
-   Algorithm Card Selector Overrides
-   ======================================== */
-
-/* --- Filter section (AlgorithmCardSelector / HashAlgorithmCardSelector) --- */
-html.dark .filter-section {
-  background-color: #2d2d2d;
-}
-
-html.dark .filter-label {
-  color: #e5eaf3;
-}
-
-/* --- Algorithm cards --- */
+/* ===== Algorithm Cards ===== */
 html.dark .algorithm-card:hover {
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
-html.dark .algorithm-name {
-  color: #e5eaf3;
+/* ===== Custom Scrollbar (dark) ===== */
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #434343;
 }
 
-html.dark .algorithm-description {
-  color: #a3a6ad;
+html.dark ::-webkit-scrollbar-track {
+  background-color: #1d1e1f;
 }

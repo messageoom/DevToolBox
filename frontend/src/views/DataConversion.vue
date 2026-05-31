@@ -1,280 +1,278 @@
 <template>
-  <div class="data-conversion">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><DocumentCopy /></el-icon>
-          <span>数据互转</span>
+  <ToolPage title="数据互转" :icon="Switch">
+    <el-tabs v-model="activeTab">
+      <el-tab-pane label="Markdown转HTML" name="md-to-html">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">输入Markdown文本</h4>
+            <el-input
+              v-model="markdownInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入Markdown文本..."
+              style="width: 100%;"
+              @input="updateMdPreview"
+            />
+          </div>
+          <div class="preview-toggle">
+            <el-checkbox v-model="showMdPreview">显示预览</el-checkbox>
+          </div>
+          <div v-if="showMdPreview" class="preview-section">
+            <h4 class="section-title">预览效果</h4>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div class="preview-content" v-html="sanitizedMdPreviewHtml"></div>
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="convertMdToHtml" :loading="converting">
+              转换
+            </el-button>
+            <el-button @click="clearAll">清空</el-button>
+          </div>
+          <div class="output-section" v-if="htmlOutput">
+            <h4 class="section-title">HTML输出</h4>
+            <el-input
+              v-model="htmlOutput"
+              type="textarea"
+              :rows="8"
+              readonly
+              style="width: 100%;"
+            />
+            <div class="stats" v-if="conversionStats">
+              <el-descriptions :column="2" size="small" border>
+                <el-descriptions-item label="原始长度">
+                  {{ conversionStats.original_length }} 字符
+                </el-descriptions-item>
+                <el-descriptions-item label="输出长度">
+                  {{ conversionStats.html_length }} 字符
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+            <div class="action-section" style="margin-top: 15px;">
+              <el-button type="primary" @click="downloadHtml">
+                下载HTML文件
+              </el-button>
+            </div>
+          </div>
         </div>
-      </template>
+      </el-tab-pane>
 
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="Markdown转HTML" name="md-to-html">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入Markdown文本</h4>
-              <el-input
-                v-model="markdownInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入Markdown文本..."
-                style="width: 100%;"
-                @input="updateMdPreview"
-              />
-            </div>
-            <div class="preview-toggle">
-              <el-checkbox v-model="showMdPreview">显示预览</el-checkbox>
-            </div>
-            <div v-if="showMdPreview" class="preview-section">
-              <h4>预览效果</h4>
-              <div class="preview-content" v-html="mdPreviewHtml"></div>
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="convertMdToHtml" :loading="converting">
-                转换
-              </el-button>
-              <el-button @click="clearAll">清空</el-button>
-            </div>
-            <div class="output-section" v-if="htmlOutput">
-              <h4>HTML输出</h4>
-              <el-input
-                v-model="htmlOutput"
-                type="textarea"
-                :rows="8"
-                readonly
-                style="width: 100%;"
-              />
-              <div class="stats" v-if="conversionStats">
-                <el-descriptions :column="2" size="small" border>
-                  <el-descriptions-item label="原始长度">
-                    {{ conversionStats.original_length }} 字符
-                  </el-descriptions-item>
-                  <el-descriptions-item label="输出长度">
-                    {{ conversionStats.html_length }} 字符
-                  </el-descriptions-item>
-                </el-descriptions>
-              </div>
-              <div class="action-section" style="margin-top: 15px;">
-                <el-button type="primary" @click="downloadHtml">
-                  下载HTML文件
-                </el-button>
-              </div>
-            </div>
+      <el-tab-pane label="HTML转Markdown" name="html-to-md">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">输入HTML文本</h4>
+            <el-input
+              v-model="htmlInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入HTML文本..."
+              style="width: 100%;"
+              @input="updateHtmlPreview"
+            />
           </div>
-        </el-tab-pane>
-
-        <el-tab-pane label="HTML转Markdown" name="html-to-md">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入HTML文本</h4>
-              <el-input
-                v-model="htmlInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入HTML文本..."
-                style="width: 100%;"
-                @input="updateHtmlPreview"
-              />
-            </div>
-            <div class="preview-toggle">
-              <el-checkbox v-model="showHtmlPreview">显示预览</el-checkbox>
-            </div>
-            <div v-if="showHtmlPreview" class="preview-section">
-              <h4>预览效果</h4>
-              <div class="preview-content" v-html="htmlPreviewHtml"></div>
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="convertHtmlToMd" :loading="converting">
-                转换
-              </el-button>
-              <el-button @click="clearAll">清空</el-button>
-            </div>
-            <div class="output-section" v-if="markdownOutput">
-              <h4>Markdown输出</h4>
-              <el-input
-                v-model="markdownOutput"
-                type="textarea"
-                :rows="8"
-                readonly
-                style="width: 100%;"
-              />
-              <div class="stats" v-if="conversionStats">
-                <el-descriptions :column="2" size="small" border>
-                  <el-descriptions-item label="原始长度">
-                    {{ conversionStats.original_length }} 字符
-                  </el-descriptions-item>
-                  <el-descriptions-item label="输出长度">
-                    {{ conversionStats.markdown_length }} 字符
-                  </el-descriptions-item>
-                </el-descriptions>
-              </div>
-              <div class="action-section" style="margin-top: 15px;">
-                <el-button type="primary" @click="downloadMarkdown">
-                  下载Markdown文件
-                </el-button>
-              </div>
-            </div>
+          <div class="preview-toggle">
+            <el-checkbox v-model="showHtmlPreview">显示预览</el-checkbox>
           </div>
-        </el-tab-pane>
-
-        <el-tab-pane label="Markdown转PDF" name="md-to-pdf">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入Markdown文本</h4>
-              <el-input
-                v-model="markdownInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入Markdown文本..."
-                style="width: 100%;"
-              />
+          <div v-if="showHtmlPreview" class="preview-section">
+            <h4 class="section-title">预览效果</h4>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div class="preview-content" v-html="sanitizedHtmlPreviewHtml"></div>
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="convertHtmlToMd" :loading="converting">
+              转换
+            </el-button>
+            <el-button @click="clearAll">清空</el-button>
+          </div>
+          <div class="output-section" v-if="markdownOutput">
+            <h4 class="section-title">Markdown输出</h4>
+            <el-input
+              v-model="markdownOutput"
+              type="textarea"
+              :rows="8"
+              readonly
+              style="width: 100%;"
+            />
+            <div class="stats" v-if="conversionStats">
+              <el-descriptions :column="2" size="small" border>
+                <el-descriptions-item label="原始长度">
+                  {{ conversionStats.original_length }} 字符
+                </el-descriptions-item>
+                <el-descriptions-item label="输出长度">
+                  {{ conversionStats.markdown_length }} 字符
+                </el-descriptions-item>
+              </el-descriptions>
             </div>
-            <div class="action-section">
-              <el-button type="primary" @click="convertMdToPdf" :loading="converting">
-                生成PDF
-              </el-button>
-              <el-button @click="clearAll">清空</el-button>
-            </div>
-            <div class="output-section" v-if="pdfUrl">
-              <h4>PDF生成成功</h4>
-              <el-alert
-                title="PDF已生成"
-                type="success"
-                :description="`文件大小: ${pdfSize} bytes`"
-                show-icon
-                style="margin-bottom: 20px;"
-              />
-              <el-button type="primary" @click="downloadPdf">
-                下载PDF
+            <div class="action-section" style="margin-top: 15px;">
+              <el-button type="primary" @click="downloadMarkdown">
+                下载Markdown文件
               </el-button>
             </div>
           </div>
-        </el-tab-pane>
+        </div>
+      </el-tab-pane>
 
-        <el-tab-pane label="PDF转Markdown" name="pdf-to-md">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>上传PDF文件</h4>
-              <el-upload
-                ref="uploadRef"
-                class="upload-demo"
-                drag
-                :action="uploadUrl"
-                :on-success="handleUploadSuccess"
-                :on-error="handleUploadError"
-                :before-upload="beforeUpload"
-                :file-list="fileList"
-                accept=".pdf"
-                :limit="1"
-              >
-                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                <div class="el-upload__text">
-                  将PDF文件拖到此处，或<em>点击上传</em>
-                </div>
-                <template #tip>
-                  <div class="el-upload__tip">只能上传PDF文件，且不超过10MB</div>
-                </template>
-              </el-upload>
+      <el-tab-pane label="Markdown转PDF" name="md-to-pdf">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">输入Markdown文本</h4>
+            <el-input
+              v-model="markdownInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入Markdown文本..."
+              style="width: 100%;"
+            />
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="convertMdToPdf" :loading="converting">
+              生成PDF
+            </el-button>
+            <el-button @click="clearAll">清空</el-button>
+          </div>
+          <div class="output-section" v-if="pdfUrl">
+            <h4 class="section-title">PDF生成成功</h4>
+            <el-alert
+              title="PDF已生成"
+              type="success"
+              :description="`文件大小: ${pdfSize} bytes`"
+              show-icon
+              style="margin-bottom: 20px;"
+            />
+            <el-button type="primary" @click="downloadPdf">
+              下载PDF
+            </el-button>
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="PDF转Markdown" name="pdf-to-md">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">上传PDF文件</h4>
+            <el-upload
+              ref="uploadRef"
+              class="upload-demo"
+              drag
+              :action="uploadUrl"
+              :on-success="handleUploadSuccess"
+              :on-error="handleUploadError"
+              :before-upload="beforeUpload"
+              :file-list="fileList"
+              accept=".pdf"
+              :limit="1"
+            >
+              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+              <div class="el-upload__text">
+                将PDF文件拖到此处，或<em>点击上传</em>
+              </div>
+              <template #tip>
+                <div class="el-upload__tip">只能上传PDF文件，且不超过10MB</div>
+              </template>
+            </el-upload>
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="convertPdfToMd" :loading="converting" :disabled="!uploadedFile">
+              转换
+            </el-button>
+            <el-button @click="clearAll">清空</el-button>
+          </div>
+          <div class="output-section" v-if="markdownFromPdf">
+            <h4 class="section-title">Markdown输出</h4>
+            <el-input
+              v-model="markdownFromPdf"
+              type="textarea"
+              :rows="8"
+              readonly
+              style="width: 100%;"
+            />
+            <div class="stats" v-if="pdfConversionStats">
+              <el-descriptions :column="2" size="small" border>
+                <el-descriptions-item label="页数">
+                  {{ pdfConversionStats.pages }} 页
+                </el-descriptions-item>
+                <el-descriptions-item label="字符数">
+                  {{ pdfConversionStats.characters }} 字符
+                </el-descriptions-item>
+              </el-descriptions>
             </div>
-            <div class="action-section">
-              <el-button type="primary" @click="convertPdfToMd" :loading="converting" :disabled="!uploadedFile">
-                转换
+            <div class="action-section" style="margin-top: 15px;">
+              <el-button type="primary" @click="downloadPdfToMdResult">
+                下载Markdown文件
               </el-button>
-              <el-button @click="clearAll">清空</el-button>
-            </div>
-            <div class="output-section" v-if="markdownFromPdf">
-              <h4>Markdown输出</h4>
-              <el-input
-                v-model="markdownFromPdf"
-                type="textarea"
-                :rows="8"
-                readonly
-                style="width: 100%;"
-              />
-              <div class="stats" v-if="pdfConversionStats">
-                <el-descriptions :column="2" size="small" border>
-                  <el-descriptions-item label="页数">
-                    {{ pdfConversionStats.pages }} 页
-                  </el-descriptions-item>
-                  <el-descriptions-item label="字符数">
-                    {{ pdfConversionStats.characters }} 字符
-                  </el-descriptions-item>
-                </el-descriptions>
-              </div>
-              <div class="action-section" style="margin-top: 15px;">
-                <el-button type="primary" @click="downloadPdfToMdResult">
-                  下载Markdown文件
-                </el-button>
-              </div>
             </div>
           </div>
-        </el-tab-pane>
+        </div>
+      </el-tab-pane>
 
-        <el-tab-pane label="HTML转PDF" name="html-to-pdf">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入HTML文本</h4>
-              <el-input
-                v-model="htmlInput"
-                type="textarea"
-                :rows="8"
-                placeholder="请输入HTML文本..."
-                style="width: 100%;"
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="convertHtmlToPdf" :loading="converting">
-                生成PDF
-              </el-button>
-              <el-button @click="clearAll">清空</el-button>
-            </div>
-            <div class="output-section" v-if="pdfUrl">
-              <h4>PDF生成成功</h4>
-              <el-alert
-                title="PDF已生成"
-                type="success"
-                :description="`文件大小: ${pdfSize} bytes`"
-                show-icon
-                style="margin-bottom: 20px;"
-              />
-              <el-button type="primary" @click="downloadPdf">
-                下载PDF
-              </el-button>
-            </div>
+      <el-tab-pane label="HTML转PDF" name="html-to-pdf">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">输入HTML文本</h4>
+            <el-input
+              v-model="htmlInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入HTML文本..."
+              style="width: 100%;"
+            />
           </div>
-        </el-tab-pane>
-      </el-tabs>
-    </el-card>
-    
-    <!-- 添加PDF错误对话框 -->
-    <PdfErrorDialog 
+          <div class="action-section">
+            <el-button type="primary" @click="convertHtmlToPdf" :loading="converting">
+              生成PDF
+            </el-button>
+            <el-button @click="clearAll">清空</el-button>
+          </div>
+          <div class="output-section" v-if="pdfUrl">
+            <h4 class="section-title">PDF生成成功</h4>
+            <el-alert
+              title="PDF已生成"
+              type="success"
+              :description="`文件大小: ${pdfSize} bytes`"
+              show-icon
+              style="margin-bottom: 20px;"
+            />
+            <el-button type="primary" @click="downloadPdf">
+              下载PDF
+            </el-button>
+          </div>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
+
+    <!-- PDF错误对话框 -->
+    <PdfErrorDialog
       v-model="pdfErrorDialogVisible"
       :error-message="pdfErrorMessage"
       @view-solution="viewPdfSolution"
     />
-  </div>
+  </ToolPage>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
-import { DocumentCopy, UploadFilled } from '@element-plus/icons-vue'
+import { Switch, UploadFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { marked } from 'marked'
 
-// 导入PDF错误对话框组件
+// DOMPurify import - sanitize HTML to prevent XSS attacks via v-html
+// If dompurify is not installed, run: npm install dompurify
+import DOMPurify from 'dompurify'
+
 import PdfErrorDialog from '@/components/PdfErrorDialog.vue'
 import { useRouter } from 'vue-router'
+import ToolPage from '@/components/ToolPage.vue'
 
 export default {
   name: 'DataConversion',
   components: {
-    DocumentCopy,
+    Switch,
     UploadFilled,
-    PdfErrorDialog
+    PdfErrorDialog,
+    ToolPage
   },
   setup() {
     const router = useRouter()
-    
+
     return {
       router
     }
@@ -310,6 +308,14 @@ export default {
       uploadUrl: '/api/data-conversion/upload-pdf',
       pdfErrorDialogVisible: false,
       pdfErrorMessage: ''
+    }
+  },
+  computed: {
+    sanitizedMdPreviewHtml() {
+      return DOMPurify.sanitize(this.mdPreviewHtml)
+    },
+    sanitizedHtmlPreviewHtml() {
+      return DOMPurify.sanitize(this.htmlPreviewHtml)
     }
   },
   methods: {
@@ -407,27 +413,21 @@ export default {
           this.pdfSize = response.data.size
           ElMessage.success('PDF生成成功')
         } else {
-          // 处理非200状态码的错误
           this.pdfErrorMessage = 'PDF生成失败: 服务器返回错误状态码 ' + response.status
           this.pdfErrorDialogVisible = true
           ElMessage.error('PDF生成失败，请查看错误详情')
         }
       } catch (error) {
-        // 处理网络错误或异常
-        console.error('PDF生成异常:', error)
         let errorMessage = 'PDF生成失败'
         if (error.response) {
-          // 服务器响应了错误状态码
           if (error.response.status) {
             errorMessage = `PDF生成失败: ${error.response.status} ${error.response.statusText}`
           } else {
             errorMessage = 'PDF生成失败: 服务器响应错误'
           }
         } else if (error.request) {
-          // 请求已发出但没有收到响应
           errorMessage = 'PDF生成失败: 无法连接到服务器'
         } else {
-          // 其他错误
           errorMessage = 'PDF生成失败: ' + (error.message || '未知错误')
         }
 
@@ -435,7 +435,6 @@ export default {
         this.pdfErrorDialogVisible = true
         ElMessage.error('PDF生成失败，请查看错误详情')
       } finally {
-        // 确保总是重置加载状态
         this.converting = false
       }
     },
@@ -517,7 +516,6 @@ export default {
 
       this.converting = true
       try {
-        // 直接将HTML发送到后端生成PDF
         const response = await axios.post('/api/data-conversion/html-to-pdf', {
           html_text: this.htmlInput
         }, {
@@ -530,27 +528,21 @@ export default {
           this.pdfSize = response.data.size
           ElMessage.success('PDF生成成功')
         } else {
-          // 处理非200状态码的错误
           this.pdfErrorMessage = 'PDF生成失败: 服务器返回错误状态码 ' + response.status
           this.pdfErrorDialogVisible = true
           ElMessage.error('PDF生成失败，请查看错误详情')
         }
       } catch (error) {
-        // 处理网络错误或异常
-        console.error('HTML转PDF生成异常:', error)
         let errorMessage = 'PDF生成失败'
         if (error.response) {
-          // 服务器响应了错误状态码
           if (error.response.status) {
             errorMessage = `PDF生成失败: ${error.response.status} ${error.response.statusText}`
           } else {
             errorMessage = 'PDF生成失败: 服务器响应错误'
           }
         } else if (error.request) {
-          // 请求已发出但没有收到响应
           errorMessage = 'PDF生成失败: 无法连接到服务器'
         } else {
-          // 其他错误
           errorMessage = 'PDF生成失败: ' + (error.message || '未知错误')
         }
 
@@ -558,7 +550,6 @@ export default {
         this.pdfErrorDialogVisible = true
         ElMessage.error('PDF生成失败，请查看错误详情')
       } finally {
-        // 确保总是重置加载状态
         this.converting = false
       }
     },
@@ -581,10 +572,8 @@ export default {
 
     downloadHtml() {
       if (this.htmlOutput) {
-        // 确保下载的是完整的HTML文档
         let htmlContent = this.htmlOutput;
         if (!htmlContent.trim().startsWith('<!DOCTYPE')) {
-          // 如果不是完整的HTML文档，包装成完整的文档
           htmlContent = `<!DOCTYPE html>
 <html>
 <head>
@@ -606,30 +595,12 @@ export default {
             font-weight: 600;
             line-height: 1.25;
         }
-        h1 {
-            font-size: 2em;
-            border-bottom: 1px solid #eaecef;
-            padding-bottom: 0.3em;
-        }
-        h2 {
-            font-size: 1.5em;
-            border-bottom: 1px solid #eaecef;
-            padding-bottom: 0.3em;
-        }
-        h3 {
-            font-size: 1.25em;
-        }
-        p {
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-        a {
-            color: #0366d6;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        p { margin-top: 0; margin-bottom: 16px; }
+        a { color: #0366d6; text-decoration: none; }
+        a:hover { text-decoration: underline; }
         code {
             padding: 0.2em 0.4em;
             margin: 0;
@@ -646,46 +617,14 @@ export default {
             background-color: #f6f8fa;
             border-radius: 3px;
         }
-        pre code {
-            padding: 0;
-            margin: 0;
-            overflow: visible;
-            font-size: 100%;
-            word-wrap: normal;
-            background-color: transparent;
-            border: 0;
-        }
-        blockquote {
-            padding: 0 1em;
-            color: #6a737d;
-            border-left: 0.25em solid #dfe2e5;
-        }
-        ul, ol {
-            padding-left: 2em;
-        }
-        li {
-            margin-bottom: 0.25em;
-        }
-        table {
-            display: block;
-            width: 100%;
-            overflow: auto;
-            border-collapse: collapse;
-        }
-        table th, table td {
-            padding: 6px 13px;
-            border: 1px solid #dfe2e5;
-        }
-        table tr:nth-child(2n) {
-            background-color: #f6f8fa;
-        }
-        hr {
-            height: 0.25em;
-            padding: 0;
-            margin: 24px 0;
-            background-color: #e1e4e8;
-            border: 0;
-        }
+        pre code { padding: 0; margin: 0; overflow: visible; font-size: 100%; word-wrap: normal; background-color: transparent; border: 0; }
+        blockquote { padding: 0 1em; color: #6a737d; border-left: 0.25em solid #dfe2e5; }
+        ul, ol { padding-left: 2em; }
+        li { margin-bottom: 0.25em; }
+        table { display: block; width: 100%; overflow: auto; border-collapse: collapse; }
+        table th, table td { padding: 6px 13px; border: 1px solid #dfe2e5; }
+        table tr:nth-child(2n) { background-color: #f6f8fa; }
+        hr { height: 0.25em; padding: 0; margin: 24px 0; background-color: #e1e4e8; border: 0; }
     </style>
 </head>
 <body>
@@ -693,7 +632,7 @@ export default {
 </body>
 </html>`;
         }
-        
+
         const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -735,7 +674,6 @@ export default {
     },
 
     viewPdfSolution() {
-      // 跳转到PDF帮助页面
       this.router.push('/pdf-help')
     }
   },
@@ -761,46 +699,8 @@ export default {
 </script>
 
 <style scoped>
-.data-conversion {
-  padding: 20px;
-}
-
-.tool-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input-section, .output-section, .preview-section {
-  flex: 1;
-}
-
-.input-section h4, .output-section h4, .preview-section h4 {
-  margin-bottom: 10px;
-  color: #333;
-  font-weight: bold;
-}
-
-.action-section {
-  text-align: center;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-}
-
-.card-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.card-header span {
-  font-weight: bold;
-}
-
 .stats {
-  margin-top: 15px;
+  margin-top: var(--dt-spacing-md);
 }
 
 .upload-demo {
@@ -809,15 +709,15 @@ export default {
 
 .preview-toggle {
   text-align: right;
-  padding: 10px 0;
+  padding: var(--dt-spacing-sm) 0;
 }
 
 .preview-content {
-  border: 1px solid #e6e6e6;
-  border-radius: 4px;
-  padding: 16px;
+  border: 1px solid var(--dt-border-light);
+  border-radius: var(--dt-radius-sm);
+  padding: var(--dt-spacing-md);
   min-height: 100px;
-  background-color: #fff;
+  background-color: var(--dt-bg-card);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
 }
@@ -830,18 +730,18 @@ export default {
 .preview-content :deep(h6) {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .preview-content :deep(h1) {
   font-size: 2em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--dt-border-lighter);
   padding-bottom: 0.3em;
 }
 
 .preview-content :deep(h2) {
   font-size: 1.5em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--dt-border-lighter);
   padding-bottom: 0.3em;
 }
 
@@ -850,7 +750,7 @@ export default {
 }
 
 .preview-content :deep(code) {
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
@@ -858,7 +758,7 @@ export default {
 }
 
 .preview-content :deep(pre) {
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   padding: 16px;
   border-radius: 6px;
   overflow-x: auto;
@@ -871,10 +771,10 @@ export default {
 }
 
 .preview-content :deep(blockquote) {
-  border-left: 4px solid #ddd;
+  border-left: 4px solid var(--dt-border-base);
   padding-left: 16px;
   margin: 1em 0;
-  color: #666;
+  color: var(--dt-text-regular);
 }
 
 .preview-content :deep(table) {
@@ -885,13 +785,13 @@ export default {
 
 .preview-content :deep(th),
 .preview-content :deep(td) {
-  border: 1px solid #ddd;
+  border: 1px solid var(--dt-border-base);
   padding: 8px 12px;
   text-align: left;
 }
 
 .preview-content :deep(th) {
-  background-color: #f8f9fa;
+  background-color: var(--dt-bg-section);
   font-weight: bold;
 }
 
@@ -906,7 +806,7 @@ export default {
 }
 
 .preview-content :deep(a) {
-  color: #409eff;
+  color: var(--dt-primary);
   text-decoration: none;
 }
 
@@ -917,52 +817,52 @@ export default {
 .preview-content :deep(img) {
   max-width: 100%;
   height: auto;
-  border-radius: 4px;
+  border-radius: var(--dt-radius-sm);
 }
 
 .empty-preview {
   text-align: center;
-  color: #999;
+  color: var(--dt-text-secondary);
   font-style: italic;
   margin: 2em 0;
 }
 
 .error {
-  color: #f56c6c;
+  color: var(--dt-danger);
   font-style: italic;
 }
 
-/* 添加PDF错误对话框样式 */
+/* PDF错误对话框样式 */
 .error-dialog {
   text-align: center;
 }
 
 .error-icon {
   font-size: 48px;
-  color: #F56C6C;
+  color: var(--dt-danger);
   margin-bottom: 20px;
 }
 
 .error-content h3 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .error-message {
-  color: #666;
+  color: var(--dt-text-regular);
   margin-bottom: 20px;
 }
 
 .solution {
-  background-color: #f5f7fa;
-  border-radius: 4px;
+  background-color: var(--dt-bg-page);
+  border-radius: var(--dt-radius-sm);
   padding: 15px;
   text-align: left;
 }
 
 .solution h4 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .solution ol {
@@ -977,7 +877,7 @@ export default {
 
 .solution p {
   margin: 0;
-  font-size: 14px;
-  color: #999;
+  font-size: var(--dt-font-size-base);
+  color: var(--dt-text-secondary);
 }
 </style>

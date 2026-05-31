@@ -1,10 +1,10 @@
 <template>
-  <div class="qr-tools">
+  <ToolPage title="二维码工具" :icon="Crop">
     <el-tabs v-model="activeTab" class="demo-tabs" @tab-change="handleTabChange">
       <el-tab-pane label="二维码生成" name="generate">
         <div class="tool-container">
           <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :xs="24" :sm="24" :md="12">
               <el-card class="input-card">
                 <template #header>
                   <div class="card-header">
@@ -19,19 +19,19 @@
                 ></el-input>
                 <div class="config-section">
                   <el-row :gutter="20" style="margin-top: 20px;">
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="尺寸">
                         <el-slider v-model="qrSize" :min="100" :max="500" :step="10" show-input />
                       </el-form-item>
                     </el-col>
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="颜色">
                         <el-color-picker v-model="qrColor" />
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row :gutter="20">
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="背景色">
                         <el-color-picker v-model="qrBackground" />
                       </el-form-item>
@@ -43,7 +43,7 @@
                 </el-button>
               </el-card>
             </el-col>
-            <el-col :span="12">
+            <el-col :xs="24" :sm="24" :md="12">
               <el-card class="output-card">
                 <template #header>
                   <div class="card-header">
@@ -64,11 +64,11 @@
           </el-row>
         </div>
       </el-tab-pane>
-      
+
       <el-tab-pane label="二维码美化" name="beautify">
         <div class="tool-container">
           <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :xs="24" :sm="24" :md="12">
               <el-card class="input-card">
                 <template #header>
                   <div class="card-header">
@@ -97,22 +97,22 @@
                     </template>
                   </el-upload>
                 </div>
-                
+
                 <div class="config-section" style="margin-top: 30px;">
                   <el-row :gutter="20">
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="圆角半径">
                         <el-slider v-model="cornerRadius" :min="0" :max="20" :step="1" show-input />
                       </el-form-item>
                     </el-col>
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="边框宽度">
                         <el-slider v-model="borderWidth" :min="0" :max="20" :step="1" show-input />
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row :gutter="20">
-                    <el-col :span="12">
+                    <el-col :xs="24" :sm="12" :md="12">
                       <el-form-item label="边框颜色">
                         <el-color-picker v-model="borderColor" />
                       </el-form-item>
@@ -137,13 +137,13 @@
                     </el-col>
                   </el-row>
                 </div>
-                
+
                 <el-button type="primary" @click="beautifyQrCode" :loading="beautifying">
                   {{ beautifying ? '美化中...' : '美化二维码' }}
                 </el-button>
               </el-card>
             </el-col>
-            <el-col :span="12">
+            <el-col :xs="24" :sm="24" :md="12">
               <el-card class="output-card">
                 <template #header>
                   <div class="card-header">
@@ -165,17 +165,21 @@
         </div>
       </el-tab-pane>
     </el-tabs>
-  </div>
+  </ToolPage>
 </template>
 
 <script>
-import { UploadFilled } from '@element-plus/icons-vue'
+import { UploadFilled, Crop } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
+import ToolPage from '@/components/ToolPage.vue'
 
 export default {
   name: 'QrTools',
   components: {
-    UploadFilled
+    UploadFilled,
+    Crop,
+    ToolPage
   },
   data() {
     return {
@@ -187,7 +191,7 @@ export default {
       qrBackground: '#FFFFFF',
       generatedQrCode: '',
       generating: false,
-      
+
       // 美化二维码相关数据
       uploadedQrCode: '',
       beautifiedQrCode: '',
@@ -203,29 +207,23 @@ export default {
     handleTabChange(tab) {
       this.activeTab = tab
     },
-    
+
     async generateQrCode() {
       if (!this.generateContent) {
         ElMessage.warning('请输入要生成二维码的内容')
         return
       }
-      
+
       this.generating = true
       try {
-        const response = await fetch('/api/qr-tools/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            content: this.generateContent,
-            size: this.qrSize,
-            color: this.qrColor,
-            background: this.qrBackground
-          })
+        const response = await axios.post('/api/qr-tools/generate', {
+          content: this.generateContent,
+          size: this.qrSize,
+          color: this.qrColor,
+          background: this.qrBackground
         })
-        
-        const result = await response.json()
+
+        const result = response.data
         if (result.success) {
           this.generatedQrCode = result.qr_code
           ElMessage.success('二维码生成成功')
@@ -238,30 +236,24 @@ export default {
         this.generating = false
       }
     },
-    
+
     async beautifyQrCode() {
       if (!this.uploadedQrCode) {
         ElMessage.warning('请先上传二维码图片')
         return
       }
-      
+
       this.beautifying = true
       try {
-        const response = await fetch('/api/qr-tools/beautify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            qr_code: this.uploadedQrCode,
-            border_color: this.borderColor,
-            border_width: this.borderWidth,
-            corner_radius: this.cornerRadius,
-            logo: this.logoBase64 || undefined
-          })
+        const response = await axios.post('/api/qr-tools/beautify', {
+          qr_code: this.uploadedQrCode,
+          border_color: this.borderColor,
+          border_width: this.borderWidth,
+          corner_radius: this.cornerRadius,
+          logo: this.logoBase64 || undefined
         })
-        
-        const result = await response.json()
+
+        const result = response.data
         if (result.success) {
           this.beautifiedQrCode = result.beautified_qr_code
           ElMessage.success('二维码美化成功')
@@ -274,59 +266,54 @@ export default {
         this.beautifying = false
       }
     },
-    
+
     handleQrUpload(file) {
-      // 检查file对象是否存在raw属性
       if (!file || !file.raw) {
         ElMessage.error('文件上传失败：无效的文件对象')
         return
       }
-      
+
       const reader = new FileReader()
       reader.onload = (e) => {
-        // 将图片转换为base64
         const img = new Image()
         img.onload = () => {
-          // 创建canvas来获取图片数据
           const canvas = document.createElement('canvas')
           const ctx = canvas.getContext('2d')
           canvas.width = img.width
           canvas.height = img.height
           ctx.drawImage(img, 0, 0)
-          
-          // 转换为base64
+
           this.uploadedQrCode = canvas.toDataURL('image/png').split(',')[1]
           ElMessage.success('二维码上传成功')
         }
-        img.onerror = (err) => {
+        img.onerror = () => {
           ElMessage.error('图片加载失败')
         }
         img.src = e.target.result
       }
-      reader.onerror = (err) => {
+      reader.onerror = () => {
         ElMessage.error('文件读取失败')
       }
       reader.readAsDataURL(file.raw)
     },
-    
+
     handleLogoUpload(file) {
       const reader = new FileReader()
       reader.onload = (e) => {
         this.logoPreview = e.target.result
-        // 将logo转换为base64（去除data:image部分）
         this.logoBase64 = e.target.result.split(',')[1]
       }
       reader.readAsDataURL(file.raw)
     },
-    
+
     downloadQrCode() {
       this.downloadImage(this.generatedQrCode, 'qrcode.png')
     },
-    
+
     downloadBeautifiedQrCode() {
       this.downloadImage(this.beautifiedQrCode, 'beautified_qrcode.png')
     },
-    
+
     downloadImage(base64Data, filename) {
       const link = document.createElement('a')
       link.href = 'data:image/png;base64,' + base64Data
@@ -338,10 +325,6 @@ export default {
 </script>
 
 <style scoped>
-.qr-tools {
-  padding: 20px;
-}
-
 .tool-container {
   margin-top: 20px;
 }
@@ -352,11 +335,7 @@ export default {
 }
 
 .card-header {
-  font-weight: bold;
-}
-
-.config-section {
-  margin: 20px 0;
+  font-weight: 600;
 }
 
 .qr-result {
@@ -365,24 +344,35 @@ export default {
 
 .qr-result img {
   max-width: 100%;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  border: 1px solid var(--dt-border-light);
+  border-radius: var(--dt-radius-sm);
 }
 
 .no-result {
   text-align: center;
-  color: #999;
+  color: var(--dt-text-secondary);
   padding: 40px 0;
 }
 
 .logo-preview {
-  margin-top: 10px;
+  margin-top: var(--dt-spacing-sm);
 }
 
 .logo-preview img {
   max-width: 100px;
   max-height: 100px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  border: 1px solid var(--dt-border-light);
+  border-radius: var(--dt-radius-sm);
+}
+
+@media (max-width: 768px) {
+  .tool-container {
+    margin-top: var(--dt-spacing-sm);
+  }
+
+  .input-card,
+  .output-card {
+    margin-bottom: var(--dt-spacing-md);
+  }
 }
 </style>

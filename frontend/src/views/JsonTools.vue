@@ -1,187 +1,178 @@
 <template>
-  <div class="json-tools">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><DocumentCopy /></el-icon>
-          <span>JSON工具</span>
+  <ToolPage title="JSON工具" :icon="DocumentCopy">
+    <el-tabs v-model="activeTab" @tab-click="handleTabClick">
+      <!-- 格式化 -->
+      <el-tab-pane label="格式化" name="format">
+        <ToolSection
+          input-label="输入JSON"
+          output-label="格式化结果"
+          action-text="格式化"
+          :loading="formatting"
+          @submit="formatJson"
+        >
+          <template #input>
+            <el-input
+              v-model="formatInput"
+              type="textarea"
+              :rows="10"
+              placeholder="请输入JSON字符串..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="formatOutput"
+              type="textarea"
+              :rows="10"
+              readonly
+              placeholder="格式化后的JSON将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+
+      <!-- 压缩 -->
+      <el-tab-pane label="压缩" name="minify">
+        <ToolSection
+          input-label="输入JSON"
+          output-label="压缩结果"
+          action-text="压缩"
+          :loading="minifying"
+          @submit="minifyJson"
+        >
+          <template #input>
+            <el-input
+              v-model="minifyInput"
+              type="textarea"
+              :rows="10"
+              placeholder="请输入JSON字符串..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="minifyOutput"
+              type="textarea"
+              :rows="10"
+              readonly
+              placeholder="压缩后的JSON将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+
+      <!-- 验证 -->
+      <el-tab-pane label="验证" name="validate">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">输入JSON</h4>
+            <el-input
+              v-model="validateInput"
+              type="textarea"
+              :rows="10"
+              placeholder="请输入JSON字符串..."
+              clearable
+            />
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="validateJson" :loading="validating">
+              验证
+            </el-button>
+          </div>
+          <div class="output-section">
+            <h4 class="section-title">验证结果</h4>
+            <div class="validation-result">
+              <el-alert
+                v-if="validationResult"
+                :title="validationResult.valid ? '验证成功' : '验证失败'"
+                :type="validationResult.valid ? 'success' : 'error'"
+                :description="validationResult.message || validationResult.error"
+                show-icon
+              />
+              <pre v-if="validationResult && validationResult.parsed_data" class="parsed-data">
+                {{ JSON.stringify(validationResult.parsed_data, null, 2) }}
+              </pre>
+            </div>
+          </div>
         </div>
-      </template>
+      </el-tab-pane>
 
-      <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-        <!-- 格式化 -->
-        <el-tab-pane label="格式化" name="format">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入JSON</h4>
-              <el-input
-                v-model="formatInput"
-                type="textarea"
-                :rows="10"
-                placeholder="请输入JSON字符串..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="formatJson" :loading="formatting">
-                格式化
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>格式化结果</h4>
-              <el-input
-                v-model="formatOutput"
-                type="textarea"
-                :rows="10"
-                readonly
-                placeholder="格式化后的JSON将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
+      <!-- 转义 -->
+      <el-tab-pane label="转义" name="escape">
+        <ToolSection
+          input-label="输入文本"
+          output-label="转义结果"
+          action-text="转义"
+          :loading="escaping"
+          @submit="escapeJson"
+        >
+          <template #input>
+            <el-input
+              v-model="escapeInput"
+              type="textarea"
+              :rows="10"
+              placeholder="请输入要转义的文本..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="escapeOutput"
+              type="textarea"
+              :rows="10"
+              readonly
+              placeholder="转义后的字符串将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
 
-        <!-- 压缩 -->
-        <el-tab-pane label="压缩" name="minify">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入JSON</h4>
-              <el-input
-                v-model="minifyInput"
-                type="textarea"
-                :rows="10"
-                placeholder="请输入JSON字符串..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="minifyJson" :loading="minifying">
-                压缩
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>压缩结果</h4>
-              <el-input
-                v-model="minifyOutput"
-                type="textarea"
-                :rows="10"
-                readonly
-                placeholder="压缩后的JSON将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 验证 -->
-        <el-tab-pane label="验证" name="validate">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入JSON</h4>
-              <el-input
-                v-model="validateInput"
-                type="textarea"
-                :rows="10"
-                placeholder="请输入JSON字符串..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="validateJson" :loading="validating">
-                验证
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>验证结果</h4>
-              <div class="validation-result">
-                <el-alert
-                  v-if="validationResult"
-                  :title="validationResult.valid ? '验证成功' : '验证失败'"
-                  :type="validationResult.valid ? 'success' : 'error'"
-                  :description="validationResult.message || validationResult.error"
-                  show-icon
-                />
-                <pre v-if="validationResult && validationResult.parsed_data" class="parsed-data">
-                  {{ JSON.stringify(validationResult.parsed_data, null, 2) }}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 转义 -->
-        <el-tab-pane label="转义" name="escape">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入文本</h4>
-              <el-input
-                v-model="escapeInput"
-                type="textarea"
-                :rows="10"
-                placeholder="请输入要转义的文本..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="escapeJson" :loading="escaping">
-                转义
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>转义结果</h4>
-              <el-input
-                v-model="escapeOutput"
-                type="textarea"
-                :rows="10"
-                readonly
-                placeholder="转义后的字符串将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 反转义 -->
-        <el-tab-pane label="反转义" name="unescape">
-          <div class="tool-section">
-            <div class="input-section">
-              <h4>输入JSON字符串</h4>
-              <el-input
-                v-model="unescapeInput"
-                type="textarea"
-                :rows="10"
-                placeholder="请输入JSON字符串..."
-                clearable
-              />
-            </div>
-            <div class="action-section">
-              <el-button type="primary" @click="unescapeJson" :loading="unescaping">
-                反转义
-              </el-button>
-            </div>
-            <div class="output-section">
-              <h4>反转义结果</h4>
-              <el-input
-                v-model="unescapeOutput"
-                type="textarea"
-                :rows="10"
-                readonly
-                placeholder="反转义后的文本将显示在这里..."
-              />
-            </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-    </el-card>
-  </div>
+      <!-- 反转义 -->
+      <el-tab-pane label="反转义" name="unescape">
+        <ToolSection
+          input-label="输入JSON字符串"
+          output-label="反转义结果"
+          action-text="反转义"
+          :loading="unescaping"
+          @submit="unescapeJson"
+        >
+          <template #input>
+            <el-input
+              v-model="unescapeInput"
+              type="textarea"
+              :rows="10"
+              placeholder="请输入JSON字符串..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <el-input
+              v-model="unescapeOutput"
+              type="textarea"
+              :rows="10"
+              readonly
+              placeholder="反转义后的文本将显示在这里..."
+            />
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+    </el-tabs>
+  </ToolPage>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
 import { DocumentCopy } from '@element-plus/icons-vue'
 import axios from 'axios'
+import ToolPage from '@/components/ToolPage.vue'
+import ToolSection from '@/components/ToolSection.vue'
 
 export default {
   name: 'JsonTools',
   components: {
-    DocumentCopy
+    DocumentCopy,
+    ToolPage,
+    ToolSection
   },
   data() {
     return {
@@ -346,56 +337,18 @@ export default {
 </script>
 
 <style scoped>
-.json-tools {
-  padding: 20px;
-}
-
-.tool-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input-section, .output-section {
-  flex: 1;
-}
-
-.input-section h4, .output-section h4 {
-  margin-bottom: 10px;
-  color: #333;
-  font-weight: bold;
-}
-
-.action-section {
-  text-align: center;
-}
-
 .validation-result {
-  margin-top: 10px;
+  margin-top: var(--dt-spacing-sm);
 }
 
 .parsed-data {
-  background-color: #f5f5f5;
-  padding: 10px;
-  border-radius: 4px;
-  margin-top: 10px;
+  background-color: var(--dt-bg-section);
+  padding: var(--dt-spacing-sm);
+  border-radius: var(--dt-radius-sm);
+  margin-top: var(--dt-spacing-sm);
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 300px;
   overflow-y: auto;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-}
-
-.card-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.card-header span {
-  font-weight: bold;
 }
 </style>
