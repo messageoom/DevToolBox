@@ -40,10 +40,14 @@ Thumbs.db
 # Database files
 *.db
 
-# Test files (if temporary or generated)
-test*
-*test
-*test*
+# Test artifacts
+test-results/
+coverage/
+.coverage
+htmlcov/
+
+# Built frontend assets (generated during build)
+backend/static/frontend/
 
 # GitHub Releases files
 Releases/

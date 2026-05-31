@@ -322,10 +322,6 @@ export default {
   border-radius: 8px;
 }
 
-html.dark .filter-section {
-  background-color: #2d2d2d;
-}
-
 .search-input {
   width: 300px;
   margin-bottom: 15px;
@@ -341,10 +337,6 @@ html.dark .filter-section {
 .filter-label {
   font-weight: bold;
   color: #333;
-}
-
-html.dark .filter-label {
-  color: #e5eaf3;
 }
 
 .filter-group {
@@ -375,10 +367,6 @@ html.dark .filter-label {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-html.dark .algorithm-card:hover {
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
-}
-
 .algorithm-card.active {
   border-color: #409eff;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
@@ -407,10 +395,6 @@ html.dark .algorithm-card:hover {
   color: #333;
 }
 
-html.dark .algorithm-name {
-  color: #e5eaf3;
-}
-
 .algorithm-tags {
   display: flex;
   justify-content: center;
@@ -423,10 +407,6 @@ html.dark .algorithm-name {
   font-size: 12px;
   color: #666;
   line-height: 1.4;
-}
-
-html.dark .algorithm-description {
-  color: #a3a6ad;
 }
 
 @media (max-width: 768px) {

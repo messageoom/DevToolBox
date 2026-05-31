@@ -1,5 +1,13 @@
 from flask import Blueprint, request, jsonify
 import json
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 json_tools_bp = Blueprint('json_tools', __name__)
 
@@ -32,7 +40,7 @@ def format_json():
             'position': e.pos if hasattr(e, 'pos') else None
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @json_tools_bp.route('/minify', methods=['POST'])
 def minify_json():
@@ -63,7 +71,7 @@ def minify_json():
             'position': e.pos if hasattr(e, 'pos') else None
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @json_tools_bp.route('/validate', methods=['POST'])
 def validate_json():
@@ -95,7 +103,7 @@ def validate_json():
             'position': e.pos if hasattr(e, 'pos') else None
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @json_tools_bp.route('/escape', methods=['POST'])
 def escape_json():
@@ -116,7 +124,7 @@ def escape_json():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @json_tools_bp.route('/unescape', methods=['POST'])
 def unescape_json():
@@ -146,4 +154,4 @@ def unescape_json():
             'position': e.pos if hasattr(e, 'pos') else None
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)

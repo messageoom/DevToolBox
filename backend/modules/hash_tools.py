@@ -1,6 +1,12 @@
 from flask import Blueprint, request, jsonify
 import hashlib
 import hmac
+import logging
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+logger = logging.getLogger(__name__)
 
 # 尝试导入额外的哈希库
 try:
@@ -25,9 +31,9 @@ try:
 except:
     HAS_SM3 = False
 
-print(f"HAS_BLAKE3: {HAS_BLAKE3}")
-print(f"blake3 module: {blake3}")
-print(f"HAS_SM3: {HAS_SM3}")
+logger.debug(f"HAS_BLAKE3: {HAS_BLAKE3}")
+logger.debug(f"blake3 module: {blake3}")
+logger.debug(f"HAS_SM3: {HAS_SM3}")
 
 hash_tools_bp = Blueprint('hash_tools', __name__)
 
@@ -50,17 +56,17 @@ SUPPORTED_ALGORITHMS = {
 # 动态添加SM3算法（如果可用）
 if HAS_SM3:
     SUPPORTED_ALGORITHMS['sm3'] = lambda: hashlib.new('sm3')
-    print("Added SM3 to SUPPORTED_ALGORITHMS")
+    logger.debug("Added SM3 to SUPPORTED_ALGORITHMS")
 
 # 动态添加BLAKE3算法（如果可用）
-print(f"Adding BLAKE3: HAS_BLAKE3={HAS_BLAKE3}, blake3 is not None={blake3 is not None}")
+logger.debug(f"Adding BLAKE3: HAS_BLAKE3={HAS_BLAKE3}, blake3 is not None={blake3 is not None}")
 if HAS_BLAKE3 and blake3 is not None:
     SUPPORTED_ALGORITHMS['blake3'] = lambda: blake3.blake3()
-    print("Added BLAKE3 to SUPPORTED_ALGORITHMS")
+    logger.debug("Added BLAKE3 to SUPPORTED_ALGORITHMS")
 else:
-    print("BLAKE3 not added to SUPPORTED_ALGORITHMS")
+    logger.debug("BLAKE3 not added to SUPPORTED_ALGORITHMS")
 
-print(f"Final SUPPORTED_ALGORITHMS keys: {list(SUPPORTED_ALGORITHMS.keys())}")
+logger.debug(f"Final SUPPORTED_ALGORITHMS keys: {list(SUPPORTED_ALGORITHMS.keys())}")
 
 @hash_tools_bp.route('/algorithms', methods=['GET'])
 def get_algorithms():
@@ -83,9 +89,9 @@ def generate_hash():
         encoding = data.get('encoding', 'utf-8')
 
         # 调试信息
-        print(f"Requested algorithm: {algorithm}")
-        print(f"Supported algorithms: {list(SUPPORTED_ALGORITHMS.keys())}")
-        print(f"Algorithm in supported: {algorithm in SUPPORTED_ALGORITHMS}")
+        logger.debug(f"Requested algorithm: {algorithm}")
+        logger.debug(f"Supported algorithms: {list(SUPPORTED_ALGORITHMS.keys())}")
+        logger.debug(f"Algorithm in supported: {algorithm in SUPPORTED_ALGORITHMS}")
 
         if algorithm not in SUPPORTED_ALGORITHMS:
             return jsonify({'error': f'不支持的算法: {algorithm}'}), 400
@@ -109,7 +115,7 @@ def generate_hash():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/generate-file', methods=['POST'])
 def generate_file_hash():
@@ -128,10 +134,15 @@ def generate_file_hash():
             return jsonify({'error': f'不支持的算法: {algorithm}'}), 400
 
         try:
-            # 生成文件哈希
+            # 生成文件哈希 (streaming to avoid loading entire file into memory)
             hash_obj = SUPPORTED_ALGORITHMS[algorithm]()
-            file_content = file.read()
-            hash_obj.update(file_content)
+            file_size = 0
+            while True:
+                chunk = file.read(8192)
+                if not chunk:
+                    break
+                hash_obj.update(chunk)
+                file_size += len(chunk)
             hash_value = hash_obj.hexdigest()
 
             return jsonify({
@@ -140,15 +151,15 @@ def generate_file_hash():
                 'algorithm': algorithm,
                 'hash': hash_value,
                 'length': len(hash_value),
-                'file_size': len(file_content),
+                'file_size': file_size,
                 'mime_type': file.mimetype or 'application/octet-stream'
             }), 200
 
         except Exception as e:
-            return jsonify({'error': f'文件处理错误: {str(e)}'}), 500
+            return safe_error(e)
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/verify', methods=['POST'])
 def verify_hash():
@@ -188,7 +199,7 @@ def verify_hash():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/hmac', methods=['POST'])
 def generate_hmac():
@@ -229,7 +240,7 @@ def generate_hmac():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/pbkdf2', methods=['POST'])
 def generate_pbkdf2():
@@ -245,6 +256,10 @@ def generate_pbkdf2():
         iterations = data.get('iterations', 100000)
         dklen = data.get('dklen')  # 派生密钥长度
         encoding = data.get('encoding', 'utf-8')
+
+        # DoS prevention: clamp iterations and dklen
+        iterations = max(1000, min(500000, iterations))
+        dklen = max(16, min(128, dklen or 32))
 
         if algorithm not in SUPPORTED_ALGORITHMS:
             return jsonify({'error': f'不支持的算法: {algorithm}'}), 400
@@ -275,7 +290,7 @@ def generate_pbkdf2():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/bcrypt', methods=['POST'])
 def generate_bcrypt():
@@ -289,6 +304,7 @@ def generate_bcrypt():
 
         password = data['password']
         rounds = data.get('rounds', 12)
+        rounds = max(4, min(14, rounds or 12))
         encoding = data.get('encoding', 'utf-8')
 
         try:
@@ -308,9 +324,9 @@ def generate_bcrypt():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except ImportError:
-        return jsonify({'error': 'bcrypt模块未安装，请安装bcrypt'}), 500
+        return safe_error(ImportError('bcrypt模块未安装，请安装bcrypt'))
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @hash_tools_bp.route('/bcrypt/verify', methods=['POST'])
 def verify_bcrypt():
@@ -344,6 +360,6 @@ def verify_bcrypt():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except ImportError:
-        return jsonify({'error': 'bcrypt模块未安装，请安装bcrypt'}), 500
+        return safe_error(ImportError('bcrypt模块未安装，请安装bcrypt'))
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)

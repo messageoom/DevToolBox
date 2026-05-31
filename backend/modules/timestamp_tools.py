@@ -1,6 +1,14 @@
 from flask import Blueprint, request, jsonify
 import time
 import datetime
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 timestamp_tools_bp = Blueprint('timestamp_tools', __name__)
 
@@ -85,7 +93,7 @@ def get_current_timestamp():
             'current_timezone': str(local_tz)
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/convert', methods=['POST'])
 def convert_timestamp():
@@ -130,7 +138,7 @@ def convert_timestamp():
             return jsonify({'error': f'时间戳格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/parse', methods=['POST'])
 def parse_datetime():
@@ -168,7 +176,7 @@ def parse_datetime():
             return jsonify({'error': f'日期时间格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/calculate', methods=['POST'])
 def calculate_time():
@@ -221,7 +229,7 @@ def calculate_time():
             return jsonify({'error': f'时间戳格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/difference', methods=['POST'])
 def calculate_time_difference():
@@ -272,7 +280,7 @@ def calculate_time_difference():
             return jsonify({'error': f'时间格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/add-time', methods=['POST'])
 def add_time():
@@ -336,7 +344,7 @@ def add_time():
             return jsonify({'error': f'时间格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/business-days', methods=['POST'])
 def calculate_business_days():
@@ -394,7 +402,7 @@ def calculate_business_days():
             return jsonify({'error': f'日期格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @timestamp_tools_bp.route('/batch-calculate', methods=['POST'])
 def batch_calculate():
@@ -491,7 +499,7 @@ def batch_calculate():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 def _format_time_difference(time_diff):
     """格式化时间差为人类可读的字符串"""

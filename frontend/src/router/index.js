@@ -1,23 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import FileUpload from '../views/FileUpload.vue'
-import FileCategory from '../views/FileCategory.vue'
-import JsonTools from '../views/JsonTools.vue'
-import YamlTools from '../views/YamlTools.vue'
-import Base64Tools from '../views/Base64Tools.vue'
-import HashTools from '../views/HashTools.vue'
-import UrlTools from '../views/UrlTools.vue'
-import TimestampTools from '../views/TimestampTools.vue'
-import TimeCalculator from '../views/TimeCalculator.vue'
-import MarkdownTools from '../views/MarkdownTools.vue'
-import MarkdownEditor from '../views/MarkdownEditor.vue'
-import DataConversion from '../views/DataConversion.vue'
-import QrTools from '../views/QrTools.vue'
-import CryptoTools from '../views/CryptoTools.vue'
-import CryptoMainMenu from '../views/CryptoMainMenu.vue'
-import TestCryptoAPI from '../views/TestCryptoAPI.vue'
-// 导入PDF帮助页面
-import PdfHelp from '../views/PdfHelp.vue'
+
+// Lazy-loaded route components grouped by chunk
+const JsonTools = () => import(/* webpackChunkName: "data-tools" */ '../views/JsonTools.vue')
+const YamlTools = () => import(/* webpackChunkName: "data-tools" */ '../views/YamlTools.vue')
+const MarkdownTools = () => import(/* webpackChunkName: "data-tools" */ '../views/MarkdownTools.vue')
+const MarkdownEditor = () => import(/* webpackChunkName: "data-tools" */ '../views/MarkdownEditor.vue')
+
+const HashTools = () => import(/* webpackChunkName: "crypto-tools" */ '../views/HashTools.vue')
+const CryptoTools = () => import(/* webpackChunkName: "crypto-tools" */ '../views/CryptoTools.vue')
+const CryptoMainMenu = () => import(/* webpackChunkName: "crypto-tools" */ '../views/CryptoMainMenu.vue')
+
+const Base64Tools = () => import(/* webpackChunkName: "encoding-tools" */ '../views/Base64Tools.vue')
+const UrlTools = () => import(/* webpackChunkName: "encoding-tools" */ '../views/UrlTools.vue')
+
+const TimestampTools = () => import(/* webpackChunkName: "time-tools" */ '../views/TimestampTools.vue')
+const TimeCalculator = () => import(/* webpackChunkName: "time-tools" */ '../views/TimeCalculator.vue')
+
+const FileUpload = () => import(/* webpackChunkName: "file-tools" */ '../views/FileUpload.vue')
+const FileCategory = () => import(/* webpackChunkName: "file-tools" */ '../views/FileCategory.vue')
+
+const DataConversion = () => import(/* webpackChunkName: "misc-tools" */ '../views/DataConversion.vue')
+const QrTools = () => import(/* webpackChunkName: "misc-tools" */ '../views/QrTools.vue')
+const PdfHelp = () => import(/* webpackChunkName: "misc-tools" */ '../views/PdfHelp.vue')
 
 const routes = [
   {
@@ -101,12 +106,6 @@ const routes = [
     name: 'CryptoMainMenu',
     component: CryptoMainMenu
   },
-  {
-    path: '/test-crypto-api',
-    name: 'TestCryptoAPI',
-    component: TestCryptoAPI
-  },
-  // 添加PDF帮助页面路由
   {
     path: '/pdf-help',
     name: 'PdfHelp',

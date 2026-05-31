@@ -55,6 +55,7 @@ import {
   Calendar,
   Crop
 } from '@element-plus/icons-vue'
+import { toolCategories } from '../data/toolCategories'
 
 export default {
   name: 'MobileHome',
@@ -78,50 +79,7 @@ export default {
   data() {
     return {
       activeNames: [],
-      toolCategories: [
-        {
-          id: 'file',
-          name: '文件工具',
-          description: '文件上传、管理与处理',
-          icon: 'FolderOpened',
-          route: '/file-upload'
-        },
-        {
-          id: 'crypto',
-          name: '加密工具',
-          description: '哈希算法、对称与非对称加密',
-          icon: 'Key',
-          route: '/crypto-main-menu'
-        },
-        {
-          id: 'data',
-          name: '数据工具',
-          description: '数据格式转换与处理',
-          icon: 'DocumentCopy',
-          route: '/json-tools'
-        },
-        {
-          id: 'encoding',
-          name: '编码工具',
-          description: '各种编码解码工具',
-          icon: 'Lock',
-          route: '/base64-tools'
-        },
-        {
-          id: 'time',
-          name: '时间工具',
-          description: '时间戳与日期时间处理',
-          icon: 'Clock',
-          route: '/timestamp-tools'
-        },
-        {
-          id: 'other',
-          name: '其他工具',
-          description: '二维码生成等其他实用工具',
-          icon: 'Crop',
-          route: '/qr-tools'
-        }
-      ]
+      toolCategories
     }
   },
   methods: {
