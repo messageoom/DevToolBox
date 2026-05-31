@@ -67,6 +67,7 @@ exe = EXE(
     a.datas,
     [],
     name='DevToolBox',
+    icon='frontend/public/favicon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
