@@ -51,6 +51,295 @@
         </ToolSection>
       </el-tab-pane>
 
+      <el-tab-pane label="解析URL" name="parse">
+        <ToolSection
+          input-label="输入URL"
+          output-label="解析结果"
+          action-text="解析"
+          :loading="parsing"
+          :has-output="!!parseResult"
+          @submit="parseUrl"
+        >
+          <template #input>
+            <el-input
+              v-model="parseInput"
+              placeholder="请输入要解析的URL，例如: https://example.com:8080/path?key=value#section..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <div v-if="parseResult" class="parse-result">
+              <el-descriptions title="URL组件" :column="2" border>
+                <el-descriptions-item label="Scheme">{{ parseResult.scheme || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Netloc">{{ parseResult.netloc || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Hostname">{{ parseResult.hostname || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Port">{{ parseResult.port || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Path">{{ parseResult.path || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Params">{{ parseResult.params || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Query">{{ parseResult.query || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Fragment">{{ parseResult.fragment || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Username">{{ parseResult.username || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Password">{{ parseResult.password || '-' }}</el-descriptions-item>
+              </el-descriptions>
+              <div v-if="parseResult.query_params && Object.keys(parseResult.query_params).length > 0" class="query-params-section">
+                <h5>Query参数</h5>
+                <el-table :data="parseQueryParamsList" border stripe>
+                  <el-table-column prop="key" label="参数名" />
+                  <el-table-column prop="value" label="参数值" />
+                </el-table>
+              </div>
+            </div>
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+
+      <el-tab-pane label="构建URL" name="build">
+        <div class="tool-section">
+          <div class="input-section">
+            <h4 class="section-title">URL组件</h4>
+            <div class="build-form">
+              <div class="build-form-row">
+                <label class="build-label">Scheme:</label>
+                <el-select v-model="buildScheme" placeholder="选择协议" style="width: 150px;">
+                  <el-option label="http" value="http"></el-option>
+                  <el-option label="https" value="https"></el-option>
+                  <el-option label="ftp" value="ftp"></el-option>
+                </el-select>
+              </div>
+              <div class="build-form-row">
+                <label class="build-label">Netloc:</label>
+                <el-input v-model="buildNetloc" placeholder="例如: example.com:8080" clearable />
+              </div>
+              <div class="build-form-row">
+                <label class="build-label">Path:</label>
+                <el-input v-model="buildPath" placeholder="例如: /api/users" clearable />
+              </div>
+              <div class="build-form-row">
+                <label class="build-label">Params:</label>
+                <el-input v-model="buildParams" placeholder="参数" clearable />
+              </div>
+              <div class="build-form-row">
+                <label class="build-label">Query:</label>
+                <el-input v-model="buildQuery" placeholder="查询字符串" clearable />
+              </div>
+              <div class="build-form-row">
+                <label class="build-label">Fragment:</label>
+                <el-input v-model="buildFragment" placeholder="锚点" clearable />
+              </div>
+              <div class="query-params-builder">
+                <h5>Query参数列表</h5>
+                <div v-for="(param, index) in buildQueryParams" :key="index" class="header-item">
+                  <el-input
+                    v-model="param.key"
+                    placeholder="参数名"
+                    style="width: 40%;"
+                  />
+                  <el-input
+                    v-model="param.value"
+                    placeholder="参数值"
+                    style="width: 40%; margin-left: 10px;"
+                  />
+                  <el-button
+                    type="danger"
+                    size="small"
+                    @click="removeBuildQueryParam(index)"
+                    style="margin-left: 10px;"
+                    :disabled="buildQueryParams.length === 1"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button type="primary" size="small" @click="addBuildQueryParam" style="margin-top: 10px;">
+                  添加参数
+                </el-button>
+              </div>
+            </div>
+          </div>
+          <div class="action-section">
+            <el-button type="primary" @click="buildUrl" :loading="building">
+              构建URL
+            </el-button>
+          </div>
+          <div v-if="buildResult" class="output-section">
+            <h4 class="section-title">构建结果</h4>
+            <el-input
+              v-model="buildResult"
+              readonly
+              placeholder="构建的URL将显示在这里..."
+            />
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="验证URL" name="validate">
+        <ToolSection
+          input-label="输入URL"
+          output-label="验证结果"
+          action-text="验证"
+          :loading="validating"
+          :has-output="!!validateResult"
+          @submit="validateUrl"
+        >
+          <template #input>
+            <el-input
+              v-model="validateInput"
+              placeholder="请输入要验证的URL..."
+              clearable
+            />
+          </template>
+          <template #output>
+            <div v-if="validateResult" class="validate-result">
+              <el-alert
+                :title="validateResult.valid ? 'URL有效' : 'URL无效'"
+                :type="validateResult.valid ? 'success' : 'error'"
+                :description="validateResult.valid ? '' : (validateResult.error || '格式不正确')"
+                show-icon
+                :closable="false"
+                style="margin-bottom: 15px;"
+              />
+              <div v-if="validateResult.valid" class="validate-detail">
+                <el-descriptions title="URL信息" :column="2" border>
+                  <el-descriptions-item label="Scheme">{{ validateResult.scheme || '-' }}</el-descriptions-item>
+                  <el-descriptions-item label="Netloc">{{ validateResult.netloc || '-' }}</el-descriptions-item>
+                  <el-descriptions-item label="是否HTTPS">
+                    <el-tag :type="validateResult.is_https ? 'success' : 'info'" size="small">
+                      {{ validateResult.is_https ? '是' : '否' }}
+                    </el-tag>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="包含端口">
+                    <el-tag :type="validateResult.has_port ? 'success' : 'info'" size="small">
+                      {{ validateResult.has_port ? '是' : '否' }}
+                    </el-tag>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="包含查询参数">
+                    <el-tag :type="validateResult.has_query ? 'success' : 'info'" size="small">
+                      {{ validateResult.has_query ? '是' : '否' }}
+                    </el-tag>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="包含锚点">
+                    <el-tag :type="validateResult.has_fragment ? 'success' : 'info'" size="small">
+                      {{ validateResult.has_fragment ? '是' : '否' }}
+                    </el-tag>
+                  </el-descriptions-item>
+                </el-descriptions>
+              </div>
+            </div>
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+
+      <el-tab-pane label="提取链接" name="extract-links">
+        <ToolSection
+          input-label="输入文本"
+          output-label="提取结果"
+          action-text="提取链接"
+          :loading="extractingLinks"
+          :has-output="!!extractedLinks.length"
+          @submit="extractLinks"
+        >
+          <template #input>
+            <el-input
+              v-model="extractInput"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入包含链接的文本内容..."
+            />
+          </template>
+          <template #output>
+            <div v-if="extractedLinks.length" class="extract-result">
+              <el-alert
+                :title="'共提取到 ' + extractedLinks.length + ' 个链接'"
+                type="success"
+                show-icon
+                :closable="false"
+                style="margin-bottom: 15px;"
+              />
+              <el-table :data="extractedLinksTable" border stripe>
+                <el-table-column prop="index" label="序号" width="80" />
+                <el-table-column prop="url" label="URL">
+                  <template #default="scope">
+                    <a :href="scope.row.url" target="_blank" rel="noopener noreferrer" class="link-text">{{ scope.row.url }}</a>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </template>
+        </ToolSection>
+      </el-tab-pane>
+
+      <el-tab-pane label="Query编解码" name="query-codec">
+        <div class="tool-section">
+          <div class="input-section">
+            <el-tabs v-model="queryCodecTab" type="border-card">
+              <el-tab-pane label="编码" name="encode">
+                <h4 class="section-title">Query编码</h4>
+                <div class="query-codec-params">
+                  <div v-for="(param, index) in queryEncodeParams" :key="index" class="header-item">
+                    <el-input
+                      v-model="param.key"
+                      placeholder="参数名"
+                      style="width: 40%;"
+                    />
+                    <el-input
+                      v-model="param.value"
+                      placeholder="参数值"
+                      style="width: 40%; margin-left: 10px;"
+                    />
+                    <el-button
+                      type="danger"
+                      size="small"
+                      @click="removeQueryEncodeParam(index)"
+                      style="margin-left: 10px;"
+                      :disabled="queryEncodeParams.length === 1"
+                    >
+                      删除
+                    </el-button>
+                  </div>
+                  <el-button type="primary" size="small" @click="addQueryEncodeParam" style="margin-top: 10px;">
+                    添加参数
+                  </el-button>
+                </div>
+                <div class="action-section">
+                  <el-button type="primary" @click="encodeQuery" :loading="encodingQuery">
+                    编码
+                  </el-button>
+                </div>
+                <div v-if="queryEncodeResult" class="output-section">
+                  <h4 class="section-title">编码结果</h4>
+                  <el-input
+                    v-model="queryEncodeResult"
+                    readonly
+                    placeholder="编码结果将显示在这里..."
+                  />
+                </div>
+              </el-tab-pane>
+
+              <el-tab-pane label="解码" name="decode">
+                <h4 class="section-title">Query解码</h4>
+                <el-input
+                  v-model="queryDecodeInput"
+                  placeholder="请输入要解码的查询字符串，例如: key1=value1&key2=value2..."
+                  clearable
+                  style="margin-bottom: 15px;"
+                />
+                <div class="action-section">
+                  <el-button type="primary" @click="decodeQuery" :loading="decodingQuery">
+                    解码
+                  </el-button>
+                </div>
+                <div v-if="queryDecodeResult.length" class="output-section">
+                  <h4 class="section-title">解码结果</h4>
+                  <el-table :data="queryDecodeResult" border stripe>
+                    <el-table-column prop="key" label="参数名" />
+                    <el-table-column prop="value" label="参数值" />
+                  </el-table>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+      </el-tab-pane>
+
       <el-tab-pane label="转HAR" name="to-har">
         <div class="tool-section">
           <div class="input-section">
@@ -402,6 +691,37 @@ export default {
       decodeInput: '',
       decodeOutput: '',
       decoding: false,
+      // 解析URL
+      parseInput: '',
+      parseResult: null,
+      parsing: false,
+      // 构建URL
+      buildScheme: 'https',
+      buildNetloc: '',
+      buildPath: '',
+      buildParams: '',
+      buildQuery: '',
+      buildFragment: '',
+      buildQueryParams: [{ key: '', value: '' }],
+      buildResult: '',
+      building: false,
+      // 验证URL
+      validateInput: '',
+      validateResult: null,
+      validating: false,
+      // 提取链接
+      extractInput: '',
+      extractedLinks: [],
+      extractingLinks: false,
+      // Query编解码
+      queryCodecTab: 'encode',
+      queryEncodeParams: [{ key: '', value: '' }],
+      queryEncodeResult: '',
+      encodingQuery: false,
+      queryDecodeInput: '',
+      queryDecodeResult: [],
+      decodingQuery: false,
+      // 转HAR
       harInput: '',
       harOutput: '',
       harMethod: 'GET',
@@ -411,6 +731,7 @@ export default {
       curlCommand: '',
       currentHarData: null,
       showCurlDialog: false,
+      // API请求
       apiUrl: '',
       apiMethod: 'GET',
       apiHeaders: [{ name: '', value: '' }],
@@ -419,12 +740,22 @@ export default {
       responseBodyText: '',
       responseTab: 'body',
       sendingRequest: false,
+      // Curl请求
       curlParsed: null,
       curlResponse: null,
       curlResponseBodyText: '',
       curlResponseTab: 'body',
       parsingCurl: false,
       executingCurl: false
+    }
+  },
+  computed: {
+    parseQueryParamsList() {
+      if (!this.parseResult || !this.parseResult.query_params) return []
+      return Object.entries(this.parseResult.query_params).map(([key, value]) => ({ key, value }))
+    },
+    extractedLinksTable() {
+      return this.extractedLinks.map((url, index) => ({ index: index + 1, url }))
     }
   },
   methods: {
@@ -475,6 +806,194 @@ export default {
         ElMessage.error('解码失败: ' + error.response?.data?.error || error.message)
       } finally {
         this.decoding = false
+      }
+    },
+
+    async parseUrl() {
+      if (!this.parseInput.trim()) {
+        ElMessage.warning('请输入要解析的URL')
+        return
+      }
+
+      this.parsing = true
+      try {
+        const response = await axios.post('/api/url-tools/parse', {
+          url: this.parseInput
+        })
+
+        if (response.data.success) {
+          this.parseResult = response.data
+          ElMessage.success('解析成功')
+        } else {
+          ElMessage.error(response.data.error || '解析失败')
+        }
+      } catch (error) {
+        ElMessage.error('解析失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.parsing = false
+      }
+    },
+
+    async buildUrl() {
+      this.building = true
+      try {
+        const params = {}
+        this.buildQueryParams.forEach(param => {
+          if (param.key.trim()) {
+            params[param.key.trim()] = param.value
+          }
+        })
+
+        const response = await axios.post('/api/url-tools/build', {
+          scheme: this.buildScheme,
+          netloc: this.buildNetloc,
+          path: this.buildPath,
+          params: this.buildParams,
+          query: this.buildQuery,
+          fragment: this.buildFragment,
+          query_params: params
+        })
+
+        if (response.data.success) {
+          this.buildResult = response.data.url
+          ElMessage.success('构建成功')
+        } else {
+          ElMessage.error(response.data.error || '构建失败')
+        }
+      } catch (error) {
+        ElMessage.error('构建失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.building = false
+      }
+    },
+
+    addBuildQueryParam() {
+      this.buildQueryParams.push({ key: '', value: '' })
+    },
+
+    removeBuildQueryParam(index) {
+      if (this.buildQueryParams.length > 1) {
+        this.buildQueryParams.splice(index, 1)
+      }
+    },
+
+    async validateUrl() {
+      if (!this.validateInput.trim()) {
+        ElMessage.warning('请输入要验证的URL')
+        return
+      }
+
+      this.validating = true
+      try {
+        const response = await axios.post('/api/url-tools/validate', {
+          url: this.validateInput
+        })
+
+        if (response.data.success) {
+          this.validateResult = response.data
+          ElMessage.success(response.data.valid ? 'URL有效' : 'URL无效')
+        } else {
+          ElMessage.error(response.data.error || '验证失败')
+        }
+      } catch (error) {
+        ElMessage.error('验证失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.validating = false
+      }
+    },
+
+    async extractLinks() {
+      if (!this.extractInput.trim()) {
+        ElMessage.warning('请输入要提取链接的文本')
+        return
+      }
+
+      this.extractingLinks = true
+      try {
+        const response = await axios.post('/api/url-tools/extract-links', {
+          text: this.extractInput
+        })
+
+        if (response.data.success) {
+          this.extractedLinks = response.data.links || []
+          ElMessage.success('提取成功，共找到 ' + this.extractedLinks.length + ' 个链接')
+        } else {
+          ElMessage.error(response.data.error || '提取失败')
+        }
+      } catch (error) {
+        ElMessage.error('提取失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.extractingLinks = false
+      }
+    },
+
+    async encodeQuery() {
+      const params = {}
+      let hasParams = false
+      this.queryEncodeParams.forEach(param => {
+        if (param.key.trim()) {
+          params[param.key.trim()] = param.value
+          hasParams = true
+        }
+      })
+
+      if (!hasParams) {
+        ElMessage.warning('请至少输入一个参数')
+        return
+      }
+
+      this.encodingQuery = true
+      try {
+        const response = await axios.post('/api/url-tools/encode-query', {
+          params: params
+        })
+
+        if (response.data.success) {
+          this.queryEncodeResult = response.data.query_string
+          ElMessage.success('编码成功')
+        } else {
+          ElMessage.error(response.data.error || '编码失败')
+        }
+      } catch (error) {
+        ElMessage.error('编码失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.encodingQuery = false
+      }
+    },
+
+    addQueryEncodeParam() {
+      this.queryEncodeParams.push({ key: '', value: '' })
+    },
+
+    removeQueryEncodeParam(index) {
+      if (this.queryEncodeParams.length > 1) {
+        this.queryEncodeParams.splice(index, 1)
+      }
+    },
+
+    async decodeQuery() {
+      if (!this.queryDecodeInput.trim()) {
+        ElMessage.warning('请输入要解码的查询字符串')
+        return
+      }
+
+      this.decodingQuery = true
+      try {
+        const response = await axios.post('/api/url-tools/decode-query', {
+          query_string: this.queryDecodeInput
+        })
+
+        if (response.data.success) {
+          const decodedParams = response.data.params || {}
+          this.queryDecodeResult = Object.entries(decodedParams).map(([key, value]) => ({ key, value }))
+          ElMessage.success('解码成功')
+        } else {
+          ElMessage.error(response.data.error || '解码失败')
+        }
+      } catch (error) {
+        ElMessage.error('解码失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.decodingQuery = false
       }
     },
 
@@ -885,6 +1404,87 @@ export default {
   font-size: var(--dt-font-size-base);
 }
 
+/* 解析URL样式 */
+.parse-result {
+  margin-top: 10px;
+}
+
+.query-params-section {
+  margin-top: 20px;
+}
+
+.query-params-section h5 {
+  margin: 0 0 10px 0;
+  color: var(--dt-text-primary);
+  font-weight: 600;
+}
+
+/* 构建URL样式 */
+.build-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.build-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.build-label {
+  font-weight: 600;
+  color: var(--dt-text-primary);
+  min-width: 70px;
+  text-align: right;
+}
+
+.query-params-builder {
+  border: 1px solid var(--dt-border-light);
+  border-radius: var(--dt-radius-sm);
+  padding: 15px;
+  background-color: var(--dt-bg-section);
+}
+
+.query-params-builder h5 {
+  margin: 0 0 10px 0;
+  color: var(--dt-text-primary);
+  font-weight: 600;
+}
+
+/* 验证URL样式 */
+.validate-result {
+  margin-top: 10px;
+}
+
+.validate-detail {
+  margin-top: 10px;
+}
+
+/* 提取链接样式 */
+.extract-result {
+  margin-top: 10px;
+}
+
+.link-text {
+  color: var(--el-color-primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.link-text:hover {
+  text-decoration: underline;
+}
+
+/* Query编解码样式 */
+.query-codec-params {
+  border: 1px solid var(--dt-border-light);
+  border-radius: var(--dt-radius-sm);
+  padding: 15px;
+  background-color: var(--dt-bg-section);
+  margin-bottom: 15px;
+}
+
 @media (max-width: 768px) {
   .url-section {
     flex-direction: column;
@@ -909,6 +1509,15 @@ export default {
   .method-section,
   .format-section {
     flex-wrap: wrap;
+  }
+
+  .build-form-row {
+    flex-wrap: wrap;
+  }
+
+  .build-label {
+    min-width: auto;
+    text-align: left;
   }
 }
 </style>

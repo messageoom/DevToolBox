@@ -34,9 +34,7 @@
                   <el-option label="分钟" value="minutes"></el-option>
                   <el-option label="小时" value="hours"></el-option>
                   <el-option label="天" value="days"></el-option>
-                  <el-option label="周" value="weeks"></el-option>
-                  <el-option label="月" value="months"></el-option>
-                  <el-option label="年" value="years"></el-option>
+
                 </el-select>
               </el-col>
             </el-row>

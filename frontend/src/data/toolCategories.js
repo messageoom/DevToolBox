@@ -18,7 +18,7 @@ export const toolCategories = [
     name: '加密工具',
     description: '哈希算法、对称与非对称加密',
     icon: 'Key',
-    route: '/crypto-main-menu',
+    route: '/crypto-tools',
     tools: ['RSA', 'ECC', 'AES', 'ChaCha20', 'SM2', 'SM4', 'MD5', 'SHA256', 'SM3', 'BLAKE3']
   },
   {

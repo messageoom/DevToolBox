@@ -28,7 +28,7 @@
           </div>
           <template #tip>
             <div class="el-upload__tip">
-              支持多种文件格式，单文件最大100MB，总大小最大1GB，最多9个文件
+              支持多种文件格式，单文件最大50MB，最多9个文件
             </div>
           </template>
         </el-upload>
@@ -361,10 +361,10 @@ export default {
     },
 
     beforeUpload(file) {
-      // 检查文件大小（限制为100MB）
-      const isLt100M = file.size / 1024 / 1024 < 100
-      if (!isLt100M) {
-        ElMessage.error('上传文件大小不能超过 100MB!')
+      // 检查文件大小（限制为50MB）
+      const isLt50M = file.size / 1024 / 1024 < 50
+      if (!isLt50M) {
+        ElMessage.error('上传文件大小不能超过 50MB!')
         return false
       }
       // 不返回false，让文件正常添加到列表中

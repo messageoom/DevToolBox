@@ -36,8 +36,8 @@
                 <el-form :model="rsaGenerateForm" label-width="120px">
                   <el-form-item label="密钥长度">
                     <el-select v-model="rsaGenerateForm.keySize">
-                      <el-option label="1024位" :value="1024" />
                       <el-option label="2048位" :value="2048" />
+                      <el-option label="3072位" :value="3072" />
                       <el-option label="4096位" :value="4096" />
                     </el-select>
                   </el-form-item>

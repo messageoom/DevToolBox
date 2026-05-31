@@ -53,7 +53,14 @@ def markdown_to_html():
     </div>
 </body>
 </html>"""
-        return html_template
+        return jsonify({
+            'success': True,
+            'html': html_content,
+            'full_html': html_template,
+            'original_length': len(markdown_text),
+            'html_length': len(html_content),
+            'full_html_length': len(html_template)
+        })
 
     except Exception as e:
         return safe_error(e)
