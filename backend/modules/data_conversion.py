@@ -12,10 +12,17 @@ try:
     from ..utils.path_safety import safe_join, sanitize_filename
     from ..utils.error_handler import safe_error
 except ImportError:
-    from backend.utils.path_safety import safe_join, sanitize_filename
-    from backend.utils.error_handler import safe_error
+    try:
+        from backend.utils.path_safety import safe_join, sanitize_filename
+        from backend.utils.error_handler import safe_error
+    except ImportError:
+        from utils.path_safety import safe_join, sanitize_filename
+        from utils.error_handler import safe_error
 
-from .data_conversion_styles import build_full_html, build_preview_html
+try:
+    from .data_conversion_styles import build_full_html, build_preview_html
+except ImportError:
+    from data_conversion_styles import build_full_html, build_preview_html
 
 logger = logging.getLogger(__name__)
 

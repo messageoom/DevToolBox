@@ -31,8 +31,7 @@ jobs:
 
       - name: Import check
         run: |
-          cd backend
-          python -c "from app import create_app; app = create_app(); print('Flask app created successfully')"
+          PYTHONPATH=. python -c "from backend.app import create_app; app = create_app(); print('Flask app created successfully')"
 
   frontend-build:
     name: Frontend Build

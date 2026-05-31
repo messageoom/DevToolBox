@@ -7,8 +7,12 @@ try:
     from ..utils.path_safety import safe_join, sanitize_filename
     from ..utils.error_handler import safe_error
 except ImportError:
-    from backend.utils.path_safety import safe_join, sanitize_filename
-    from backend.utils.error_handler import safe_error
+    try:
+        from backend.utils.path_safety import safe_join, sanitize_filename
+        from backend.utils.error_handler import safe_error
+    except ImportError:
+        from utils.path_safety import safe_join, sanitize_filename
+        from utils.error_handler import safe_error
 
 logger = logging.getLogger(__name__)
 

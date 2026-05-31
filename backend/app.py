@@ -22,20 +22,36 @@ try:
     from .modules.password_tools import password_tools_bp
     from .modules.apikey_tools import apikey_tools_bp
 except ImportError:
-    from modules.file_upload import file_upload_bp
-    from modules.json_tools import json_tools_bp
-    from modules.yaml_tools import yaml_tools_bp
-    from modules.timestamp_tools import timestamp_tools_bp
-    from modules.base64_tools import base64_tools_bp
-    from modules.hash_tools import hash_tools_bp
-    from modules.url_tools import url_tools_bp
-    from modules.markdown_tools import markdown_tools_bp
-    from modules.data_conversion import data_conversion_bp
-    from modules.qr_tools import qr_tools_bp
-    from modules.crypto_tools import crypto_tools_bp
-    from modules.uuid_tools import uuid_tools_bp
-    from modules.password_tools import password_tools_bp
-    from modules.apikey_tools import apikey_tools_bp
+    try:
+        from modules.file_upload import file_upload_bp
+        from modules.json_tools import json_tools_bp
+        from modules.yaml_tools import yaml_tools_bp
+        from modules.timestamp_tools import timestamp_tools_bp
+        from modules.base64_tools import base64_tools_bp
+        from modules.hash_tools import hash_tools_bp
+        from modules.url_tools import url_tools_bp
+        from modules.markdown_tools import markdown_tools_bp
+        from modules.data_conversion import data_conversion_bp
+        from modules.qr_tools import qr_tools_bp
+        from modules.crypto_tools import crypto_tools_bp
+        from modules.uuid_tools import uuid_tools_bp
+        from modules.password_tools import password_tools_bp
+        from modules.apikey_tools import apikey_tools_bp
+    except ImportError:
+        from backend.modules.file_upload import file_upload_bp
+        from backend.modules.json_tools import json_tools_bp
+        from backend.modules.yaml_tools import yaml_tools_bp
+        from backend.modules.timestamp_tools import timestamp_tools_bp
+        from backend.modules.base64_tools import base64_tools_bp
+        from backend.modules.hash_tools import hash_tools_bp
+        from backend.modules.url_tools import url_tools_bp
+        from backend.modules.markdown_tools import markdown_tools_bp
+        from backend.modules.data_conversion import data_conversion_bp
+        from backend.modules.qr_tools import qr_tools_bp
+        from backend.modules.crypto_tools import crypto_tools_bp
+        from backend.modules.uuid_tools import uuid_tools_bp
+        from backend.modules.password_tools import password_tools_bp
+        from backend.modules.apikey_tools import apikey_tools_bp
 
 def create_app():
     app = Flask(__name__)
