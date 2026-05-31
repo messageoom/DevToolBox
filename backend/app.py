@@ -18,6 +18,9 @@ try:
     from .modules.data_conversion import data_conversion_bp
     from .modules.qr_tools import qr_tools_bp
     from .modules.crypto_tools import crypto_tools_bp
+    from .modules.uuid_tools import uuid_tools_bp
+    from .modules.password_tools import password_tools_bp
+    from .modules.apikey_tools import apikey_tools_bp
 except ImportError:
     from modules.file_upload import file_upload_bp
     from modules.json_tools import json_tools_bp
@@ -30,6 +33,9 @@ except ImportError:
     from modules.data_conversion import data_conversion_bp
     from modules.qr_tools import qr_tools_bp
     from modules.crypto_tools import crypto_tools_bp
+    from modules.uuid_tools import uuid_tools_bp
+    from modules.password_tools import password_tools_bp
+    from modules.apikey_tools import apikey_tools_bp
 
 def create_app():
     app = Flask(__name__)
@@ -61,6 +67,9 @@ def create_app():
     app.register_blueprint(data_conversion_bp, url_prefix='/api/data-conversion')
     app.register_blueprint(qr_tools_bp, url_prefix='/api/qr-tools')
     app.register_blueprint(crypto_tools_bp, url_prefix='/api/crypto-tools')
+    app.register_blueprint(uuid_tools_bp, url_prefix='/api/uuid-tools')
+    app.register_blueprint(password_tools_bp, url_prefix='/api/password-tools')
+    app.register_blueprint(apikey_tools_bp, url_prefix='/api/apikey-tools')
 
     # 前端静态文件服务（打包模式）
     frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')

@@ -21,6 +21,10 @@ const FileCategory = () => import(/* webpackChunkName: "file-tools" */ '../views
 const DataConversion = () => import(/* webpackChunkName: "misc-tools" */ '../views/DataConversion.vue')
 const QrTools = () => import(/* webpackChunkName: "misc-tools" */ '../views/QrTools.vue')
 
+const UuidTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/UuidTools.vue')
+const PasswordTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/PasswordTools.vue')
+const ApiKeyTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/ApiKeyTools.vue')
+
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/file-upload', name: 'FileUpload', component: FileUpload },
@@ -37,6 +41,9 @@ const routes = [
   { path: '/data-conversion', name: 'DataConversion', component: DataConversion },
   { path: '/qr-tools', name: 'QrTools', component: QrTools },
   { path: '/crypto-tools', name: 'CryptoTools', component: CryptoTools },
+  { path: '/uuid-tools', name: 'UuidTools', component: UuidTools },
+  { path: '/password-tools', name: 'PasswordTools', component: PasswordTools },
+  { path: '/apikey-tools', name: 'ApiKeyTools', component: ApiKeyTools },
 ]
 
 const router = createRouter({

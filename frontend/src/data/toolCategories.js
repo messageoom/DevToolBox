@@ -52,5 +52,13 @@ export const toolCategories = [
     icon: 'Crop',
     route: '/qr-tools',
     tools: ['二维码生成', '二维码美化']
+  },
+  {
+    id: 'generator',
+    name: '生成器',
+    description: 'UUID、密码、API Key生成',
+    icon: 'MagicStick',
+    route: '/uuid-tools',
+    tools: ['UUID生成', '密码生成', 'API Key生成']
   }
 ]
