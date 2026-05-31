@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, send_from_directory
+from flask import Flask, Blueprint, send_from_directory, request
 from flask_cors import CORS
 import os
 import logging
@@ -62,10 +62,20 @@ def create_app():
     app.register_blueprint(qr_tools_bp, url_prefix='/api/qr-tools')
     app.register_blueprint(crypto_tools_bp, url_prefix='/api/crypto-tools')
 
+    # 前端静态文件服务（打包模式）
+    frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')
+    if os.path.isdir(frontend_dist):
+        @app.route('/', defaults={'path': ''})
+        @app.route('/<path:path>')
+        def serve_frontend(path):
+            if path and os.path.exists(os.path.join(frontend_dist, path)):
+                return send_from_directory(frontend_dist, path)
+            return send_from_directory(frontend_dist, 'index.html')
+
     # 静态资源缓存头
     @app.after_request
     def add_cache_headers(response):
-        if '/static/frontend/assets/' in response.headers.get('Content-Type', ''):
+        if '/assets/' in request.path:
             response.cache_control.max_age = 31536000
         return response
 
