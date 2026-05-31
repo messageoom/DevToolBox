@@ -1,7 +1,17 @@
 from flask import Blueprint, request, jsonify
 import urllib.parse
-import urllib.request
 import json
+import logging
+import re
+
+try:
+    from ..utils.ssrf_protection import validate_url
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.ssrf_protection import validate_url
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 url_tools_bp = Blueprint('url_tools', __name__)
 
@@ -34,7 +44,7 @@ def encode_url():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/decode', methods=['POST'])
 def decode_url():
@@ -63,7 +73,7 @@ def decode_url():
             return jsonify({'error': f'解码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/parse', methods=['POST'])
 def parse_url():
@@ -104,7 +114,7 @@ def parse_url():
             return jsonify({'error': f'URL解析错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/build', methods=['POST'])
 def build_url():
@@ -155,7 +165,7 @@ def build_url():
             return jsonify({'error': f'URL构建错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/validate', methods=['POST'])
 def validate_url():
@@ -203,51 +213,7 @@ def validate_url():
             }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@url_tools_bp.route('/shorten', methods=['POST'])
-def shorten_url():
-    """URL缩短（模拟）"""
-    try:
-        data = request.get_json()
-        if not data or 'url' not in data:
-            return jsonify({'error': '请提供url字段'}), 400
-
-        url = data['url']
-        service = data.get('service', 'tinyurl')  # 支持的缩短服务
-
-        try:
-            # 验证原始URL
-            parsed = urllib.parse.urlparse(url)
-            if not parsed.scheme or not parsed.netloc:
-                return jsonify({'error': '无效的URL格式'}), 400
-
-            # 这里是模拟的URL缩短服务
-            # 在实际应用中，你需要集成真实的URL缩短服务API
-            import hashlib
-            import base64
-
-            # 生成短链接标识符
-            url_hash = hashlib.md5(url.encode()).digest()
-            short_id = base64.urlsafe_b64encode(url_hash[:6]).decode().rstrip('=')
-
-            # 模拟短链接
-            short_url = f"https://{service}.com/{short_id}"
-
-            return jsonify({
-                'success': True,
-                'original_url': url,
-                'short_url': short_url,
-                'short_id': short_id,
-                'service': service,
-                'note': '这是一个模拟的URL缩短服务，实际应用中需要集成真实的缩短服务API'
-            }), 200
-
-        except Exception as e:
-            return jsonify({'error': f'URL缩短错误: {str(e)}'}), 500
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/extract-links', methods=['POST'])
 def extract_links():
@@ -287,7 +253,7 @@ def extract_links():
             return jsonify({'error': f'链接提取错误: {str(e)}'}), 500
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/encode-query', methods=['POST'])
 def encode_query_params():
@@ -320,7 +286,7 @@ def encode_query_params():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/decode-query', methods=['POST'])
 def decode_query_params():
@@ -350,7 +316,7 @@ def decode_query_params():
             return jsonify({'error': f'解码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/send-request', methods=['POST'])
 def send_request():
@@ -364,6 +330,10 @@ def send_request():
         method = data.get('method', 'GET').upper()
         headers = data.get('headers', {})
         body = data.get('body', '')
+
+        is_valid, msg = validate_url(url)
+        if not is_valid:
+            return jsonify({'error': msg, 'success': False}), 400
 
         try:
             import requests
@@ -439,17 +409,55 @@ def send_request():
                 'success': False,
                 'error': f'请求失败: {str(e)}',
                 'error_type': 'request_error'
-            }), 200
+            }), 502
 
         except Exception as e:
-            return jsonify({
-                'success': False,
-                'error': f'处理请求时出错: {str(e)}',
-                'error_type': 'processing_error'
-            }), 200
+            return safe_error(e, '处理请求时出错')
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
+
+def _parse_curl_command(curl_command):
+    """共享的 curl 命令解析逻辑"""
+    parsed = {
+        'method': 'GET',
+        'url': '',
+        'headers': {},
+        'data': '',
+        'original_command': curl_command
+    }
+
+    if '-X' in curl_command or '--request' in curl_command:
+        method_match = re.search(r'(-X\s+|--request\s+)([A-Z]+)', curl_command)
+        if method_match:
+            parsed['method'] = method_match.group(2)
+    elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
+        parsed['method'] = 'POST'
+
+    url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?[\'"]([^\'"]+)[\'"]', curl_command)
+    if url_match:
+        parsed['url'] = url_match.group(1)
+    else:
+        url_matches = re.findall(r'[\'"](https?://[^\'"]+)[\'"]', curl_command)
+        if url_matches:
+            parsed['url'] = url_matches[-1]
+        else:
+            url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?(\S+)', curl_command)
+            if url_match:
+                parsed['url'] = url_match.group(1)
+
+    header_matches = re.findall(r'(-H\s+|--header\s+)[\'"]([^\'"]+)[\'"]', curl_command)
+    for header_str in header_matches:
+        if ':' in header_str[1]:
+            header_name, header_value = header_str[1].split(':', 1)
+            parsed['headers'][header_name.strip()] = header_value.strip()
+
+    data_match = re.search(r'(-d\s+|--data\s+|--data-raw\s+)[\'"]([^\'"]*)[\'"]', curl_command)
+    if data_match:
+        parsed['data'] = data_match.group(2)
+
+    return parsed
+
 
 @url_tools_bp.route('/parse-curl', methods=['POST'])
 def parse_curl():
@@ -462,70 +470,7 @@ def parse_curl():
         curl_command = data['curl_command'].strip()
 
         try:
-            import re
-
-            # 解析curl命令的基本结构
-            parsed = {
-                'method': 'GET',
-                'url': '',
-                'headers': {},
-                'data': '',
-                'original_command': curl_command
-            }
-
-            # 提取HTTP方法
-            if '-X' in curl_command or '--request' in curl_command:
-                method_match = re.search(r'(-X\s+|--request\s+)([A-Z]+)', curl_command)
-                if method_match:
-                    parsed['method'] = method_match.group(2)
-            elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
-                # 如果有数据参数但没有指定方法，默认使用POST
-                parsed['method'] = 'POST'
-            elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
-                # 如果有数据参数但没有指定方法，默认使用POST
-                parsed['method'] = 'POST'
-            elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
-                # 如果有数据参数但没有指定方法，默认使用POST
-                parsed['method'] = 'POST'
-            elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
-                # 如果有数据参数但没有指定方法，默认使用POST
-                parsed['method'] = 'POST'
-            elif '-d' in curl_command or '--data' in curl_command or '--data-raw' in curl_command:
-                # 如果有数据参数但没有指定方法，默认使用POST
-                parsed['method'] = 'POST'
-
-            # 提取URL - 支持多种格式
-            # 1. 标准格式：curl -X GET "url"
-            # 2. 简写格式：curl "url"
-            # 3. URL在最后的格式：curl -H "..." --data "..." "url"
-
-            # 先尝试标准格式（URL在-X之后）
-            url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?[\'"]([^\'"]+)[\'"]', curl_command)
-            if url_match:
-                parsed['url'] = url_match.group(1)
-            else:
-                # 处理URL在最后的格式
-                # 查找最后一个引号包围的URL
-                url_matches = re.findall(r'[\'"](https?://[^\'"]+)[\'"]', curl_command)
-                if url_matches:
-                    parsed['url'] = url_matches[-1]  # 取最后一个匹配的URL
-                else:
-                    # 处理不带引号的URL
-                    url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?(\S+)', curl_command)
-                    if url_match:
-                        parsed['url'] = url_match.group(1)
-
-            # 提取请求头
-            header_matches = re.findall(r'(-H\s+|--header\s+)[\'"]([^\'"]+)[\'"]', curl_command)
-            for header_str in header_matches:
-                if ':' in header_str[1]:
-                    header_name, header_value = header_str[1].split(':', 1)
-                    parsed['headers'][header_name.strip()] = header_value.strip()
-
-            # 提取请求数据
-            data_match = re.search(r'(-d\s+|--data\s+|--data-raw\s+)[\'"]([^\'"]*)[\'"]', curl_command)
-            if data_match:
-                parsed['data'] = data_match.group(2)
+            parsed = _parse_curl_command(curl_command)
 
             return jsonify({
                 'success': True,
@@ -536,10 +481,10 @@ def parse_curl():
             return jsonify({
                 'success': False,
                 'error': f'解析curl命令失败: {str(e)}'
-            }), 200
+            }), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/execute-curl', methods=['POST'])
 def execute_curl():
@@ -552,61 +497,19 @@ def execute_curl():
         curl_command = data['curl_command'].strip()
 
         try:
-            import re
-            import requests
+            import requests as http_requests
             import time
+            import base64
 
-            # 解析curl命令
-            parsed = {
-                'method': 'GET',
-                'url': '',
-                'headers': {},
-                'data': ''
-            }
-
-            # 提取URL - 支持多种格式
-            # 1. 标准格式：curl -X GET "url"
-            # 2. 简写格式：curl "url"
-            # 3. URL在最后的格式：curl -H "..." --data "..." "url"
-
-            # 先尝试标准格式（URL在-X之后）
-            url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?[\'"]([^\'"]+)[\'"]', curl_command)
-            if url_match:
-                parsed['url'] = url_match.group(1)
-            else:
-                # 处理URL在最后的格式
-                # 查找最后一个引号包围的URL
-                url_matches = re.findall(r'[\'"](https?://[^\'"]+)[\'"]', curl_command)
-                if url_matches:
-                    parsed['url'] = url_matches[-1]  # 取最后一个匹配的URL
-                else:
-                    # 处理不带引号的URL
-                    url_match = re.search(r'curl\s+(?:-X\s+[A-Z]+\s+)?(\S+)', curl_command)
-                    if url_match:
-                        parsed['url'] = url_match.group(1)
+            parsed = _parse_curl_command(curl_command)
 
             if not parsed['url']:
                 return jsonify({'error': '无法从curl命令中提取URL'}), 400
 
-            # 提取HTTP方法
-            if '-X' in curl_command or '--request' in curl_command:
-                method_match = re.search(r'(-X\s+|--request\s+)([A-Z]+)', curl_command)
-                if method_match:
-                    parsed['method'] = method_match.group(2)
+            is_valid, msg = validate_url(parsed['url'])
+            if not is_valid:
+                return jsonify({'error': msg, 'success': False}), 400
 
-            # 提取请求头
-            header_matches = re.findall(r'(-H\s+|--header\s+)[\'"]([^\'"]+)[\'"]', curl_command)
-            for header_str in header_matches:
-                if ':' in header_str[1]:
-                    header_name, header_value = header_str[1].split(':', 1)
-                    parsed['headers'][header_name.strip()] = header_value.strip()
-
-            # 提取请求数据
-            data_match = re.search(r'(-d\s+|--data\s+|--data-raw\s+)[\'"]([^\'"]*)[\'"]', curl_command)
-            if data_match:
-                parsed['data'] = data_match.group(2)
-
-            # 发送请求
             request_data = {
                 'method': parsed['method'],
                 'url': parsed['url'],
@@ -617,16 +520,10 @@ def execute_curl():
             if parsed['data'] and parsed['method'] in ['POST', 'PUT', 'PATCH']:
                 request_data['data'] = parsed['data']
 
-            # 记录请求开始时间
             start_time = time.time()
-
-            # 发送请求
-            response = requests.request(**request_data)
-
-            # 计算响应时间
+            response = http_requests.request(**request_data)
             response_time = time.time() - start_time
 
-            # 构建响应数据
             result = {
                 'success': True,
                 'curl_command': curl_command,
@@ -641,36 +538,28 @@ def execute_curl():
                 }
             }
 
-            # 尝试解析响应内容
             try:
                 content_type = response.headers.get('content-type', '').lower()
 
                 if 'application/json' in content_type:
-                    # 已经是JSON类型，直接解析
                     result['response']['body'] = response.json()
                     result['response']['body_type'] = 'json'
                     result['response']['body_raw'] = response.text
                 elif 'text/' in content_type or 'xml' in content_type:
-                    # 文本类型，先尝试解析为JSON，如果失败则保持原始格式
                     try:
-                        # 尝试解析为JSON
                         json_data = response.json()
                         result['response']['body'] = json_data
                         result['response']['body_type'] = 'json'
                         result['response']['body_raw'] = response.text
                     except (ValueError, TypeError):
-                        # 不是有效的JSON，保持原始文本
                         result['response']['body'] = response.text
                         result['response']['body_type'] = 'raw'
                 else:
-                    # 二进制内容或其他类型
-                    import base64
                     result['response']['body'] = base64.b64encode(response.content).decode()
                     result['response']['body_type'] = 'binary'
                     result['response']['body_raw'] = response.text
 
             except Exception as e:
-                # 解析失败时，尝试检测是否为JSON
                 try:
                     json_data = response.json()
                     result['response']['body'] = json_data
@@ -679,28 +568,22 @@ def execute_curl():
                 except (ValueError, TypeError):
                     result['response']['body'] = response.text
                     result['response']['body_type'] = 'raw'
-                    result['response']['parse_error'] = str(e)
 
             return jsonify(result), 200
 
-        except requests.exceptions.RequestException as e:
-            return jsonify({
-                'success': False,
-                'curl_command': curl_command,
-                'error': f'请求失败: {str(e)}',
-                'error_type': 'request_error'
-            }), 200
-
         except Exception as e:
-            return jsonify({
-                'success': False,
-                'curl_command': curl_command,
-                'error': f'执行curl命令失败: {str(e)}',
-                'error_type': 'execution_error'
-            }), 200
+            import requests as http_requests
+            if isinstance(e, http_requests.exceptions.RequestException):
+                return jsonify({
+                    'success': False,
+                    'curl_command': curl_command,
+                    'error': f'请求失败: {str(e)}',
+                    'error_type': 'request_error'
+                }), 502
+            raise
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/generate-curl', methods=['POST'])
 def generate_curl():
@@ -768,7 +651,7 @@ def generate_curl():
             return jsonify({'error': f'生成curl命令错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @url_tools_bp.route('/to-har', methods=['POST'])
 def url_to_har():
@@ -927,4 +810,4 @@ def url_to_har():
             return jsonify({'error': f'URL转HAR错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)

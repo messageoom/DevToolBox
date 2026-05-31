@@ -4,6 +4,14 @@ from markdown_it import MarkdownIt
 import html
 from bs4 import BeautifulSoup
 import re
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 markdown_tools_bp = Blueprint('markdown_tools', __name__)
 
@@ -18,16 +26,41 @@ def markdown_to_html():
         if not markdown_text.strip():
             return jsonify({'error': 'Markdown文本不能为空'}), 400
 
-        # 使用 markdown-it-py 解析 Markdown，嵌套列表100%兼容
-        md = MarkdownIt()
+        md = MarkdownIt("commonmark", {"breaks": True, "html": False, "linkify": True}).enable(['table', 'strikethrough', 'code', 'fence', 'emphasis', 'list'])
         html_content = md.render(markdown_text)
 
-        # 创建完整的HTML文档，包含样式
+        title = "Markdown 文档"
+        lines = markdown_text.split('\n')
+        for line in lines:
+            if line.strip().startswith('# '):
+                title = line.strip()[2:].strip()
+                break
+
+        css_styles = _get_preview_css()
+        html_template = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{html.escape(title)}</title>
+    <style>
+    {css_styles}
+    </style>
+</head>
+<body>
+    <div class="preview-content">
+    {html_content}
+    </div>
+</body>
+</html>"""
+        return html_template
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
-    code_themes_css = """
+
+def _get_preview_css():
+    return """
     /* 代码主题样式 */
     .code-github pre {
         background-color: #f6f8fa !important;
@@ -505,214 +538,6 @@ def markdown_to_html():
     }
     """
 
-    # 生成文档标题（从第一个标题提取或使用默认标题）
-    title = "Markdown 文档"
-    lines = original_markdown.split('\n')
-    for line in lines:
-        if line.strip().startswith('# '):
-            title = line.strip()[2:].strip()
-            break
-
-    html_template = f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{html.escape(title)}</title>
-    <style>
-    {typography_themes_css}
-    {code_themes_css}
-    {css_styles}
-    </style>
-</head>
-<body class="typography-classic code-github">
-    <div class="preview-content">
-    {html_content}
-    </div>
-</body>
-</html>"""
-    return html_template
-
-
-def parse_list_structure(original_markdown):
-    """解析列表结构"""
-    lines = original_markdown.split('\n')
-    list_items = []
-    indent_stack = []
-
-    for i, line in enumerate(lines):
-        stripped = line.rstrip()
-        if not stripped:
-            continue
-
-        # 计算缩进级别
-        indent_match = re.match(r'^(\s*)', line)
-        indent_level = len(indent_match.group(1)) if indent_match else 0
-
-        # 检查是否是列表项
-        ul_match = re.match(r'^(\s*)[-\*\+]\s+(.+)$', line)
-        ol_match = re.match(r'^(\s*)\d+\.\s+(.+)$', line)
-
-        if ul_match or ol_match:
-            # 计算列表级别 - 更精确的缩进检测
-            list_level = 0
-            if indent_level >= 2:
-                list_level = (indent_level // 2)
-            elif indent_level >= 1:
-                list_level = 1
-
-            # 确定列表类型
-            list_type = 'ul' if ul_match else 'ol'
-            content = ul_match.group(2) if ul_match else ol_match.group(2)
-
-            item = {
-                'level': list_level,
-                'type': list_type,
-                'content': content.strip(),
-                'line_index': i,
-                'children': []
-            }
-
-            # 处理嵌套关系 - 确保正确的父子关系
-            while indent_stack and indent_stack[-1]['level'] >= list_level:
-                indent_stack.pop()
-
-            if indent_stack:
-                indent_stack[-1]['children'].append(item)
-            else:
-                list_items.append(item)
-
-            indent_stack.append(item)
-
-        elif indent_stack and indent_level > indent_stack[-1]['level'] * 2:
-            # 这是列表项的延续内容
-            indent_stack[-1]['content'] += '\n' + stripped.lstrip()
-
-    return list_items
-
-
-def rebuild_html_with_proper_indentation(soup, list_structure):
-    # 重新构建具有正确缩进的HTML
-    def build_list_html(items, level=0):
-        if not items:
-            return ''
-
-        # 按类型分组
-        ul_items = [item for item in items if item['type'] == 'ul']
-        ol_items = [item for item in items if item['type'] == 'ol']
-
-        html_parts = []
-
-        # 处理无序列表
-        if ul_items:
-            li_parts = []
-            for item in ul_items:
-                # 处理内容中的Markdown
-                content_html = markdown.markdown(item['content'], extensions=['extra'])
-
-                # 构建列表项HTML
-                li_html = f'<li>{content_html.strip()}'
-
-                # 添加子列表
-                if item['children']:
-                    child_html = build_list_html(item['children'], level + 1)
-                    if child_html:
-                        li_html += '\n' + child_html
-
-                li_html += '</li>'
-                li_parts.append(li_html)
-
-            # 构建完整的列表
-            list_html = '<ul>\n' + '\n'.join(li_parts) + '\n</ul>'
-            html_parts.append(list_html)
-
-        # 处理有序列表
-        if ol_items:
-            li_parts = []
-            for item in ol_items:
-                # 处理内容中的Markdown
-                content_html = markdown.markdown(item['content'], extensions=['extra'])
-
-                # 构建列表项HTML
-                li_html = f'<li>{content_html.strip()}'
-
-                # 添加子列表
-                if item['children']:
-                    child_html = build_list_html(item['children'], level + 1)
-                    if child_html:
-                        li_html += '\n' + child_html
-
-                li_html += '</li>'
-                li_parts.append(li_html)
-
-            # 构建完整的列表
-            list_html = '<ol>\n' + '\n'.join(li_parts) + '\n</ol>'
-            html_parts.append(list_html)
-
-        return '\n'.join(html_parts)
-
-    # 替换原始的列表HTML
-    for ul in soup.find_all('ul'):
-        ul.decompose()
-    for ol in soup.find_all('ol'):
-        ol.decompose()
-
-    # 添加新的正确缩进的列表
-    if list_structure:
-        new_list_html = build_list_html(list_structure)
-        if new_list_html:
-            # 在适当的位置插入新的列表
-            body = soup.find('body')
-            if body:
-                # 使用BeautifulSoup解析新的HTML并保持格式
-                new_soup = BeautifulSoup(new_list_html, 'html.parser')
-                body.append(new_soup)
-
-    # 返回格式化的HTML
-    return soup.prettify()
-
-
-def post_process_html_lists(html_content):
-    # 后处理HTML以确保列表缩进正确
-    try:
-        soup = BeautifulSoup(html_content, 'html.parser')
-
-        # 处理所有列表项，确保它们有正确的缩进结构
-        def process_list_items(element, depth=0):
-            # 递归处理列表项
-            if element.name in ['ul', 'ol']:
-                # 为列表添加深度类
-                if depth > 0:
-                    element['class'] = element.get('class', []) + [f'list-depth-{depth}']
-
-                # 处理子列表项
-                for li in element.find_all('li', recursive=False):
-                    # 确保列表项有正确的结构
-                    if not li.get('class'):
-                        li['class'] = []
-                    li['class'].append('list-item')
-
-                    # 递归处理嵌套列表
-                    for child in li.find_all(['ul', 'ol'], recursive=False):
-                        process_list_items(child, depth + 1)
-
-                return element
-
-        # 处理所有顶级列表
-        for ul in soup.find_all('ul', recursive=False):
-            process_list_items(ul, 0)
-
-        for ol in soup.find_all('ol', recursive=False):
-            process_list_items(ol, 0)
-
-        # 返回处理后的HTML
-        return str(soup)
-
-    except Exception as e:
-        # 如果处理失败，返回原始内容
-        print(f"列表后处理失败: {e}")
-        return html_content
-
 
 @markdown_tools_bp.route('/to-plain', methods=['POST'])
 def markdown_to_plain():
@@ -744,7 +569,7 @@ def markdown_to_plain():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/escape', methods=['POST'])
 def escape_markdown():
@@ -767,7 +592,7 @@ def escape_markdown():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/unescape', methods=['POST'])
 def unescape_markdown():
@@ -790,7 +615,7 @@ def unescape_markdown():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/extract-links', methods=['POST'])
 def extract_markdown_links():
@@ -824,7 +649,7 @@ def extract_markdown_links():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/extract-images', methods=['POST'])
 def extract_markdown_images():
@@ -859,7 +684,7 @@ def extract_markdown_images():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/table-to-markdown', methods=['POST'])
 def table_to_markdown():
@@ -933,7 +758,7 @@ def table_to_markdown():
             return jsonify({'error': f'HTML解析错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/validate', methods=['POST'])
 def validate_markdown():
@@ -990,7 +815,7 @@ def validate_markdown():
             }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @markdown_tools_bp.route('/stats', methods=['POST'])
 def markdown_stats():
@@ -1038,4 +863,4 @@ def markdown_stats():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)

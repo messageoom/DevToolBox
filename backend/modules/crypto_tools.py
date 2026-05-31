@@ -1,6 +1,14 @@
 from flask import Blueprint, request, jsonify
 import base64
 import json
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 # 尝试导入加密库
 try:
@@ -13,7 +21,7 @@ try:
     HAS_CRYPTOGRAPHY = True
 except ImportError as e:
     HAS_CRYPTOGRAPHY = False
-    print(f"导入cryptography库失败: {e}")
+    logger.debug(f"导入cryptography库失败: {e}")
     rsa = ec = ed25519 = hashes = serialization = asymmetric_padding = None
     algorithms = modes = padding = default_backend = None
 
@@ -33,7 +41,7 @@ try:
             return data.hex()
 except ImportError as e:
     HAS_GMSSL = False
-    print(f"导入gmssl库失败: {e}")
+    logger.debug(f"导入gmssl库失败: {e}")
     sm2 = sm4 = None
     # 提供兼容性函数
     def hex_to_bytes(hex_str):
@@ -85,7 +93,11 @@ def generate_rsa_keypair():
     try:
         data = request.get_json()
         key_size = data.get('key_size', 2048)
-        
+
+        # 验证key_size
+        if key_size not in [2048, 3072, 4096]:
+            return jsonify({'error': 'key_size必须为2048、3072或4096'}), 400
+
         # 生成私钥
         private_key = rsa.generate_private_key(
             public_exponent=65537,

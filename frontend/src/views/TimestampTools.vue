@@ -43,7 +43,7 @@
               />
 
               <el-row :gutter="20">
-                <el-col :span="12" v-for="(timezone, key) in currentTimestamp.timezones" :key="key">
+                <el-col :xs="24" :sm="24" :md="12" v-for="(timezone, key) in currentTimestamp.timezones" :key="key">
                   <el-card :class="{'current-timezone-card': key === 'local'}" style="margin-bottom: 15px;">
                     <template #header>
                       <div class="timezone-header">

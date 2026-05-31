@@ -1,6 +1,14 @@
 from flask import Blueprint, request, jsonify
 import base64
 import binascii
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 base64_tools_bp = Blueprint('base64_tools', __name__)
 
@@ -32,7 +40,7 @@ def encode_base64():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/decode', methods=['POST'])
 def decode_base64():
@@ -64,7 +72,7 @@ def decode_base64():
             return jsonify({'error': f'解码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/encode-file', methods=['POST'])
 def encode_file_base64():
@@ -95,7 +103,7 @@ def encode_file_base64():
             return jsonify({'error': f'文件处理错误: {str(e)}'}), 500
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/decode-file', methods=['POST'])
 def decode_file_base64():
@@ -140,7 +148,7 @@ def decode_file_base64():
             return jsonify({'error': f'Base64格式错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/validate', methods=['POST'])
 def validate_base64():
@@ -172,7 +180,7 @@ def validate_base64():
             }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/url-safe/encode', methods=['POST'])
 def encode_url_safe_base64():
@@ -202,7 +210,7 @@ def encode_url_safe_base64():
             return jsonify({'error': f'编码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @base64_tools_bp.route('/url-safe/decode', methods=['POST'])
 def decode_url_safe_base64():
@@ -234,4 +242,4 @@ def decode_url_safe_base64():
             return jsonify({'error': f'解码错误: {str(e)}'}), 400
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)

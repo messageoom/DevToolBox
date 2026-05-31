@@ -187,7 +187,7 @@
               <h4>响应结果</h4>
               <div class="response-info">
                 <el-row :gutter="20">
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>状态码:</strong>
                       <span :class="getStatusClass(apiResponse.response.status_code)">
@@ -195,19 +195,19 @@
                       </span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>响应时间:</strong>
                       <span>{{ apiResponse.response.response_time }}ms</span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>内容长度:</strong>
                       <span>{{ apiResponse.response.content_length }} bytes</span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>内容类型:</strong>
                       <span>{{ apiResponse.response.body_type || 'unknown' }}</span>
@@ -284,12 +284,12 @@
               <h4>解析结果</h4>
               <div class="parsed-info">
                 <el-row :gutter="20">
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="parsed-item">
                       <strong>方法:</strong> {{ curlParsed.method }}
                     </div>
                   </el-col>
-                  <el-col :span="18">
+                  <el-col :xs="24" :sm="24" :md="18">
                     <div class="parsed-item">
                       <strong>URL:</strong> {{ curlParsed.url }}
                     </div>
@@ -314,7 +314,7 @@
               <h4>执行结果</h4>
               <div class="response-info">
                 <el-row :gutter="20">
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>状态码:</strong>
                       <span :class="getStatusClass(curlResponse.response.status_code)">
@@ -322,19 +322,19 @@
                       </span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>响应时间:</strong>
                       <span>{{ curlResponse.response.response_time }}ms</span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>内容长度:</strong>
                       <span>{{ curlResponse.response.content_length }} bytes</span>
                     </div>
                   </el-col>
-                  <el-col :span="6">
+                  <el-col :xs="12" :sm="12" :md="6">
                     <div class="response-item">
                       <strong>内容类型:</strong>
                       <span>{{ curlResponse.response.body_type || 'unknown' }}</span>

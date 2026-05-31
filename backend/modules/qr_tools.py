@@ -4,6 +4,14 @@ import io
 import base64
 from PIL import Image, ImageDraw, ImageFont
 import json
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 qr_tools_bp = Blueprint('qr_tools', __name__)
 
@@ -16,7 +24,7 @@ def generate_qr():
             return jsonify({'error': '请提供content字段'}), 400
 
         content = data['content']
-        size = data.get('size', 300)  # 二维码大小，默认300px
+        size = max(100, min(4096, data.get('size', 300)))  # 二维码大小，默认300px
         color = data.get('color', 'black')  # 二维码颜色，默认黑色
         background = data.get('background', 'white')  # 背景颜色，默认白色
 
@@ -53,10 +61,10 @@ def generate_qr():
             }), 200
 
         except Exception as e:
-            return jsonify({'error': f'生成二维码失败: {str(e)}'}), 500
+            return safe_error(e)
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @qr_tools_bp.route('/beautify', methods=['POST'])
 def beautify_qr():
@@ -69,7 +77,7 @@ def beautify_qr():
         qr_base64 = data['qr_code']
         logo = data.get('logo')  # 可选的logo base64
         border_color = data.get('border_color', 'black')  # 边框颜色
-        border_width = data.get('border_width', 0)  # 边框宽度
+        border_width = max(0, min(100, data.get('border_width', 0)))  # 边框宽度
         corner_radius = data.get('corner_radius', 0)  # 圆角半径
 
         try:
@@ -103,10 +111,10 @@ def beautify_qr():
             }), 200
 
         except Exception as e:
-            return jsonify({'error': f'美化二维码失败: {str(e)}'}), 500
+            return safe_error(e)
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 def add_rounded_corners(img, radius):
     """添加圆角"""

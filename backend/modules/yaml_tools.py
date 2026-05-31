@@ -1,6 +1,14 @@
 from flask import Blueprint, request, jsonify
 import yaml
 from yaml import YAMLError
+import logging
+
+try:
+    from ..utils.error_handler import safe_error
+except ImportError:
+    from backend.utils.error_handler import safe_error
+
+logger = logging.getLogger(__name__)
 
 yaml_tools_bp = Blueprint('yaml_tools', __name__)
 
@@ -32,7 +40,7 @@ def format_yaml():
             'error': f'YAML格式错误: {str(e)}'
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @yaml_tools_bp.route('/minify', methods=['POST'])
 def minify_yaml():
@@ -62,7 +70,7 @@ def minify_yaml():
             'error': f'YAML格式错误: {str(e)}'
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @yaml_tools_bp.route('/validate', methods=['POST'])
 def validate_yaml():
@@ -93,7 +101,7 @@ def validate_yaml():
             'error': f'YAML格式错误: {str(e)}'
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @yaml_tools_bp.route('/to-json', methods=['POST'])
 def yaml_to_json():
@@ -124,7 +132,7 @@ def yaml_to_json():
             'error': f'YAML格式错误: {str(e)}'
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
 
 @yaml_tools_bp.route('/from-json', methods=['POST'])
 def json_to_yaml():
@@ -155,4 +163,4 @@ def json_to_yaml():
             'error': f'JSON格式错误: {str(e)}'
         }), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error(e)
