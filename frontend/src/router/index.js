@@ -28,8 +28,6 @@ const ApiKeyTools = () => import(/* webpackChunkName: "generator-tools" */ '../v
 const JwtDebugger = () => import(/* webpackChunkName: "dev-tools" */ '../views/JwtDebugger.vue')
 const DiffTool = () => import(/* webpackChunkName: "dev-tools" */ '../views/DiffTool.vue')
 
-const Settings = () => import(/* webpackChunkName: "settings" */ '../views/Settings.vue')
-
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/file-upload', name: 'FileUpload', component: FileUpload },
@@ -51,7 +49,6 @@ const routes = [
   { path: '/apikey-tools', name: 'ApiKeyTools', component: ApiKeyTools },
   { path: '/jwt-debugger', name: 'JwtDebugger', component: JwtDebugger },
   { path: '/diff-tool', name: 'DiffTool', component: DiffTool },
-  { path: '/settings', name: 'Settings', component: Settings },
 ]
 
 const router = createRouter({
