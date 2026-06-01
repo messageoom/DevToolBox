@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="PDF生成错误"
+    :title="$t('tools.markdownEditor.pdfError.title')"
     width="500px"
     :before-close="handleClose"
   >
@@ -10,24 +10,24 @@
         <el-icon color="#F56C6C" size="48"><Warning /></el-icon>
       </div>
       <div class="error-content">
-        <h3>PDF生成失败</h3>
+        <h3>{{ $t('tools.markdownEditor.pdfError.generateFailed') }}</h3>
         <p class="error-message">{{ formattedErrorMessage }}</p>
         <div class="solution">
-          <h4>解决方案：</h4>
+          <h4>{{ $t('tools.markdownEditor.pdfError.solution') }}</h4>
           <ol>
-            <li>安装wkhtmltopdf工具（推荐）</li>
-            <li>或配置WeasyPrint依赖</li>
+            <li>{{ $t('tools.markdownEditor.pdfError.installWkhtmltopdf') }}</li>
+            <li>{{ $t('tools.markdownEditor.pdfError.orWeasyPrint') }}</li>
           </ol>
-          <p>详细安装说明请参考项目文档</p>
+          <p>{{ $t('tools.markdownEditor.pdfError.seeDocs') }}</p>
         </div>
       </div>
     </div>
     
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="viewSolution">
-          查看解决方案
+          {{ $t('tools.markdownEditor.pdfError.viewSolution') }}
         </el-button>
       </span>
     </template>
@@ -38,6 +38,7 @@
 import { ref, computed } from 'vue'
 import { ElDialog, ElIcon, ElButton } from 'element-plus'
 import { Warning } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'PdfErrorDialog',
@@ -59,11 +60,12 @@ export default {
   },
   emits: ['update:modelValue', 'view-solution'],
   setup(props, { emit }) {
+    const { t } = useI18n()
     const visible = ref(props.modelValue)
 
     // 格式化错误信息，提取关键内容
     const formattedErrorMessage = computed(() => {
-      if (!props.errorMessage) return '未知错误'
+      if (!props.errorMessage) return t('tools.markdownEditor.pdfError.unknownError')
       
       // 如果是JSON格式的错误信息，尝试解析
       try {

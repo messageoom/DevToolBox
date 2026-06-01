@@ -1,35 +1,35 @@
 <template>
-  <ToolPage title="数据互转" :icon="Switch">
+  <ToolPage :title="$t('tools.dataConversion.title')" :icon="Switch">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="Markdown转HTML" name="md-to-html">
+      <el-tab-pane :label="$t('tools.dataConversion.tab.mdToHtml')" name="md-to-html">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入Markdown文本</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.inputMarkdown') }}</h4>
             <el-input
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Markdown文本..."
+              :placeholder="$t('tools.dataConversion.label.inputMarkdown')"
               style="width: 100%;"
               @input="updateMdPreview"
             />
           </div>
           <div class="preview-toggle">
-            <el-checkbox v-model="showMdPreview">显示预览</el-checkbox>
+            <el-checkbox v-model="showMdPreview">{{ $t('tools.dataConversion.label.showPreview') }}</el-checkbox>
           </div>
           <div v-if="showMdPreview" class="preview-section">
-            <h4 class="section-title">预览效果</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.preview') }}</h4>
             <!-- eslint-disable-next-line vue/no-v-html -->
             <div class="preview-content" v-html="sanitizedMdPreviewHtml"></div>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertMdToHtml" :loading="converting">
-              转换
+              {{ $t('tools.dataConversion.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.dataConversion.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="htmlOutput">
-            <h4 class="section-title">HTML输出</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.htmlOutput') }}</h4>
             <el-input
               v-model="htmlOutput"
               type="textarea"
@@ -39,52 +39,52 @@
             />
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="2" size="small" border>
-                <el-descriptions-item label="原始长度">
-                  {{ conversionStats.original_length }} 字符
+                <el-descriptions-item :label="$t('tools.dataConversion.label.originalLength')">
+                  {{ conversionStats.original_length }} {{ $t('tools.dataConversion.label.chars') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="输出长度">
-                  {{ conversionStats.html_length }} 字符
+                <el-descriptions-item :label="$t('tools.dataConversion.label.outputLength')">
+                  {{ conversionStats.html_length }} {{ $t('tools.dataConversion.label.chars') }}
                 </el-descriptions-item>
               </el-descriptions>
             </div>
             <div class="action-section" style="margin-top: 15px;">
               <el-button type="primary" @click="downloadHtml">
-                下载HTML文件
+                {{ $t('tools.dataConversion.label.downloadHtml') }}
               </el-button>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="HTML转Markdown" name="html-to-md">
+      <el-tab-pane :label="$t('tools.dataConversion.tab.htmlToMd')" name="html-to-md">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入HTML文本</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.inputHtml') }}</h4>
             <el-input
               v-model="htmlInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入HTML文本..."
+              :placeholder="$t('tools.dataConversion.label.inputHtml')"
               style="width: 100%;"
               @input="updateHtmlPreview"
             />
           </div>
           <div class="preview-toggle">
-            <el-checkbox v-model="showHtmlPreview">显示预览</el-checkbox>
+            <el-checkbox v-model="showHtmlPreview">{{ $t('tools.dataConversion.label.showPreview') }}</el-checkbox>
           </div>
           <div v-if="showHtmlPreview" class="preview-section">
-            <h4 class="section-title">预览效果</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.preview') }}</h4>
             <!-- eslint-disable-next-line vue/no-v-html -->
             <div class="preview-content" v-html="sanitizedHtmlPreviewHtml"></div>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertHtmlToMd" :loading="converting">
-              转换
+              {{ $t('tools.dataConversion.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.dataConversion.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="markdownOutput">
-            <h4 class="section-title">Markdown输出</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.markdownOutput') }}</h4>
             <el-input
               v-model="markdownOutput"
               type="textarea"
@@ -94,61 +94,61 @@
             />
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="2" size="small" border>
-                <el-descriptions-item label="原始长度">
-                  {{ conversionStats.original_length }} 字符
+                <el-descriptions-item :label="$t('tools.dataConversion.label.originalLength')">
+                  {{ conversionStats.original_length }} {{ $t('tools.dataConversion.label.chars') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="输出长度">
-                  {{ conversionStats.markdown_length }} 字符
+                <el-descriptions-item :label="$t('tools.dataConversion.label.outputLength')">
+                  {{ conversionStats.markdown_length }} {{ $t('tools.dataConversion.label.chars') }}
                 </el-descriptions-item>
               </el-descriptions>
             </div>
             <div class="action-section" style="margin-top: 15px;">
               <el-button type="primary" @click="downloadMarkdown">
-                下载Markdown文件
+                {{ $t('tools.dataConversion.label.downloadMarkdown') }}
               </el-button>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="Markdown转PDF" name="md-to-pdf">
+      <el-tab-pane :label="$t('tools.dataConversion.tab.mdToPdf')" name="md-to-pdf">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入Markdown文本</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.inputMarkdown') }}</h4>
             <el-input
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Markdown文本..."
+              :placeholder="$t('tools.dataConversion.label.inputMarkdown')"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertMdToPdf" :loading="converting">
-              生成PDF
+              {{ $t('tools.dataConversion.label.generatePdf') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.dataConversion.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="pdfUrl">
-            <h4 class="section-title">PDF生成成功</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.pdfGenerated') }}</h4>
             <el-alert
-              title="PDF已生成"
+              :title="$t('tools.dataConversion.label.pdfGenerated')"
               type="success"
-              :description="`文件大小: ${pdfSize} bytes`"
+              :description="`${$t('tools.dataConversion.label.fileSize')}: ${pdfSize} bytes`"
               show-icon
               style="margin-bottom: 20px;"
             />
             <el-button type="primary" @click="downloadPdf">
-              下载PDF
+              {{ $t('tools.dataConversion.label.downloadPdf') }}
             </el-button>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="PDF转Markdown" name="pdf-to-md">
+      <el-tab-pane :label="$t('tools.dataConversion.tab.pdfToMd')" name="pdf-to-md">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">上传PDF文件</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.uploadPdf') }}</h4>
             <el-upload
               ref="uploadRef"
               class="upload-demo"
@@ -163,21 +163,21 @@
             >
               <el-icon class="el-icon--upload"><upload-filled /></el-icon>
               <div class="el-upload__text">
-                将PDF文件拖到此处，或<em>点击上传</em>
+                {{ $t('tools.dataConversion.label.pdfDropzone') }}<em>{{ $t('tools.dataConversion.label.pdfUploadHint') }}</em>
               </div>
               <template #tip>
-                <div class="el-upload__tip">只能上传PDF文件，且不超过10MB</div>
+                <div class="el-upload__tip">{{ $t('tools.dataConversion.message.onlyPdfAllowed') }}</div>
               </template>
             </el-upload>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertPdfToMd" :loading="converting" :disabled="!uploadedFile">
-              转换
+              {{ $t('tools.dataConversion.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.dataConversion.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="markdownFromPdf">
-            <h4 class="section-title">Markdown输出</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.markdownOutput') }}</h4>
             <el-input
               v-model="markdownFromPdf"
               type="textarea"
@@ -187,59 +187,59 @@
             />
             <div class="stats" v-if="pdfConversionStats">
               <el-descriptions :column="2" size="small" border>
-                <el-descriptions-item label="页数">
-                  {{ pdfConversionStats.pages }} 页
+                <el-descriptions-item :label="$t('tools.dataConversion.label.pageCount')">
+                  {{ pdfConversionStats.pages }} {{ $t('tools.dataConversion.label.pageUnit') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="字符数">
-                  {{ pdfConversionStats.characters }} 字符
+                <el-descriptions-item :label="$t('tools.dataConversion.label.chars')">
+                  {{ pdfConversionStats.characters }} {{ $t('tools.dataConversion.label.chars') }}
                 </el-descriptions-item>
               </el-descriptions>
             </div>
             <div class="action-section" style="margin-top: 15px;">
               <el-button type="primary" @click="downloadPdfToMdResult">
-                下载Markdown文件
+                {{ $t('tools.dataConversion.label.downloadMarkdown') }}
               </el-button>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="HTML转PDF" name="html-to-pdf">
+      <el-tab-pane :label="$t('tools.dataConversion.tab.htmlToPdf')" name="html-to-pdf">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入HTML文本</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.inputHtml') }}</h4>
             <el-input
               v-model="htmlInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入HTML文本..."
+              :placeholder="$t('tools.dataConversion.label.inputHtml')"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertHtmlToPdf" :loading="converting">
-              生成PDF
+              {{ $t('tools.dataConversion.label.generatePdf') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.dataConversion.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="pdfUrl">
-            <h4 class="section-title">PDF生成成功</h4>
+            <h4 class="section-title">{{ $t('tools.dataConversion.label.pdfGenerated') }}</h4>
             <el-alert
-              title="PDF已生成"
+              :title="$t('tools.dataConversion.label.pdfGenerated')"
               type="success"
-              :description="`文件大小: ${pdfSize} bytes`"
+              :description="`${$t('tools.dataConversion.label.fileSize')}: ${pdfSize} bytes`"
               show-icon
               style="margin-bottom: 20px;"
             />
             <el-button type="primary" @click="downloadPdf">
-              下载PDF
+              {{ $t('tools.dataConversion.label.downloadPdf') }}
             </el-button>
           </div>
         </div>
       </el-tab-pane>
     </el-tabs>
 
-    <!-- PDF错误对话框 -->
+    <!-- PDF Error Dialog -->
     <PdfErrorDialog
       v-model="pdfErrorDialogVisible"
       :error-message="pdfErrorMessage"
@@ -261,6 +261,7 @@ import DOMPurify from 'dompurify'
 import PdfErrorDialog from '@/components/PdfErrorDialog.vue'
 import { useRouter } from 'vue-router'
 import ToolPage from '@/components/ToolPage.vue'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'DataConversion',
@@ -278,7 +279,9 @@ export default {
     }
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'md-to-html',
 
       // Markdown转HTML
@@ -324,20 +327,20 @@ export default {
         try {
           this.mdPreviewHtml = marked.parse(this.markdownInput)
         } catch (e) {
-          this.mdPreviewHtml = '<p class="error">预览解析错误: ' + e.message + '</p>'
+          this.mdPreviewHtml = '<p class="error">' + this.$t('tools.dataConversion.message.previewParseError') + ': ' + e.message + '</p>'
         }
       } else {
-        this.mdPreviewHtml = '<p class="empty-preview">暂无内容，请输入 Markdown 内容</p>'
+        this.mdPreviewHtml = '<p class="empty-preview">' + this.$t('tools.dataConversion.label.emptyMdPreview') + '</p>'
       }
     },
 
     updateHtmlPreview() {
-      this.htmlPreviewHtml = this.htmlInput || '<p class="empty-preview">暂无内容，请输入 HTML 内容</p>'
+      this.htmlPreviewHtml = this.htmlInput || '<p class="empty-preview">' + this.$t('tools.dataConversion.label.emptyHtmlPreview') + '</p>'
     },
 
     async convertMdToHtml() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.dataConversion.message.inputMarkdownRequired'))
         return
       }
 
@@ -353,12 +356,12 @@ export default {
             original_length: response.data.original_length,
             html_length: response.data.html_length
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.dataConversion.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.dataConversion.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -366,7 +369,7 @@ export default {
 
     async convertHtmlToMd() {
       if (!this.htmlInput) {
-        ElMessage.warning('请输入HTML文本')
+        ElMessage.warning(this.$t('tools.dataConversion.message.inputHtmlRequired'))
         return
       }
 
@@ -382,12 +385,12 @@ export default {
             original_length: response.data.original_length,
             markdown_length: response.data.markdown_length
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.dataConversion.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.dataConversion.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -395,7 +398,7 @@ export default {
 
     async convertMdToPdf() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.dataConversion.message.inputMarkdownRequired'))
         return
       }
 
@@ -411,29 +414,29 @@ export default {
           const blob = new Blob([response.data], { type: 'application/pdf' })
           this.pdfUrl = URL.createObjectURL(blob)
           this.pdfSize = response.data.size
-          ElMessage.success('PDF生成成功')
+          ElMessage.success(this.$t('tools.dataConversion.message.pdfSuccess'))
         } else {
-          this.pdfErrorMessage = 'PDF生成失败: 服务器返回错误状态码 ' + response.status
+          this.pdfErrorMessage = this.$t('tools.dataConversion.message.pdfFailStatus') + ' ' + response.status
           this.pdfErrorDialogVisible = true
-          ElMessage.error('PDF生成失败，请查看错误详情')
+          ElMessage.error(this.$t('tools.dataConversion.message.pdfFail'))
         }
       } catch (error) {
-        let errorMessage = 'PDF生成失败'
+        let errorMessage = this.$t('tools.dataConversion.message.pdfFail')
         if (error.response) {
           if (error.response.status) {
-            errorMessage = `PDF生成失败: ${error.response.status} ${error.response.statusText}`
+            errorMessage = this.$t('tools.dataConversion.message.pdfFailStatus') + `: ${error.response.status} ${error.response.statusText}`
           } else {
-            errorMessage = 'PDF生成失败: 服务器响应错误'
+            errorMessage = this.$t('tools.dataConversion.message.pdfFailResponse')
           }
         } else if (error.request) {
-          errorMessage = 'PDF生成失败: 无法连接到服务器'
+          errorMessage = this.$t('tools.dataConversion.message.pdfFailNetwork')
         } else {
-          errorMessage = 'PDF生成失败: ' + (error.message || '未知错误')
+          errorMessage = this.$t('tools.dataConversion.message.pdfFailWithError') + ': ' + (error.message || '')
         }
 
         this.pdfErrorMessage = errorMessage
         this.pdfErrorDialogVisible = true
-        ElMessage.error('PDF生成失败，请查看错误详情')
+        ElMessage.error(this.$t('tools.dataConversion.message.pdfFail'))
       } finally {
         this.converting = false
       }
@@ -454,14 +457,14 @@ export default {
       if (response.success) {
         this.uploadedFile = response.filename
         this.fileList = fileList
-        ElMessage.success('文件上传成功')
+        ElMessage.success(this.$t('tools.dataConversion.message.fileUploadSuccess'))
       } else {
-        ElMessage.error(response.error || '上传失败')
+        ElMessage.error(response.error || this.$t('tools.dataConversion.message.uploadFail'))
       }
     },
 
     handleUploadError(err, file, fileList) {
-      ElMessage.error('上传失败: ' + err.message)
+      ElMessage.error(this.$t('tools.dataConversion.message.uploadFail') + ': ' + err.message)
     },
 
     beforeUpload(file) {
@@ -469,11 +472,11 @@ export default {
       const isLt10M = file.size / 1024 / 1024 < 10
 
       if (!isPdf) {
-        ElMessage.error('只能上传PDF文件!')
+        ElMessage.error(this.$t('tools.dataConversion.message.onlyPdfAllowed'))
         return false
       }
       if (!isLt10M) {
-        ElMessage.error('上传文件大小不能超过10MB!')
+        ElMessage.error(this.$t('tools.dataConversion.message.pdfSizeExceeded'))
         return false
       }
       return true
@@ -481,7 +484,7 @@ export default {
 
     async convertPdfToMd() {
       if (!this.uploadedFile) {
-        ElMessage.warning('请先上传PDF文件')
+        ElMessage.warning(this.$t('tools.dataConversion.message.uploadPdfFirst'))
         return
       }
 
@@ -497,12 +500,12 @@ export default {
             pages: response.data.pages,
             characters: response.data.characters
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.dataConversion.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.dataConversion.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -510,7 +513,7 @@ export default {
 
     async convertHtmlToPdf() {
       if (!this.htmlInput) {
-        ElMessage.warning('请输入HTML文本')
+        ElMessage.warning(this.$t('tools.dataConversion.message.inputHtmlRequired'))
         return
       }
 
@@ -526,29 +529,29 @@ export default {
           const blob = new Blob([response.data], { type: 'application/pdf' })
           this.pdfUrl = URL.createObjectURL(blob)
           this.pdfSize = response.data.size
-          ElMessage.success('PDF生成成功')
+          ElMessage.success(this.$t('tools.dataConversion.message.pdfSuccess'))
         } else {
-          this.pdfErrorMessage = 'PDF生成失败: 服务器返回错误状态码 ' + response.status
+          this.pdfErrorMessage = this.$t('tools.dataConversion.message.pdfFailStatus') + ' ' + response.status
           this.pdfErrorDialogVisible = true
-          ElMessage.error('PDF生成失败，请查看错误详情')
+          ElMessage.error(this.$t('tools.dataConversion.message.pdfFail'))
         }
       } catch (error) {
-        let errorMessage = 'PDF生成失败'
+        let errorMessage = this.$t('tools.dataConversion.message.pdfFail')
         if (error.response) {
           if (error.response.status) {
-            errorMessage = `PDF生成失败: ${error.response.status} ${error.response.statusText}`
+            errorMessage = this.$t('tools.dataConversion.message.pdfFailStatus') + `: ${error.response.status} ${error.response.statusText}`
           } else {
-            errorMessage = 'PDF生成失败: 服务器响应错误'
+            errorMessage = this.$t('tools.dataConversion.message.pdfFailResponse')
           }
         } else if (error.request) {
-          errorMessage = 'PDF生成失败: 无法连接到服务器'
+          errorMessage = this.$t('tools.dataConversion.message.pdfFailNetwork')
         } else {
-          errorMessage = 'PDF生成失败: ' + (error.message || '未知错误')
+          errorMessage = this.$t('tools.dataConversion.message.pdfFailWithError') + ': ' + (error.message || '')
         }
 
         this.pdfErrorMessage = errorMessage
         this.pdfErrorDialogVisible = true
-        ElMessage.error('PDF生成失败，请查看错误详情')
+        ElMessage.error(this.$t('tools.dataConversion.message.pdfFail'))
       } finally {
         this.converting = false
       }
@@ -579,7 +582,7 @@ export default {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown转换结果</title>
+    <title>Markdown Conversion Result</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -879,5 +882,13 @@ export default {
   margin: 0;
   font-size: var(--dt-font-size-base);
   color: var(--dt-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .el-textarea :deep(.el-textarea__inner) { min-height: 120px !important; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+  .el-row { flex-direction: column; }
+  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
 }
 </style>

@@ -1,45 +1,45 @@
 <template>
-  <ToolPage title="二维码工具" :icon="Crop">
+  <ToolPage :title="$t('tools.qr.title')" :icon="Crop">
     <el-tabs v-model="activeTab" class="demo-tabs" @tab-change="handleTabChange">
-      <el-tab-pane label="二维码生成" name="generate">
+      <el-tab-pane :label="$t('tools.qr.tab.generate')" name="generate">
         <div class="tool-container">
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="12">
               <el-card class="input-card">
                 <template #header>
                   <div class="card-header">
-                    <span>输入内容</span>
+                    <span>{{ $t('tools.qr.label.inputContent') }}</span>
                   </div>
                 </template>
                 <el-input
                   v-model="generateContent"
                   type="textarea"
                   :rows="6"
-                  placeholder="请输入要生成二维码的内容，如网址、文本等"
+                  :placeholder="$t('tools.qr.label.qrPlaceholder')"
                 ></el-input>
                 <div class="config-section">
                   <el-row :gutter="20" style="margin-top: 20px;">
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="尺寸">
+                      <el-form-item :label="$t('tools.qr.label.size')">
                         <el-slider v-model="qrSize" :min="100" :max="500" :step="10" show-input />
                       </el-form-item>
                     </el-col>
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="颜色">
+                      <el-form-item :label="$t('tools.qr.label.color')">
                         <el-color-picker v-model="qrColor" />
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row :gutter="20">
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="背景色">
+                      <el-form-item :label="$t('tools.qr.label.bgColor')">
                         <el-color-picker v-model="qrBackground" />
                       </el-form-item>
                     </el-col>
                   </el-row>
                 </div>
                 <el-button type="primary" @click="generateQrCode" :loading="generating">
-                  {{ generating ? '生成中...' : '生成二维码' }}
+                  {{ generating ? $t('tools.qr.label.generating') : $t('tools.qr.label.generateQr') }}
                 </el-button>
               </el-card>
             </el-col>
@@ -47,17 +47,17 @@
               <el-card class="output-card">
                 <template #header>
                   <div class="card-header">
-                    <span>二维码结果</span>
+                    <span>{{ $t('tools.qr.label.qrResult') }}</span>
                   </div>
                 </template>
                 <div class="qr-result" v-if="generatedQrCode">
-                  <img :src="'data:image/png;base64,' + generatedQrCode" alt="二维码" />
+                  <img :src="'data:image/png;base64,' + generatedQrCode" :alt="$t('tools.qr.title')" />
                   <el-button type="success" @click="downloadQrCode" style="margin-top: 20px;">
-                    下载二维码
+                    {{ $t('tools.qr.label.downloadQr') }}
                   </el-button>
                 </div>
                 <div class="no-result" v-else>
-                  <p>请在左侧输入内容并点击生成按钮</p>
+                  <p>{{ $t('tools.qr.label.qrPlaceholder') }}</p>
                 </div>
               </el-card>
             </el-col>
@@ -65,14 +65,14 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="二维码美化" name="beautify">
+      <el-tab-pane :label="$t('tools.qr.tab.beautify')" name="beautify">
         <div class="tool-container">
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="12">
               <el-card class="input-card">
                 <template #header>
                   <div class="card-header">
-                    <span>上传二维码</span>
+                    <span>{{ $t('tools.qr.label.uploadQr') }}</span>
                   </div>
                 </template>
                 <div class="upload-section">
@@ -88,11 +88,11 @@
                   >
                     <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                     <div class="el-upload__text">
-                      将二维码图片拖到此处，或 <em>点击上传</em>
+                      {{ $t('tools.qr.label.uploadDropzone') }}
                     </div>
                     <template #tip>
                       <div class="el-upload__tip">
-                        请上传需要美化的二维码图片，支持PNG、JPG格式
+                        {{ $t('tools.qr.label.uploadHint') }}
                       </div>
                     </template>
                   </el-upload>
@@ -101,26 +101,26 @@
                 <div class="config-section" style="margin-top: 30px;">
                   <el-row :gutter="20">
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="圆角半径">
+                      <el-form-item :label="$t('tools.qr.label.borderRadius')">
                         <el-slider v-model="cornerRadius" :min="0" :max="20" :step="1" show-input />
                       </el-form-item>
                     </el-col>
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="边框宽度">
+                      <el-form-item :label="$t('tools.qr.label.borderWidth')">
                         <el-slider v-model="borderWidth" :min="0" :max="20" :step="1" show-input />
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row :gutter="20">
                     <el-col :xs="24" :sm="12" :md="12">
-                      <el-form-item label="边框颜色">
+                      <el-form-item :label="$t('tools.qr.label.borderColor')">
                         <el-color-picker v-model="borderColor" />
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row :gutter="20">
                     <el-col :span="24">
-                      <el-form-item label="Logo上传">
+                      <el-form-item :label="$t('tools.qr.label.logoUpload')">
                         <el-upload
                           class="logo-upload"
                           action="#"
@@ -128,10 +128,10 @@
                           :show-file-list="false"
                           :on-change="handleLogoUpload"
                         >
-                          <el-button size="small" type="primary">选择Logo</el-button>
+                          <el-button size="small" type="primary">{{ $t('tools.qr.label.selectLogo') }}</el-button>
                         </el-upload>
                         <div v-if="logoPreview" class="logo-preview">
-                          <img :src="logoPreview" alt="Logo预览" />
+                          <img :src="logoPreview" alt="Logo" />
                         </div>
                       </el-form-item>
                     </el-col>
@@ -139,7 +139,7 @@
                 </div>
 
                 <el-button type="primary" @click="beautifyQrCode" :loading="beautifying">
-                  {{ beautifying ? '美化中...' : '美化二维码' }}
+                  {{ beautifying ? $t('tools.qr.label.beautifying') : $t('tools.qr.label.beautifyQr') }}
                 </el-button>
               </el-card>
             </el-col>
@@ -147,17 +147,17 @@
               <el-card class="output-card">
                 <template #header>
                   <div class="card-header">
-                    <span>美化结果</span>
+                    <span>{{ $t('tools.qr.label.beautifyResult') }}</span>
                   </div>
                 </template>
                 <div class="qr-result" v-if="beautifiedQrCode">
-                  <img :src="'data:image/png;base64,' + beautifiedQrCode" alt="美化后的二维码" />
+                  <img :src="'data:image/png;base64,' + beautifiedQrCode" :alt="$t('tools.qr.title')" />
                   <el-button type="success" @click="downloadBeautifiedQrCode" style="margin-top: 20px;">
-                    下载美化后的二维码
+                    {{ $t('tools.qr.label.downloadBeautified') }}
                   </el-button>
                 </div>
                 <div class="no-result" v-else>
-                  <p>请上传二维码图片并设置美化参数</p>
+                  <p>{{ $t('tools.qr.label.beautifyPlaceholder') }}</p>
                 </div>
               </el-card>
             </el-col>
@@ -210,7 +210,7 @@ export default {
 
     async generateQrCode() {
       if (!this.generateContent) {
-        ElMessage.warning('请输入要生成二维码的内容')
+        ElMessage.warning(this.$t('tools.qr.message.inputContentRequired'))
         return
       }
 
@@ -226,12 +226,12 @@ export default {
         const result = response.data
         if (result.success) {
           this.generatedQrCode = result.qr_code
-          ElMessage.success('二维码生成成功')
+          ElMessage.success(this.$t('tools.qr.message.generateSuccess'))
         } else {
-          ElMessage.error(result.error || '生成失败')
+          ElMessage.error(result.error || this.$t('tools.qr.message.generateFail'))
         }
       } catch (error) {
-        ElMessage.error('生成二维码时出错: ' + error.message)
+        ElMessage.error(this.$t('tools.qr.message.generateError') + error.message)
       } finally {
         this.generating = false
       }
@@ -239,7 +239,7 @@ export default {
 
     async beautifyQrCode() {
       if (!this.uploadedQrCode) {
-        ElMessage.warning('请先上传二维码图片')
+        ElMessage.warning(this.$t('tools.qr.message.uploadQrRequired'))
         return
       }
 
@@ -256,12 +256,12 @@ export default {
         const result = response.data
         if (result.success) {
           this.beautifiedQrCode = result.beautified_qr_code
-          ElMessage.success('二维码美化成功')
+          ElMessage.success(this.$t('tools.qr.message.beautifySuccess'))
         } else {
-          ElMessage.error(result.error || '美化失败')
+          ElMessage.error(result.error || this.$t('tools.qr.message.beautifyFail'))
         }
       } catch (error) {
-        ElMessage.error('美化二维码时出错: ' + error.message)
+        ElMessage.error(this.$t('tools.qr.message.beautifyError') + error.message)
       } finally {
         this.beautifying = false
       }
@@ -269,7 +269,7 @@ export default {
 
     handleQrUpload(file) {
       if (!file || !file.raw) {
-        ElMessage.error('文件上传失败：无效的文件对象')
+        ElMessage.error(this.$t('tools.qr.message.invalidFileObject'))
         return
       }
 
@@ -284,15 +284,15 @@ export default {
           ctx.drawImage(img, 0, 0)
 
           this.uploadedQrCode = canvas.toDataURL('image/png').split(',')[1]
-          ElMessage.success('二维码上传成功')
+          ElMessage.success(this.$t('tools.qr.message.uploadSuccess'))
         }
         img.onerror = () => {
-          ElMessage.error('图片加载失败')
+          ElMessage.error(this.$t('tools.qr.message.imageLoadFail'))
         }
         img.src = e.target.result
       }
       reader.onerror = () => {
-        ElMessage.error('文件读取失败')
+        ElMessage.error(this.$t('tools.qr.message.fileReadFail'))
       }
       reader.readAsDataURL(file.raw)
     },

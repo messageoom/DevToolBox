@@ -1,6 +1,6 @@
 {
   "name": "devtoolbox-frontend",
-  "version": "1.0.1",
+  "version": "2.0.2",
   "description": "DevToolBox - 开发工具箱前端",
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "marked": "^16.2.1",
     "pinia": "^2.3.1",
     "vue": "^3.4.0",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

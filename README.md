@@ -8,6 +8,7 @@
 - **隐私优先**：不上传任何数据到外部服务器，无用户追踪
 - **开箱即用**：双击 exe 即可运行，无需安装 Python 或 Node.js
 - **响应式设计**：桌面、平板、手机自适应布局
+- **国际化**：中英双语实时切换，前端 + 原生 GUI + 锁页面全覆盖
 
 ## 功能一览
 
@@ -130,7 +131,7 @@ DevToolBox/
 
 **后端**：Flask 2.3 · Flask-CORS · PyYAML · markdown-it-py · PyCryptodome · cryptography · bcrypt · PyMuPDF · WeasyPrint · Pillow · qrcode
 
-**前端**：Vue 3.4 · Vue Router 4 · Element Plus 2.4 · Pinia · Axios · Vite 5
+**前端**：Vue 3.4 · Vue Router 4 · Element Plus 2.4 · Pinia · vue-i18n 9 · Axios · Vite 5
 
 **安全**：SSRF 防护 · 路径穿越防护 · XSS 过滤 · 输入参数边界校验 · 错误响应脱敏 · 速率限制
 

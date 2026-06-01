@@ -4,12 +4,12 @@
     <div class="editor-header">
       <div class="header-left">
         <el-icon class="editor-icon"><Edit /></el-icon>
-        <span>编辑</span>
+        <span>{{ $t('tools.markdownEditor.editor') }}</span>
       </div>
       <div class="header-right">
         <div class="editor-stats">
-          <span>字符数: {{ stats.characters }}</span>
-          <span>行数: {{ stats.lines }}</span>
+          <span>{{ $t('tools.markdownEditor.characters') }}: {{ stats.characters }}</span>
+          <span>{{ $t('tools.markdownEditor.lines') }}: {{ stats.lines }}</span>
         </div>
       </div>
     </div>
@@ -20,7 +20,7 @@
           ref="editorTextarea"
           :value="content"
           class="editor-textarea"
-          placeholder="在这里输入 Markdown 内容..."
+          :placeholder="$t('tools.markdownEditor.placeholder')"
           @input="$emit('update:content', $event.target.value)"
           @select="$emit('selection-change', $event)"
         ></textarea>

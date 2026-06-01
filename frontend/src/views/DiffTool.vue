@@ -1,49 +1,49 @@
 <template>
-  <ToolPage title="文本对比" :icon="DocumentCopy">
+  <ToolPage :title="$t('tools.diff.title')" :icon="DocumentCopy">
     <div class="diff-tool">
       <!-- Input section -->
       <div class="input-section">
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12">
-            <h4 class="section-title">原始文本</h4>
+            <h4 class="section-title">{{ $t('tools.diff.originalText') }}</h4>
             <el-input
               v-model="oldText"
               type="textarea"
               :rows="10"
-              placeholder="原始文本"
+              :placeholder="$t('tools.diff.placeholder')"
               clearable
             />
           </el-col>
           <el-col :xs="24" :sm="12">
-            <h4 class="section-title">修改后文本</h4>
+            <h4 class="section-title">{{ $t('tools.diff.modifiedText') }}</h4>
             <el-input
               v-model="newText"
               type="textarea"
               :rows="10"
-              placeholder="修改后文本"
+              :placeholder="$t('tools.diff.placeholder')"
               clearable
             />
           </el-col>
         </el-row>
 
         <div class="action-buttons">
-          <el-button type="primary" @click="computeDiff">对比</el-button>
-          <el-button @click="swapTexts">交换</el-button>
-          <el-button @click="clearAll">清空</el-button>
-          <el-button v-if="diffResult.length > 0" @click="copyDiff">复制结果</el-button>
+          <el-button type="primary" @click="computeDiff">{{ $t('tools.diff.compare') }}</el-button>
+          <el-button @click="swapTexts">{{ $t('tools.diff.swap') }}</el-button>
+          <el-button @click="clearAll">{{ $t('tools.diff.clear') }}</el-button>
+          <el-button v-if="diffResult.length > 0" @click="copyDiff">{{ $t('tools.diff.copyResult') }}</el-button>
         </div>
 
         <div class="stats-row" v-if="diffResult.length > 0">
-          <el-tag type="success">新增 {{ stats.added }} 行</el-tag>
-          <el-tag type="danger">删除 {{ stats.removed }} 行</el-tag>
-          <el-tag type="warning">修改 {{ stats.modified }} 行</el-tag>
-          <el-tag type="info">相同 {{ stats.same }} 行</el-tag>
+          <el-tag type="success">{{ $t('tools.diff.addedLines', { count: stats.added }) }}</el-tag>
+          <el-tag type="danger">{{ $t('tools.diff.deletedLines', { count: stats.removed }) }}</el-tag>
+          <el-tag type="warning">{{ $t('tools.diff.modifiedLines', { count: stats.modified }) }}</el-tag>
+          <el-tag type="info">{{ $t('tools.diff.sameLines', { count: stats.same }) }}</el-tag>
         </div>
       </div>
 
       <!-- Diff output tabs -->
       <el-tabs v-model="viewMode" class="diff-tabs">
-        <el-tab-pane label="统一视图" name="unified">
+        <el-tab-pane :label="$t('tools.diff.unifiedView')" name="unified">
           <div class="diff-container" v-if="diffResult.length > 0">
             <div class="diff-scroll-wrapper">
               <div
@@ -58,15 +58,15 @@
               </div>
             </div>
           </div>
-          <el-empty v-else description="请输入文本并点击对比" />
+          <el-empty v-else :description="$t('tools.diff.placeholder')" />
         </el-tab-pane>
 
-        <el-tab-pane label="并排视图" name="side-by-side">
+        <el-tab-pane :label="$t('tools.diff.sideBySideView')" name="side-by-side">
           <div class="side-by-side-container" v-if="diffResult.length > 0">
             <div class="side-by-side-wrapper">
               <!-- Left column: old text -->
               <div class="side-column old-column">
-                <div class="column-header">原始文本</div>
+                <div class="column-header">{{ $t('tools.diff.originalText') }}</div>
                 <div class="column-body">
                   <div
                     v-for="(item, index) in sideBySideLeft"
@@ -80,7 +80,7 @@
               </div>
               <!-- Right column: new text -->
               <div class="side-column new-column">
-                <div class="column-header">修改后文本</div>
+                <div class="column-header">{{ $t('tools.diff.modifiedText') }}</div>
                 <div class="column-body">
                   <div
                     v-for="(item, index) in sideBySideRight"
@@ -94,7 +94,7 @@
               </div>
             </div>
           </div>
-          <el-empty v-else description="请输入文本并点击对比" />
+          <el-empty v-else :description="$t('tools.diff.placeholder')" />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -309,9 +309,9 @@ export default {
         return marker + ' ' + item.line
       })
       navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('tools.diff.copiedToClipboard'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.diff.copyFail'))
       })
     }
   }

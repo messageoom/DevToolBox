@@ -1,49 +1,76 @@
 <template>
   <div class="home">
-    <el-card class="welcome-card">
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><Star /></el-icon>
-          <span>欢迎使用开发工具箱</span>
-        </div>
-      </template>
-      <p>功能强大的开发工具集合，包含文件处理、数据格式转换、编码解码、加密哈希等多种实用工具。</p>
-      <p>请选择下方工具分类开始使用。</p>
-    </el-card>
-
-    <div class="categories-grid">
-      <el-card
-        v-for="category in toolCategories"
-        :key="category.id"
-        class="category-card"
-        @click="$router.push(category.route)"
-      >
+    <!-- Desktop: card grid -->
+    <template v-if="!deviceStore.isMobile">
+      <el-card class="welcome-card">
         <template #header>
           <div class="card-header">
-            <el-icon class="card-icon"><component :is="category.icon" /></el-icon>
-            <span>{{ category.name }}</span>
+            <el-icon class="card-icon"><Star /></el-icon>
+            <span>{{ t('tools.home.welcome') }}</span>
           </div>
         </template>
-        <p>{{ category.description }}</p>
-        <div class="tools-list">
-          <el-tag
-            v-for="tool in category.tools"
-            :key="tool"
-            type="info"
-            size="small"
-            class="tool-tag"
-          >
-            {{ tool }}
-          </el-tag>
-        </div>
+        <p>{{ t('tools.home.desc1') }}</p>
+        <p>{{ t('tools.home.desc2') }}</p>
       </el-card>
-    </div>
+
+      <div class="categories-grid">
+        <el-card
+          v-for="category in toolCategories"
+          :key="category.id"
+          class="category-card"
+          @click="$router.push(category.route)"
+        >
+          <template #header>
+            <div class="card-header">
+              <el-icon class="card-icon"><component :is="category.icon" /></el-icon>
+              <span>{{ t('categories.' + category.id + '.name') }}</span>
+            </div>
+          </template>
+          <p>{{ t('categories.' + category.id + '.description') }}</p>
+          <div class="tools-list">
+            <el-tag
+              v-for="tool in category.tools"
+              :key="tool"
+              type="info"
+              size="small"
+              class="tool-tag"
+            >
+              {{ t('categories.' + category.id + '.tools.' + tool) }}
+            </el-tag>
+          </div>
+        </el-card>
+      </div>
+    </template>
+
+    <!-- Mobile: compact list -->
+    <template v-else>
+      <div class="mobile-categories">
+        <div
+          v-for="category in toolCategories"
+          :key="category.id"
+          class="mobile-category-item"
+          @click="$router.push(category.route)"
+        >
+          <el-icon class="item-icon"><component :is="category.icon" /></el-icon>
+          <div class="item-info">
+            <span class="item-name">{{ t('categories.' + category.id + '.name') }}</span>
+            <span class="item-desc">{{ t('categories.' + category.id + '.description') }}</span>
+          </div>
+          <el-icon class="item-arrow"><ArrowRight /></el-icon>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { Star } from '@element-plus/icons-vue'
+import { Star, ArrowRight } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+import { useDeviceStore } from '@/stores/device.js'
 import { toolCategories } from '../data/toolCategories'
+
+const { t } = useI18n()
+const deviceStore = useDeviceStore()
 </script>
 
 <style scoped>
@@ -97,24 +124,55 @@ import { toolCategories } from '../data/toolCategories'
   margin: 0;
 }
 
-@media (max-width: 768px) {
-  .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--dt-spacing-md);
-  }
-
-  .home {
-    padding: var(--dt-spacing-md);
-  }
+/* --- Mobile list layout --- */
+.mobile-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-@media (max-width: 480px) {
-  .categories-grid {
-    grid-template-columns: 1fr;
-  }
+.mobile-category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--dt-bg-card);
+  cursor: pointer;
+  transition: background var(--dt-transition-fast);
+  border-radius: var(--dt-radius-sm);
+}
 
-  .home {
-    padding: var(--dt-spacing-sm);
-  }
+.mobile-category-item:active {
+  background: var(--dt-bg-hover);
+}
+
+.item-icon {
+  font-size: 22px;
+  color: var(--dt-primary);
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dt-text-primary);
+}
+
+.item-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--dt-text-secondary);
+  margin-top: 2px;
+}
+
+.item-arrow {
+  color: var(--dt-text-placeholder);
+  flex-shrink: 0;
 }
 </style>

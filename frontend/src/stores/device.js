@@ -1,22 +1,22 @@
 import { defineStore } from 'pinia'
 
-const MOBILE_BREAKPOINT = 480
-const TABLET_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768
 
 export const useDeviceStore = defineStore('device', {
   state: () => ({
-    width: window.innerWidth,
+    isMobile: window.innerWidth <= MOBILE_BREAKPOINT,
   }),
-  getters: {
-    isMobile: (state) => state.width <= MOBILE_BREAKPOINT,
-    isTablet: (state) => state.width > MOBILE_BREAKPOINT && state.width <= TABLET_BREAKPOINT,
-    isDesktop: (state) => state.width > TABLET_BREAKPOINT,
-  },
   actions: {
-    checkDevice() {
-      this.width = window.innerWidth
-    }
+    updateDevice() {
+      this.isMobile = window.innerWidth <= MOBILE_BREAKPOINT
+    },
+    initListener() {
+      window.addEventListener('resize', this.updateDevice)
+    },
+    cleanupListener() {
+      window.removeEventListener('resize', this.updateDevice)
+    },
   }
 })
 
-export { MOBILE_BREAKPOINT, TABLET_BREAKPOINT }
+export { MOBILE_BREAKPOINT }

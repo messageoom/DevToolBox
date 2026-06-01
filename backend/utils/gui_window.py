@@ -359,6 +359,27 @@ class Api:
         except Exception as e:
             return {'success': False, 'error': str(e)}
 
+    # --- Language ---
+
+    def get_language(self):
+        try:
+            _cm = _import_config_manager()
+            config = _cm.load_config()
+            return config.get('ui', {}).get('language', 'zh')
+        except Exception:
+            return 'zh'
+
+    def set_language(self, params):
+        lang = params if isinstance(params, str) else params.get('language', 'zh')
+        try:
+            _cm = _import_config_manager()
+            config = _cm.load_config()
+            config.setdefault('ui', {})['language'] = lang
+            _cm.save_config(config)
+            return {'success': True}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
     def exit_app(self):
         if self._window:
             self._window.destroy()
@@ -842,6 +863,9 @@ select.form-input {
         <span>关于</span>
       </li>
     </ul>
+    <div style="padding:8px 12px;margin-top:auto;">
+      <button class="btn btn-ghost btn-sm" style="width:100%;" id="lang-toggle" onclick="toggleLanguage()">EN</button>
+    </div>
   </nav>
 
   <!-- Content -->
@@ -849,21 +873,21 @@ select.form-input {
 
     <!-- Dashboard -->
     <div class="page active" id="page-dashboard">
-      <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">Server Status</h2>
+      <h2 id="dashboard-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">Server Status</h2>
 
       <div class="card">
         <div class="card-header">
           <span class="card-title"><span class="status-dot" id="status-dot"></span><span id="status-text">Starting...</span></span>
         </div>
         <div id="url-section">
-          <div class="form-label">Local Access</div>
+          <div class="form-label" id="local-access-label">Local Access</div>
           <div class="url-row">
             <code id="local-url">-</code>
             <button class="copy-btn" onclick="copyUrl('local')" title="Copy">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
           </div>
-          <div class="form-label" style="margin-top:10px;">Network Access</div>
+          <div class="form-label" id="network-access-label" style="margin-top:10px;">Network Access</div>
           <div class="url-row">
             <code id="network-url">-</code>
             <button class="copy-btn" onclick="copyUrl('network')" title="Copy">
@@ -872,15 +896,15 @@ select.form-input {
           </div>
         </div>
         <div class="btn-row" style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="api.open_browser()">
+          <button class="btn btn-primary" id="btn-open-browser" onclick="api.open_browser()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             Open in Browser
           </button>
-          <button class="btn btn-ghost" onclick="api.copy_url().then(r => showToast(r.success ? 'Copied!' : 'Copy failed'))">
+          <button class="btn btn-ghost" id="btn-copy-url" onclick="copyMainUrl()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy URL
           </button>
-          <button class="btn btn-ghost" onclick="api.open_storage_folder()">
+          <button class="btn btn-ghost" id="btn-open-storage" onclick="api.open_storage_folder()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             Open Storage
           </button>
@@ -888,19 +912,19 @@ select.form-input {
       </div>
 
       <div class="stat-grid" id="stat-grid">
-        <div class="stat-item"><div class="stat-value" id="stat-uptime">-</div><div class="stat-label">Uptime</div></div>
-        <div class="stat-item"><div class="stat-value" id="stat-files">-</div><div class="stat-label">Files</div></div>
-        <div class="stat-item"><div class="stat-value" id="stat-disk">-</div><div class="stat-label">Disk Usage</div></div>
+        <div class="stat-item"><div class="stat-value" id="stat-uptime">-</div><div class="stat-label" id="stat-uptime-label">Uptime</div></div>
+        <div class="stat-item"><div class="stat-value" id="stat-files">-</div><div class="stat-label" id="stat-files-label">Files</div></div>
+        <div class="stat-item"><div class="stat-value" id="stat-disk">-</div><div class="stat-label" id="stat-disk-label">Disk Usage</div></div>
       </div>
     </div>
 
     <!-- Security -->
     <div class="page" id="page-security">
-      <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">Security Center</h2>
+      <h2 id="security-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">Security Center</h2>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Access Token</span>
+          <span class="card-title" id="access-token-title">Access Token</span>
           <span class="tag" id="token-status-tag">-</span>
         </div>
         <div class="url-row" id="token-url-row" style="display:none;">
@@ -911,13 +935,13 @@ select.form-input {
         </div>
         <div class="btn-row" style="margin-top:12px;">
           <button class="btn btn-ghost" id="toggle-token-btn" onclick="toggleToken()">-</button>
-          <button class="btn btn-danger btn-sm" onclick="confirmRefreshToken()">Refresh Token</button>
+          <button class="btn btn-danger btn-sm" id="refresh-token-btn" onclick="confirmRefreshToken()">Refresh Token</button>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Temporary Tokens</span>
+          <span class="card-title" id="temp-tokens-title">Temporary Tokens</span>
         </div>
         <div class="form-row" style="margin-bottom:16px;">
           <input class="form-input" id="temp-label" placeholder="Label (e.g. colleague)" style="flex:1;">
@@ -928,7 +952,7 @@ select.form-input {
             <option value="1440">24 hours</option>
             <option value="10080">7 days</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="createTempToken()">Generate</button>
+          <button class="btn btn-primary btn-sm" id="generate-btn" onclick="createTempToken()">Generate</button>
         </div>
         <div id="temp-token-list"></div>
       </div>
@@ -936,37 +960,37 @@ select.form-input {
 
     <!-- Storage -->
     <div class="page" id="page-storage">
-      <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">Storage</h2>
+      <h2 id="storage-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">Storage</h2>
 
       <div class="card">
         <div class="form-group">
-          <label class="form-label">Upload Directory</label>
+          <label class="form-label" id="upload-dir-label">Upload Directory</label>
           <div class="form-row">
             <input class="form-input" id="cfg-upload-dir" placeholder="uploads" style="flex:1;">
-            <button class="btn btn-ghost btn-sm" onclick="pickFolder()">Browse</button>
+            <button class="btn btn-ghost btn-sm" id="browse-btn" onclick="pickFolder()">Browse</button>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Max File Size</label>
+          <label class="form-label" id="max-file-size-label">Max File Size</label>
           <div class="slider-wrap">
             <input type="range" id="cfg-max-size" min="1" max="100" value="50" oninput="document.getElementById('max-size-val').textContent=this.value+' MB'">
             <span class="slider-value" id="max-size-val">50 MB</span>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Auto Cleanup (days)</label>
+          <label class="form-label" id="auto-cleanup-label">Auto Cleanup (days)</label>
           <div class="form-row">
             <input class="form-input" id="cfg-cleanup-days" type="number" min="0" max="365" value="0" style="width:100px;">
-            <span class="form-hint">0 = disabled</span>
+            <span class="form-hint" id="cleanup-hint">0 = disabled</span>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="saveStorageConfig()">Save</button>
+        <button class="btn btn-primary" id="save-storage-btn" onclick="saveStorageConfig()">Save</button>
 
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--card-border);">
-          <div class="form-label" style="margin-bottom:8px;">Current Usage</div>
+          <div class="form-label" id="current-usage-label" style="margin-bottom:8px;">Current Usage</div>
           <div class="stat-grid">
-            <div class="stat-item"><div class="stat-value" id="storage-file-count">-</div><div class="stat-label">Files</div></div>
-            <div class="stat-item"><div class="stat-value" id="storage-disk">-</div><div class="stat-label">Disk</div></div>
+            <div class="stat-item"><div class="stat-value" id="storage-file-count">-</div><div class="stat-label" id="storage-files-label">Files</div></div>
+            <div class="stat-item"><div class="stat-value" id="storage-disk">-</div><div class="stat-label" id="storage-disk-label">Disk</div></div>
           </div>
         </div>
       </div>
@@ -974,50 +998,50 @@ select.form-input {
 
     <!-- Network -->
     <div class="page" id="page-network">
-      <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">Network</h2>
+      <h2 id="network-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">Network</h2>
 
       <div class="card">
         <div class="form-group">
-          <label class="form-label">Listen Port</label>
+          <label class="form-label" id="listen-port-label">Listen Port</label>
           <input class="form-input" id="cfg-port" type="number" min="1024" max="65535">
         </div>
         <div class="form-group">
-          <label class="form-label">Bind Address</label>
+          <label class="form-label" id="bind-address-label">Bind Address</label>
           <select class="form-input" id="cfg-host" style="width:260px;">
             <option value="127.0.0.1">Localhost only (127.0.0.1)</option>
             <option value="0.0.0.0">All interfaces (0.0.0.0)</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="saveNetworkConfig()">Save</button>
-        <p class="form-hint" style="margin-top:12px;">Changes take effect after restart.</p>
+        <button class="btn btn-primary" id="save-network-btn" onclick="saveNetworkConfig()">Save</button>
+        <p class="form-hint" id="network-hint" style="margin-top:12px;">Changes take effect after restart.</p>
       </div>
     </div>
 
     <!-- About -->
     <div class="page" id="page-about">
-      <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">About</h2>
+      <h2 id="about-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">About</h2>
 
       <div class="card" style="text-align:center;padding:32px;">
         <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;background:var(--accent);color:white;font-size:24px;font-weight:700;margin-bottom:16px;">DT</div>
         <h3 style="font-size:22px;font-weight:700;">DevToolBox</h3>
         <p style="font-size:13px;color:var(--text-dim);margin-top:4px;" id="about-version">v-</p>
-        <p style="font-size:13px;color:var(--text-secondary);margin-top:12px;max-width:360px;margin-left:auto;margin-right:auto;">Local-first developer toolkit. All data processed locally, nothing uploaded or sent externally.</p>
+        <p id="about-desc" style="font-size:13px;color:var(--text-secondary);margin-top:12px;max-width:360px;margin-left:auto;margin-right:auto;">Local-first developer toolkit. All data processed locally, nothing uploaded or sent externally.</p>
       </div>
 
       <div class="card">
         <div class="desc-list" id="about-info">
-          <span class="desc-label">Version</span><span class="desc-value" id="about-ver">-</span>
-          <span class="desc-label">Python</span><span class="desc-value" id="about-python">-</span>
-          <span class="desc-label">Platform</span><span class="desc-value" id="about-platform">-</span>
-          <span class="desc-label">Project</span><span class="desc-value"><a href="https://github.com/messageoom/DevToolBox" onclick="event.preventDefault();api.open_browser && window.open('https://github.com/messageoom/DevToolBox')">github.com/messageoom/DevToolBox</a></span>
-          <span class="desc-label">License</span><span class="desc-value">MIT License</span>
+          <span class="desc-label" id="about-version-label">Version</span><span class="desc-value" id="about-ver">-</span>
+          <span class="desc-label" id="about-python-label">Python</span><span class="desc-value" id="about-python">-</span>
+          <span class="desc-label" id="about-platform-label">Platform</span><span class="desc-value" id="about-platform">-</span>
+          <span class="desc-label" id="about-project-label">Project</span><span class="desc-value"><a href="https://github.com/messageoom/DevToolBox" onclick="event.preventDefault();api.open_browser && window.open('https://github.com/messageoom/DevToolBox')">github.com/messageoom/DevToolBox</a></span>
+          <span class="desc-label" id="about-license-label">License</span><span class="desc-value" id="about-license-value">MIT License</span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="footer">DevToolBox — Local-First Developer Toolkit</div>
+<div class="footer" id="footer-text">DevToolBox — Local-First Developer Toolkit</div>
 
 <!-- Confirm modal -->
 <div class="modal-overlay" id="confirm-modal">
@@ -1025,7 +1049,7 @@ select.form-input {
     <h3 id="modal-title">Confirm</h3>
     <p id="modal-message">Are you sure?</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-ghost" id="modal-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger" id="modal-confirm-btn" onclick="modalConfirmAction()">Confirm</button>
     </div>
   </div>
@@ -1035,9 +1059,194 @@ select.form-input {
 <div class="toast" id="toast"></div>
 
 <script>
+// --- i18n ---
+const LANG = {
+  zh: {
+    // Sidebar
+    dashboard: '概览', security: '安全', storage: '存储', network: '网络', about: '关于',
+    // Dashboard
+    serverStatus: '服务器状态', starting: '启动中...', running: '运行中', stopped: '已停止',
+    localAccess: '本地访问', networkAccess: '网络访问',
+    openInBrowser: '在浏览器中打开', copied: '已复制！', copyFailed: '复制失败',
+    copyUrl: '复制URL', openStorage: '打开存储',
+    uptime: '运行时间', files: '文件数', diskUsage: '磁盘使用',
+    // Security
+    securityCenter: '安全中心', accessToken: '访问令牌', refreshToken: '刷新令牌',
+    tempTokens: '临时令牌', label: '标签', labelPlaceholder: '标签（例如：同事）',
+    '30min': '30分钟', '1hour': '1小时', '6hours': '6小时', '24hours': '24小时', '7days': '7天',
+    generate: '生成', enabled: '已启用', disabled: '已禁用',
+    disableToken: '禁用令牌', enableToken: '启用令牌',
+    tokenDisabled: '令牌已禁用', tokenEnabled: '令牌已启用',
+    refreshConfirm: '旧令牌将失效，确定继续？', tokenRefreshed: '令牌已刷新',
+    labelRequired: '请输入标签', tokenCreated: '临时令牌已创建', failed: '失败',
+    deleteToken: '删除令牌', deleteConfirm: '确定删除此临时令牌？', deleted: '已删除',
+    noTempTokens: '暂无临时令牌', token: '令牌', expires: '过期时间',
+    status: '状态', expired: '已过期', active: '有效', delete: '删除',
+    // Storage
+    uploadDir: '上传目录', browse: '浏览', maxFileSize: '最大文件大小',
+    autoCleanup: '自动清理（天）', cleanupDisabled: '0 = 禁用', save: '保存',
+    currentUsage: '当前使用', disk: '磁盘',
+    // Network
+    listenPort: '监听端口', bindAddress: '绑定地址',
+    localhostOnly: '仅本地 (127.0.0.1)', allInterfaces: '所有接口 (0.0.0.0)',
+    savedRestartRequired: '已保存（需重启生效）', restartRequired: '更改在重启后生效。',
+    // About
+    aboutDesc: '本地优先的开发者工具箱。所有数据在本地处理，不上传或发送到外部。',
+    version: '版本', python: 'Python', platform: '平台',
+    project: '项目', license: '许可证', mitLicense: 'MIT许可证',
+    // Footer
+    footer: 'DevToolBox — 本地优先的开发工具箱',
+    // Modal
+    confirm: '确认', areYouSure: '你确定吗？', cancel: '取消',
+    // Language
+    lang: 'EN'
+  },
+  en: {
+    // Sidebar
+    dashboard: 'Dashboard', security: 'Security', storage: 'Storage', network: 'Network', about: 'About',
+    // Dashboard
+    serverStatus: 'Server Status', starting: 'Starting...', running: 'Running', stopped: 'Stopped',
+    localAccess: 'Local Access', networkAccess: 'Network Access',
+    openInBrowser: 'Open in Browser', copied: 'Copied!', copyFailed: 'Copy failed',
+    copyUrl: 'Copy URL', openStorage: 'Open Storage',
+    uptime: 'Uptime', files: 'Files', diskUsage: 'Disk Usage',
+    // Security
+    securityCenter: 'Security Center', accessToken: 'Access Token', refreshToken: 'Refresh Token',
+    tempTokens: 'Temporary Tokens', label: 'Label', labelPlaceholder: 'Label (e.g. colleague)',
+    '30min': '30 min', '1hour': '1 hour', '6hours': '6 hours', '24hours': '24 hours', '7days': '7 days',
+    generate: 'Generate', enabled: 'Enabled', disabled: 'Disabled',
+    disableToken: 'Disable Token', enableToken: 'Enable Token',
+    tokenDisabled: 'Token disabled', tokenEnabled: 'Token enabled',
+    refreshConfirm: 'The old token will be invalidated. Continue?', tokenRefreshed: 'Token refreshed',
+    labelRequired: 'Please enter a label', tokenCreated: 'Temp token created', failed: 'Failed',
+    deleteToken: 'Delete Token', deleteConfirm: 'Remove this temporary token?', deleted: 'Deleted',
+    noTempTokens: 'No temporary tokens', token: 'Token', expires: 'Expires',
+    status: 'Status', expired: 'Expired', active: 'Active', delete: 'Delete',
+    // Storage
+    uploadDir: 'Upload Directory', browse: 'Browse', maxFileSize: 'Max File Size',
+    autoCleanup: 'Auto Cleanup (days)', cleanupDisabled: '0 = disabled', save: 'Save',
+    currentUsage: 'Current Usage', disk: 'Disk',
+    // Network
+    listenPort: 'Listen Port', bindAddress: 'Bind Address',
+    localhostOnly: 'Localhost only (127.0.0.1)', allInterfaces: 'All interfaces (0.0.0.0)',
+    savedRestartRequired: 'Saved (restart required)', restartRequired: 'Changes take effect after restart.',
+    // About
+    aboutDesc: 'Local-first developer toolkit. All data processed locally, nothing uploaded or sent externally.',
+    version: 'Version', python: 'Python', platform: 'Platform',
+    project: 'Project', license: 'License', mitLicense: 'MIT License',
+    // Footer
+    footer: 'DevToolBox — Local-First Developer Toolkit',
+    // Modal
+    confirm: 'Confirm', areYouSure: 'Are you sure?', cancel: 'Cancel',
+    // Language
+    lang: '中文'
+  }
+};
+let currentLang = 'zh';
+function t(key) { return (LANG[currentLang] && LANG[currentLang][key]) || key; }
+
+function applyTranslations() {
+  // Sidebar nav labels
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var page = item.getAttribute('data-page');
+    if (page && LANG[currentLang][page]) {
+      var span = item.querySelector('span');
+      if (span) span.textContent = t(page);
+    }
+  });
+  // Dashboard page
+  var el;
+  el = document.getElementById('dashboard-title'); if (el) el.textContent = t('serverStatus');
+  el = document.getElementById('status-text'); if (el) el.textContent = _statusData.server_running ? t('running') : t('stopped');
+  el = document.getElementById('local-access-label'); if (el) el.textContent = t('localAccess');
+  el = document.getElementById('network-access-label'); if (el) el.textContent = t('networkAccess');
+  el = document.getElementById('btn-open-browser'); if (el) el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' + t('openInBrowser');
+  el = document.getElementById('btn-copy-url'); if (el) el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' + t('copyUrl');
+  el = document.getElementById('btn-open-storage'); if (el) el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' + t('openStorage');
+  el = document.getElementById('stat-uptime-label'); if (el) el.textContent = t('uptime');
+  el = document.getElementById('stat-files-label'); if (el) el.textContent = t('files');
+  el = document.getElementById('stat-disk-label'); if (el) el.textContent = t('diskUsage');
+  // Security page
+  el = document.getElementById('security-title'); if (el) el.textContent = t('securityCenter');
+  el = document.getElementById('access-token-title'); if (el) el.textContent = t('accessToken');
+  el = document.getElementById('refresh-token-btn'); if (el) el.textContent = t('refreshToken');
+  el = document.getElementById('temp-tokens-title'); if (el) el.textContent = t('tempTokens');
+  el = document.getElementById('temp-label'); if (el) el.placeholder = t('labelPlaceholder');
+  el = document.getElementById('generate-btn'); if (el) el.textContent = t('generate');
+  // Security select options
+  var sel = document.getElementById('temp-expires');
+  if (sel) {
+    sel.options[0].text = t('30min');
+    sel.options[1].text = t('1hour');
+    sel.options[2].text = t('6hours');
+    sel.options[3].text = t('24hours');
+    sel.options[4].text = t('7days');
+  }
+  // Security token status and toggle button (re-apply with current state)
+  var tag = document.getElementById('token-status-tag');
+  if (tag) {
+    var isEnabled = tag.getAttribute('data-enabled') === 'true';
+    tag.textContent = isEnabled ? t('enabled') : t('disabled');
+  }
+  var toggleBtn = document.getElementById('toggle-token-btn');
+  if (toggleBtn) {
+    var isEnabled2 = toggleBtn.getAttribute('data-enabled') === 'true';
+    toggleBtn.textContent = isEnabled2 ? t('disableToken') : t('enableToken');
+  }
+  // Storage page
+  el = document.getElementById('storage-title'); if (el) el.textContent = t('storage');
+  el = document.getElementById('upload-dir-label'); if (el) el.textContent = t('uploadDir');
+  el = document.getElementById('browse-btn'); if (el) el.textContent = t('browse');
+  el = document.getElementById('max-file-size-label'); if (el) el.textContent = t('maxFileSize');
+  el = document.getElementById('auto-cleanup-label'); if (el) el.textContent = t('autoCleanup');
+  el = document.getElementById('cleanup-hint'); if (el) el.textContent = t('cleanupDisabled');
+  el = document.getElementById('save-storage-btn'); if (el) el.textContent = t('save');
+  el = document.getElementById('current-usage-label'); if (el) el.textContent = t('currentUsage');
+  el = document.getElementById('storage-files-label'); if (el) el.textContent = t('files');
+  el = document.getElementById('storage-disk-label'); if (el) el.textContent = t('disk');
+  // Network page
+  el = document.getElementById('network-title'); if (el) el.textContent = t('network');
+  el = document.getElementById('listen-port-label'); if (el) el.textContent = t('listenPort');
+  el = document.getElementById('bind-address-label'); if (el) el.textContent = t('bindAddress');
+  el = document.getElementById('save-network-btn'); if (el) el.textContent = t('save');
+  el = document.getElementById('network-hint'); if (el) el.textContent = t('restartRequired');
+  var hostSel = document.getElementById('cfg-host');
+  if (hostSel) {
+    hostSel.options[0].text = t('localhostOnly');
+    hostSel.options[1].text = t('allInterfaces');
+  }
+  // About page
+  el = document.getElementById('about-title'); if (el) el.textContent = t('about');
+  el = document.getElementById('about-desc'); if (el) el.textContent = t('aboutDesc');
+  el = document.getElementById('about-version-label'); if (el) el.textContent = t('version');
+  el = document.getElementById('about-python-label'); if (el) el.textContent = t('python');
+  el = document.getElementById('about-platform-label'); if (el) el.textContent = t('platform');
+  el = document.getElementById('about-project-label'); if (el) el.textContent = t('project');
+  el = document.getElementById('about-license-label'); if (el) el.textContent = t('license');
+  el = document.getElementById('about-license-value'); if (el) el.textContent = t('mitLicense');
+  // Footer
+  el = document.getElementById('footer-text'); if (el) el.textContent = t('footer');
+  // Modal
+  el = document.getElementById('modal-title'); if (el) el.textContent = t('confirm');
+  el = document.getElementById('modal-message'); if (el) el.textContent = t('areYouSure');
+  el = document.getElementById('modal-cancel-btn'); if (el) el.textContent = t('cancel');
+  el = document.getElementById('modal-confirm-btn'); if (el) el.textContent = t('confirm');
+  // Language toggle button
+  el = document.getElementById('lang-toggle'); if (el) el.textContent = t('lang');
+  // Re-render temp tokens
+  if (_lastTempTokens) renderTempTokens(_lastTempTokens);
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  if (api) api.set_language(currentLang);
+  applyTranslations();
+}
+
 let api = window.pywebview ? pywebview.api : null;
 let _modalAction = null;
 let _statusData = {};
+let _lastTempTokens = [];
 
 // Wait for pywebview API ready
 function waitForApi() {
@@ -1057,8 +1266,11 @@ function waitForApi() {
 
 async function init() {
   await waitForApi();
+  // Load saved language preference
+  try { currentLang = await api.get_language(); } catch(e) { currentLang = 'zh'; }
   await refreshStatus();
   await refreshConfig();
+  applyTranslations();
   setInterval(refreshStatus, 5000);
 }
 
@@ -1077,7 +1289,7 @@ async function refreshStatus() {
     _statusData = s;
     document.getElementById('version-label').textContent = 'v' + s.version;
     document.getElementById('status-dot').className = 'status-dot ' + (s.server_running ? 'running' : 'stopped');
-    document.getElementById('status-text').textContent = s.server_running ? 'Running' : 'Stopped';
+    document.getElementById('status-text').textContent = s.server_running ? t('running') : t('stopped');
     document.getElementById('local-url').textContent = s.local_url;
     document.getElementById('network-url').textContent = s.network_url;
     document.getElementById('stat-uptime').textContent = formatUptime(s.uptime);
@@ -1101,9 +1313,12 @@ async function refreshConfig() {
     // Security
     const sec = c.security || {};
     const tag = document.getElementById('token-status-tag');
-    tag.textContent = sec.token_enabled ? 'Enabled' : 'Disabled';
+    tag.textContent = sec.token_enabled ? t('enabled') : t('disabled');
+    tag.setAttribute('data-enabled', sec.token_enabled);
     tag.className = 'tag ' + (sec.token_enabled ? 'tag-success' : 'tag-info');
-    document.getElementById('toggle-token-btn').textContent = sec.token_enabled ? 'Disable Token' : 'Enable Token';
+    const toggleBtn = document.getElementById('toggle-token-btn');
+    toggleBtn.textContent = sec.token_enabled ? t('disableToken') : t('enableToken');
+    toggleBtn.setAttribute('data-enabled', sec.token_enabled);
     if (sec.has_token) {
       document.getElementById('token-url-row').style.display = 'flex';
       document.getElementById('token-url-display').textContent = _statusData.access_url || '-';
@@ -1125,16 +1340,16 @@ async function refreshConfig() {
 
 // --- Security actions ---
 function toggleToken() {
-  const enabled = document.getElementById('token-status-tag').textContent === 'Enabled';
+  const enabled = document.getElementById('toggle-token-btn').getAttribute('data-enabled') === 'true';
   api.toggle_token({enabled: !enabled}).then(r => {
-    if (r.success) { showToast(enabled ? 'Token disabled' : 'Token enabled'); refreshConfig(); }
+    if (r.success) { showToast(enabled ? t('tokenDisabled') : t('tokenEnabled')); refreshConfig(); }
   });
 }
 
 function confirmRefreshToken() {
-  showModal('Refresh Token', 'The old token will be invalidated. Continue?', () => {
+  showModal(t('refreshToken'), t('refreshConfirm'), () => {
     api.refresh_token().then(r => {
-      if (r.success) { showToast('Token refreshed'); refreshConfig(); refreshStatus(); }
+      if (r.success) { showToast(t('tokenRefreshed')); refreshConfig(); refreshStatus(); }
     });
   });
 }
@@ -1142,23 +1357,24 @@ function confirmRefreshToken() {
 function createTempToken() {
   const label = document.getElementById('temp-label').value.trim();
   const minutes = parseInt(document.getElementById('temp-expires').value);
-  if (!label) { showToast('Please enter a label'); return; }
+  if (!label) { showToast(t('labelRequired')); return; }
   api.create_temp_token({label: label, expires_minutes: minutes}).then(r => {
-    if (r.success) { showToast('Temp token created'); document.getElementById('temp-label').value = ''; refreshConfig(); }
-    else { showToast(r.error || 'Failed'); }
+    if (r.success) { showToast(t('tokenCreated')); document.getElementById('temp-label').value = ''; refreshConfig(); }
+    else { showToast(r.error || t('failed')); }
   });
 }
 
 function deleteTempToken(token) {
-  showModal('Delete Token', 'Remove this temporary token?', () => {
-    api.delete_temp_token(token).then(r => { if (r.success) { showToast('Deleted'); refreshConfig(); } });
+  showModal(t('deleteToken'), t('deleteConfirm'), () => {
+    api.delete_temp_token(token).then(r => { if (r.success) { showToast(t('deleted')); refreshConfig(); } });
   });
 }
 
 function renderTempTokens(tokens) {
+  _lastTempTokens = tokens;
   const el = document.getElementById('temp-token-list');
-  if (!tokens.length) { el.innerHTML = '<div class="empty-state">No temporary tokens</div>'; return; }
-  let html = '<table class="token-table"><thead><tr><th>Label</th><th>Token</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody>';
+  if (!tokens.length) { el.innerHTML = '<div class="empty-state">' + t('noTempTokens') + '</div>'; return; }
+  let html = '<table class="token-table"><thead><tr><th>' + t('label') + '</th><th>' + t('token') + '</th><th>' + t('expires') + '</th><th>' + t('status') + '</th><th></th></tr></thead><tbody>';
   const now = Date.now() / 1000;
   for (const t of tokens) {
     const expired = t.expires_at < now;
@@ -1166,8 +1382,8 @@ function renderTempTokens(tokens) {
       + '<td>' + esc(t.label) + '</td>'
       + '<td><code>' + esc(t.token) + '</code></td>'
       + '<td>' + formatTime(t.expires_at) + '</td>'
-      + '<td><span class="tag ' + (expired ? 'tag-danger' : 'tag-success') + '">' + (expired ? 'Expired' : 'Active') + '</span></td>'
-      + '<td><button class="btn btn-ghost btn-sm" onclick="deleteTempToken(\'' + esc(t.token) + '\')">Delete</button></td>'
+      + '<td><span class="tag ' + (expired ? 'tag-danger' : 'tag-success') + '">' + (expired ? t('expired') : t('active')) + '</span></td>'
+      + '<td><button class="btn btn-ghost btn-sm" onclick="deleteTempToken(\'' + esc(t.token) + '\')">' + t('delete') + '</button></td>'
       + '</tr>';
   }
   html += '</tbody></table>';
@@ -1180,7 +1396,7 @@ function saveStorageConfig() {
     upload_dir: document.getElementById('cfg-upload-dir').value,
     max_file_size_mb: parseInt(document.getElementById('cfg-max-size').value),
     auto_cleanup_days: parseInt(document.getElementById('cfg-cleanup-days').value),
-  }}).then(r => showToast(r.success ? 'Saved' : 'Failed'));
+  }}).then(r => showToast(r.success ? t('save') : t('failed')));
 }
 
 async function pickFolder() {
@@ -1194,7 +1410,7 @@ function saveNetworkConfig() {
   api.save_config({network: {
     port: parseInt(document.getElementById('cfg-port').value),
     host: document.getElementById('cfg-host').value,
-  }}).then(r => showToast(r.success ? 'Saved (restart required)' : 'Failed'));
+  }}).then(r => showToast(r.success ? t('savedRestartRequired') : t('failed')));
 }
 
 // --- Copy ---
@@ -1203,7 +1419,11 @@ function copyUrl(type) {
   if (type === 'local') text = _statusData.local_url || '';
   else if (type === 'network') text = _statusData.network_url || '';
   else if (type === 'token') text = _statusData.access_url || '';
-  api.copy_text(text).then(r => showToast(r.success ? 'Copied!' : 'Copy failed'));
+  api.copy_text(text).then(r => showToast(r.success ? t('copied') : t('copyFailed')));
+}
+
+function copyMainUrl() {
+  api.copy_url().then(r => showToast(r.success ? t('copied') : t('copyFailed')));
 }
 
 // --- Modal ---

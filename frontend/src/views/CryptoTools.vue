@@ -1,11 +1,11 @@
 <template>
   <div class="crypto-tools">
-    <ToolPage title="加密解密工具" :icon="Key">
+    <ToolPage :title="t('tools.crypto.title')" :icon="Key">
       <div class="tool-section">
         <el-alert
-          title="支持的加密算法"
+          :title="t('tools.crypto.supportedAlgorithms')"
           type="info"
-          description="本工具支持多种国际标准和国密算法，包括非对称加密、对称加密和哈希算法"
+          :description="t('tools.crypto.algorithmDesc')"
           show-icon
           closable
           style="margin-bottom: 20px;"
@@ -14,8 +14,8 @@
         <!-- 顶部切换: 加密解密 / 哈希 -->
         <div class="top-tabs">
           <el-tabs v-model="activeMenu">
-            <el-tab-pane label="加密解密" name="encryption" />
-            <el-tab-pane label="哈希工具" name="hash" />
+            <el-tab-pane :label="t('tools.crypto.tab.crypto')" name="encryption" />
+            <el-tab-pane :label="t('tools.crypto.tab.hash')" name="hash" />
           </el-tabs>
         </div>
 
@@ -32,18 +32,18 @@
           <!-- RSA -->
           <div v-if="selectedAlgorithm === 'RSA'" class="algorithm-section">
             <el-tabs v-model="rsaActiveTab">
-              <el-tab-pane label="生成密钥对" name="generate">
+              <el-tab-pane :label="t('tools.crypto.rsa.generateKeyPair')" name="generate">
                 <el-form :model="rsaGenerateForm" label-width="120px">
-                  <el-form-item label="密钥长度">
+                  <el-form-item :label="t('tools.crypto.rsa.keyLength')">
                     <el-select v-model="rsaGenerateForm.keySize">
-                      <el-option label="2048位" :value="2048" />
-                      <el-option label="3072位" :value="3072" />
-                      <el-option label="4096位" :value="4096" />
+                      <el-option :label="t('tools.crypto.rsa.bits2048')" :value="2048" />
+                      <el-option :label="t('tools.crypto.rsa.bits3072')" :value="3072" />
+                      <el-option :label="t('tools.crypto.rsa.bits4096')" :value="4096" />
                     </el-select>
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" @click="generateRSAKeyPair" :loading="generating">
-                      生成密钥对
+                      {{ t('tools.crypto.rsa.generateKeyPair') }}
                     </el-button>
                   </el-form-item>
                 </el-form>
@@ -53,7 +53,7 @@
                 />
               </el-tab-pane>
 
-              <el-tab-pane label="加密/解密" name="encryptDecrypt">
+              <el-tab-pane :label="t('tools.crypto.rsa.encryptDecrypt')" name="encryptDecrypt">
                 <PublicKeyCryptoPanel
                   algorithm="RSA"
                   :encrypting="encrypting"
@@ -70,9 +70,9 @@
           <!-- ECC -->
           <div v-else-if="selectedAlgorithm === 'ECC'" class="algorithm-section">
             <el-tabs v-model="eccActiveTab">
-              <el-tab-pane label="生成密钥对" name="generate">
+              <el-tab-pane :label="t('tools.crypto.rsa.generateKeyPair')" name="generate">
                 <el-form :model="eccGenerateForm" label-width="120px">
-                  <el-form-item label="椭圆曲线">
+                  <el-form-item :label="t('tools.crypto.ecc.curve')">
                     <el-select v-model="eccGenerateForm.curve">
                       <el-option label="secp256r1" value="secp256r1" />
                       <el-option label="secp384r1" value="secp384r1" />
@@ -81,7 +81,7 @@
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" @click="generateECCKeyPair" :loading="generating">
-                      生成密钥对
+                      {{ t('tools.crypto.rsa.generateKeyPair') }}
                     </el-button>
                   </el-form-item>
                 </el-form>
@@ -96,11 +96,11 @@
           <!-- Ed25519 -->
           <div v-else-if="selectedAlgorithm === 'Ed25519'" class="algorithm-section">
             <el-tabs v-model="ed25519ActiveTab">
-              <el-tab-pane label="生成密钥对" name="generate">
+              <el-tab-pane :label="t('tools.crypto.rsa.generateKeyPair')" name="generate">
                 <el-form>
                   <el-form-item>
                     <el-button type="primary" @click="generateEd25519KeyPair" :loading="generating">
-                      生成密钥对
+                      {{ t('tools.crypto.rsa.generateKeyPair') }}
                     </el-button>
                   </el-form-item>
                 </el-form>
@@ -111,7 +111,7 @@
                 />
               </el-tab-pane>
 
-              <el-tab-pane label="签名/验证" name="signVerify">
+              <el-tab-pane :label="t('tools.crypto.ed25519.signVerify')" name="signVerify">
                 <SignVerifyPanel
                   algorithm="Ed25519"
                   :signing="signing"
@@ -136,7 +136,7 @@
               :decrypt-result="aesDecryptResult"
               :encrypt-i-v="aesEncryptIV"
               :show-key-generate="true"
-              key-placeholder="请输入Base64编码的密钥..."
+              :key-placeholder="t('tools.crypto.aes.keyPlaceholder')"
               :key-rows="3"
               default-mode="CBC"
               :generated-key="aesGeneratedKeyValue"
@@ -156,11 +156,11 @@
               :decrypt-result="chacha20DecryptResult"
               :encrypt-i-v="chacha20EncryptNonce"
               :show-key-generate="true"
-              key-placeholder="请输入Base64编码的32字节密钥..."
+              :key-placeholder="t('tools.crypto.chacha20.keyPlaceholder')"
               :key-rows="3"
               :has-nonce="true"
-              iv-label="Nonce"
-              iv-placeholder="请输入Base64编码的16字节Nonce..."
+              :iv-label="t('tools.crypto.chacha20.nonce')"
+              :iv-placeholder="t('tools.crypto.chacha20.noncePlaceholder')"
               :generated-key="chacha20GeneratedKeyValue"
               @generate-key="generateChaCha20Key"
               @encrypt="chacha20Encrypt"
@@ -171,11 +171,11 @@
           <!-- SM2 -->
           <div v-else-if="selectedAlgorithm === 'SM2'" class="algorithm-section">
             <el-tabs v-model="sm2ActiveTab">
-              <el-tab-pane label="生成密钥对" name="generate">
+              <el-tab-pane :label="t('tools.crypto.rsa.generateKeyPair')" name="generate">
                 <el-form>
                   <el-form-item>
                     <el-button type="primary" @click="generateSM2KeyPair" :loading="generating">
-                      生成密钥对
+                      {{ t('tools.crypto.rsa.generateKeyPair') }}
                     </el-button>
                   </el-form-item>
                 </el-form>
@@ -186,7 +186,7 @@
                 />
               </el-tab-pane>
 
-              <el-tab-pane label="加密/解密" name="encryptDecrypt">
+              <el-tab-pane :label="t('tools.crypto.sm2.encryptDecrypt')" name="encryptDecrypt">
                 <PublicKeyCryptoPanel
                   algorithm="SM2"
                   :encrypting="encrypting"
@@ -199,7 +199,7 @@
                 />
               </el-tab-pane>
 
-              <el-tab-pane label="签名/验证" name="signVerify">
+              <el-tab-pane :label="t('tools.crypto.sm2.signVerify')" name="signVerify">
                 <SignVerifyPanel
                   algorithm="SM2"
                   :signing="signing"
@@ -224,10 +224,10 @@
               :decrypt-result="sm4DecryptResult"
               :encrypt-i-v="sm4EncryptIV"
               :show-key-generate="true"
-              key-placeholder="请输入32字符的十六进制密钥..."
+              :key-placeholder="t('tools.crypto.sm4.keyPlaceholder')"
               :key-rows="2"
               default-mode="ECB"
-              iv-placeholder="请输入32字符的十六进制IV..."
+              :iv-placeholder="t('tools.crypto.sm4.ivPlaceholder')"
               :generated-key="sm4GeneratedKeyValue"
               @generate-key="generateSM4Key"
               @encrypt="sm4Encrypt"
@@ -239,12 +239,12 @@
         <!-- ============ 哈希工具 ============ -->
         <div v-else-if="activeMenu === 'hash'" class="hash-tools-section">
           <div class="input-section">
-            <h4>输入文本</h4>
+            <h4>{{ t('tools.crypto.hash.inputText') }}</h4>
             <el-input
               v-model="hashInputText"
               type="textarea"
               :rows="6"
-              placeholder="请输入要生成哈希的文本..."
+              :placeholder="t('tools.crypto.hash.inputPlaceholder')"
               clearable
             />
           </div>
@@ -260,10 +260,10 @@
               <el-col :span="24">
                 <div class="action-buttons">
                   <el-button type="primary" @click="handleGenerateHash" :loading="hashGenerating">
-                    生成哈希
+                    {{ t('tools.crypto.hash.generateHash') }}
                   </el-button>
                   <el-button @click="handleVerifyHash" :loading="hashVerifying">
-                    验证哈希
+                    {{ t('tools.crypto.hash.verifyHash') }}
                   </el-button>
                 </div>
               </el-col>
@@ -271,11 +271,11 @@
           </div>
 
           <div class="output-section">
-            <h4>哈希结果</h4>
+            <h4>{{ t('tools.crypto.hash.hashResult') }}</h4>
             <el-input
               v-model="hashResult"
               readonly
-              placeholder="哈希结果将显示在这里..."
+              :placeholder="t('tools.crypto.hash.resultPlaceholder')"
               type="textarea"
               :rows="4"
             />
@@ -288,9 +288,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useDeviceStore } from '@/stores/device.js'
 import { ElMessage } from 'element-plus'
 import { Key } from '@element-plus/icons-vue'
 import axios from 'axios'
+
+const { t } = useI18n()
+const deviceStore = useDeviceStore()
 
 import ToolPage from '@/components/ToolPage.vue'
 import AlgorithmCardSelector from '@/components/AlgorithmCardSelector.vue'
@@ -348,7 +353,7 @@ const rsaDecryptResult = ref('')
 
 async function generateRSAKeyPair() {
   if (!rsaGenerateForm.keySize) {
-    ElMessage.warning('请选择密钥长度')
+    ElMessage.warning(t('tools.crypto.rsa.selectKeyLength'))
     return
   }
   generating.value = true
@@ -359,12 +364,12 @@ async function generateRSAKeyPair() {
     if (data.success) {
       rsaKeys.privateKey = data.private_key
       rsaKeys.publicKey = data.public_key
-      ElMessage.success('RSA密钥对生成成功')
+      ElMessage.success(t('tools.crypto.rsa.keyPairSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   } catch (error) {
-    ElMessage.error('RSA密钥对生成失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.keyPairFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     generating.value = false
   }
@@ -378,12 +383,12 @@ function rsaEncrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       rsaEncryptResult.value = data.ciphertext
-      ElMessage.success('RSA加密成功')
+      ElMessage.success(t('tools.crypto.rsa.encryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('RSA加密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.encryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     encrypting.value = false
   })
@@ -397,12 +402,12 @@ function rsaDecrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       rsaDecryptResult.value = data.plaintext
-      ElMessage.success('RSA解密成功')
+      ElMessage.success(t('tools.crypto.rsa.decryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('RSA解密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.decryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     decrypting.value = false
   })
@@ -422,12 +427,12 @@ async function generateECCKeyPair() {
     if (data.success) {
       eccKeys.privateKey = data.private_key
       eccKeys.publicKey = data.public_key
-      ElMessage.success('ECC密钥对生成成功')
+      ElMessage.success(t('tools.crypto.ecc.keyPairSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   } catch (error) {
-    ElMessage.error('ECC密钥对生成失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ecc.keyPairFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     generating.value = false
   }
@@ -446,12 +451,12 @@ async function generateEd25519KeyPair() {
     if (data.success) {
       ed25519Keys.privateKey = data.private_key
       ed25519Keys.publicKey = data.public_key
-      ElMessage.success('Ed25519密钥对生成成功')
+      ElMessage.success(t('tools.crypto.rsa.keyPairSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   } catch (error) {
-    ElMessage.error('Ed25519密钥对生成失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.keyPairFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     generating.value = false
   }
@@ -465,12 +470,12 @@ function ed25519Sign(form) {
   }).then(({ data }) => {
     if (data.success) {
       ed25519SignResult.value = data.signature
-      ElMessage.success('Ed25519签名成功')
+      ElMessage.success(t('tools.crypto.ed25519.signSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('Ed25519签名失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ed25519.signFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     signing.value = false
   })
@@ -485,12 +490,12 @@ function ed25519Verify(form) {
   }).then(({ data }) => {
     if (data.success) {
       ed25519VerifyResult.value = data.valid
-      ElMessage.success('Ed25519验证完成')
+      ElMessage.success(t('tools.crypto.ed25519.verifyComplete'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('Ed25519验证失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ed25519.verifyFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     verifying.value = false
   })
@@ -512,9 +517,9 @@ function generateAESKey() {
     // Simplest: expose a method or use a key ref that the panel watches.
     // For now, we store the generated key and pass it via a prop/event.
     aesGeneratedKeyValue.value = btoa(String.fromCharCode(...keyBytes))
-    ElMessage.success('AES密钥生成成功')
+    ElMessage.success(t('tools.crypto.aes.keyGenSuccess'))
   } catch (error) {
-    ElMessage.error('AES密钥生成失败: ' + error.message)
+    ElMessage.error(t('tools.crypto.aes.keyGenFail') + ': ' + error.message)
   }
 }
 
@@ -530,12 +535,12 @@ function aesEncrypt(form) {
     if (data.success) {
       aesEncryptResult.value = data.ciphertext
       aesEncryptIV.value = data.iv || ''
-      ElMessage.success('AES加密成功')
+      ElMessage.success(t('tools.crypto.rsa.encryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('AES加密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.encryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     encrypting.value = false
   })
@@ -551,12 +556,12 @@ function aesDecrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       aesDecryptResult.value = data.plaintext
-      ElMessage.success('AES解密成功')
+      ElMessage.success(t('tools.crypto.rsa.decryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('AES解密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.decryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     decrypting.value = false
   })
@@ -573,9 +578,9 @@ function generateChaCha20Key() {
     const keyBytes = new Uint8Array(32)
     window.crypto.getRandomValues(keyBytes)
     chacha20GeneratedKeyValue.value = btoa(String.fromCharCode(...keyBytes))
-    ElMessage.success('ChaCha20密钥生成成功')
+    ElMessage.success(t('tools.crypto.aes.keyGenSuccess'))
   } catch (error) {
-    ElMessage.error('ChaCha20密钥生成失败: ' + error.message)
+    ElMessage.error(t('tools.crypto.aes.keyGenFail') + ': ' + error.message)
   }
 }
 
@@ -588,12 +593,12 @@ function chacha20Encrypt(form) {
     if (data.success) {
       chacha20EncryptResult.value = data.ciphertext
       chacha20EncryptNonce.value = data.nonce
-      ElMessage.success('ChaCha20加密成功')
+      ElMessage.success(t('tools.crypto.rsa.encryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('ChaCha20加密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.encryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     encrypting.value = false
   })
@@ -608,12 +613,12 @@ function chacha20Decrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       chacha20DecryptResult.value = data.plaintext
-      ElMessage.success('ChaCha20解密成功')
+      ElMessage.success(t('tools.crypto.rsa.decryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('ChaCha20解密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.decryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     decrypting.value = false
   })
@@ -634,12 +639,12 @@ async function generateSM2KeyPair() {
     if (data.success) {
       sm2Keys.privateKey = data.private_key
       sm2Keys.publicKey = data.public_key
-      ElMessage.success('SM2密钥对生成成功')
+      ElMessage.success(t('tools.crypto.ecc.keyPairSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   } catch (error) {
-    ElMessage.error('SM2密钥对生成失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ecc.keyPairFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     generating.value = false
   }
@@ -653,12 +658,12 @@ function sm2Encrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       sm2EncryptResult.value = data.ciphertext
-      ElMessage.success('SM2加密成功')
+      ElMessage.success(t('tools.crypto.rsa.encryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM2加密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.encryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     encrypting.value = false
   })
@@ -673,12 +678,12 @@ function sm2Decrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       sm2DecryptResult.value = data.plaintext
-      ElMessage.success('SM2解密成功')
+      ElMessage.success(t('tools.crypto.rsa.decryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM2解密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.decryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     decrypting.value = false
   })
@@ -692,12 +697,12 @@ function sm2Sign(form) {
   }).then(({ data }) => {
     if (data.success) {
       sm2SignResult.value = data.signature
-      ElMessage.success('SM2签名成功')
+      ElMessage.success(t('tools.crypto.ed25519.signSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM2签名失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ed25519.signFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     signing.value = false
   })
@@ -712,12 +717,12 @@ function sm2Verify(form) {
   }).then(({ data }) => {
     if (data.success) {
       sm2VerifyResult.value = data.valid
-      ElMessage.success('SM2验证完成')
+      ElMessage.success(t('tools.crypto.ed25519.verifyComplete'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM2验证失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.ed25519.verifyFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     verifying.value = false
   })
@@ -734,9 +739,9 @@ function generateSM4Key() {
     const keyBytes = new Uint8Array(16)
     window.crypto.getRandomValues(keyBytes)
     sm4GeneratedKeyValue.value = Array.from(keyBytes).map(b => b.toString(16).padStart(2, '0')).join('')
-    ElMessage.success('SM4密钥生成成功')
+    ElMessage.success(t('tools.crypto.aes.keyGenSuccess'))
   } catch (error) {
-    ElMessage.error('SM4密钥生成失败: ' + error.message)
+    ElMessage.error(t('tools.crypto.aes.keyGenFail') + ': ' + error.message)
   }
 }
 
@@ -750,12 +755,12 @@ function sm4Encrypt(form) {
     if (data.success) {
       sm4EncryptResult.value = data.ciphertext
       sm4EncryptIV.value = data.iv || ''
-      ElMessage.success('SM4加密成功')
+      ElMessage.success(t('tools.crypto.rsa.encryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM4加密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.encryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     encrypting.value = false
   })
@@ -771,12 +776,12 @@ function sm4Decrypt(form) {
   }).then(({ data }) => {
     if (data.success) {
       sm4DecryptResult.value = data.plaintext
-      ElMessage.success('SM4解密成功')
+      ElMessage.success(t('tools.crypto.rsa.decryptSuccess'))
     } else {
       ElMessage.error(data.error)
     }
   }).catch(error => {
-    ElMessage.error('SM4解密失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.rsa.decryptFail') + ': ' + (error.response?.data?.error || error.message))
   }).finally(() => {
     decrypting.value = false
   })
@@ -792,7 +797,7 @@ const availableHashAlgorithms = ref([])
 
 async function handleGenerateHash() {
   if (!hashInputText.value.trim()) {
-    ElMessage.warning('请输入要生成哈希的文本')
+    ElMessage.warning(t('tools.crypto.hash.inputVerifyRequired'))
     return
   }
   hashGenerating.value = true
@@ -803,12 +808,12 @@ async function handleGenerateHash() {
     })
     if (data.success) {
       hashResult.value = data.hash
-      ElMessage.success('哈希生成成功')
+      ElMessage.success(t('tools.crypto.hash.hashSuccess'))
     } else {
-      ElMessage.error(data.error || '哈希生成失败')
+      ElMessage.error(data.error || t('tools.crypto.hash.hashFail'))
     }
   } catch (error) {
-    ElMessage.error('哈希生成失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.hash.hashFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     hashGenerating.value = false
   }
@@ -816,11 +821,11 @@ async function handleGenerateHash() {
 
 async function handleVerifyHash() {
   if (!hashInputText.value.trim()) {
-    ElMessage.warning('请输入要验证的文本')
+    ElMessage.warning(t('tools.crypto.hash.inputVerifyRequired'))
     return
   }
   if (!hashResult.value.trim()) {
-    ElMessage.warning('请先生成哈希或输入预期哈希值')
+    ElMessage.warning(t('tools.crypto.hash.generateOrInputHash'))
     return
   }
   hashVerifying.value = true
@@ -832,15 +837,15 @@ async function handleVerifyHash() {
     })
     if (data.success) {
       if (data.valid) {
-        ElMessage.success('哈希验证通过')
+        ElMessage.success(t('tools.crypto.hash.verifyPass'))
       } else {
-        ElMessage.error('哈希验证失败：哈希值不匹配')
+        ElMessage.error(t('tools.crypto.hash.verifyFail'))
       }
     } else {
-      ElMessage.error(data.error || '哈希验证失败')
+      ElMessage.error(data.error || t('tools.crypto.hash.verifyFail'))
     }
   } catch (error) {
-    ElMessage.error('哈希验证失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.hash.verifyFail') + ': ' + (error.response?.data?.error || error.message))
   } finally {
     hashVerifying.value = false
   }
@@ -860,7 +865,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('获取算法列表失败:', error)
-    ElMessage.error('获取算法列表失败: ' + (error.response?.data?.error || error.message))
+    ElMessage.error(t('tools.crypto.hash.getAlgorithmsFail') + ': ' + (error.response?.data?.error || error.message))
   }
 
   try {
@@ -916,5 +921,15 @@ onMounted(async () => {
 
 .top-tabs {
   margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .crypto-tools { padding: 0 !important; }
+  .algorithm-selector :deep(.algorithm-grid) {
+    grid-template-columns: 1fr !important;
+  }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+  .el-tabs :deep(.el-tabs__content) { padding: 8px; }
 }
 </style>

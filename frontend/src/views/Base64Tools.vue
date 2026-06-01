@@ -1,11 +1,11 @@
 <template>
-  <ToolPage title="Base64工具" :icon="Key">
+  <ToolPage :title="$t('tools.base64.title')" :icon="Key">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="编码" name="encode">
+      <el-tab-pane :label="$t('tools.base64.tab.encode')" name="encode">
         <ToolSection
-          input-label="输入文本"
-          output-label="Base64结果"
-          action-text="编码"
+          :input-label="$t('tools.base64.label.inputText')"
+          :output-label="$t('tools.base64.label.base64Result')"
+          :action-text="$t('tools.base64.action.encode')"
           :loading="encoding"
           @submit="encodeBase64"
         >
@@ -14,7 +14,7 @@
               v-model="encodeInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入要编码的文本..."
+              :placeholder="$t('tools.base64.placeholder.inputText')"
               clearable
             />
           </template>
@@ -24,17 +24,17 @@
               type="textarea"
               :rows="8"
               readonly
-              placeholder="编码结果将显示在这里..."
+              :placeholder="$t('tools.base64.placeholder.encodeResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="解码" name="decode">
+      <el-tab-pane :label="$t('tools.base64.tab.decode')" name="decode">
         <ToolSection
-          input-label="输入Base64"
-          output-label="解码结果"
-          action-text="解码"
+          :input-label="$t('tools.base64.label.inputBase64')"
+          :output-label="$t('tools.base64.label.decodeResult')"
+          :action-text="$t('tools.base64.action.decode')"
           :loading="decoding"
           @submit="decodeBase64"
         >
@@ -43,7 +43,7 @@
               v-model="decodeInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Base64字符串..."
+              :placeholder="$t('tools.base64.placeholder.inputBase64')"
               clearable
             />
           </template>
@@ -53,17 +53,17 @@
               type="textarea"
               :rows="8"
               readonly
-              placeholder="解码结果将显示在这里..."
+              :placeholder="$t('tools.base64.placeholder.decodeResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="URL安全编码" name="url-safe-encode">
+      <el-tab-pane :label="$t('tools.base64.tab.urlSafeEncode')" name="url-safe-encode">
         <ToolSection
-          input-label="输入文本"
-          output-label="URL安全Base64结果"
-          action-text="编码"
+          :input-label="$t('tools.base64.label.inputText')"
+          :output-label="$t('tools.base64.label.urlSafeBase64Result')"
+          :action-text="$t('tools.base64.action.encode')"
           :loading="urlSafeEncoding"
           @submit="urlSafeEncode"
         >
@@ -72,7 +72,7 @@
               v-model="urlSafeEncodeInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入要编码的文本..."
+              :placeholder="$t('tools.base64.placeholder.inputText')"
               clearable
             />
           </template>
@@ -82,17 +82,17 @@
               type="textarea"
               :rows="8"
               readonly
-              placeholder="URL安全Base64编码结果将显示在这里..."
+              :placeholder="$t('tools.base64.placeholder.urlSafeEncodeResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="URL安全解码" name="url-safe-decode">
+      <el-tab-pane :label="$t('tools.base64.tab.urlSafeDecode')" name="url-safe-decode">
         <ToolSection
-          input-label="输入URL安全Base64"
-          output-label="解码结果"
-          action-text="解码"
+          :input-label="$t('tools.base64.label.inputUrlSafeBase64')"
+          :output-label="$t('tools.base64.label.decodeResult')"
+          :action-text="$t('tools.base64.action.decode')"
           :loading="urlSafeDecoding"
           @submit="urlSafeDecode"
         >
@@ -101,7 +101,7 @@
               v-model="urlSafeDecodeInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入URL安全Base64字符串..."
+              :placeholder="$t('tools.base64.placeholder.inputUrlSafeBase64')"
               clearable
             />
           </template>
@@ -111,17 +111,17 @@
               type="textarea"
               :rows="8"
               readonly
-              placeholder="解码结果将显示在这里..."
+              :placeholder="$t('tools.base64.placeholder.decodeResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="校验" name="validate">
+      <el-tab-pane :label="$t('tools.base64.tab.validate')" name="validate">
         <ToolSection
-          input-label="输入Base64文本"
-          output-label="校验结果"
-          action-text="校验"
+          :input-label="$t('tools.base64.label.inputBase64Text')"
+          :output-label="$t('tools.base64.label.validateResult')"
+          :action-text="$t('tools.base64.action.validate')"
           :loading="validating"
           :has-output="false"
           @submit="validateBase64"
@@ -131,14 +131,14 @@
               v-model="validateInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入要校验的Base64字符串..."
+              :placeholder="$t('tools.base64.placeholder.inputValidateBase64')"
               clearable
             />
           </template>
         </ToolSection>
         <div v-if="validateResult !== null" style="margin-top: 16px;">
           <el-alert
-            :title="validateResult.valid ? '校验通过' : '校验失败'"
+            :title="validateResult.valid ? $t('tools.base64.message.validatePass') : $t('tools.base64.message.validateFail')"
             :type="validateResult.valid ? 'success' : 'error'"
             :description="validateResult.message"
             show-icon
@@ -147,11 +147,11 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="文件编码" name="file-encode">
+      <el-tab-pane :label="$t('tools.base64.tab.fileEncode')" name="file-encode">
         <ToolSection
-          input-label="选择文件"
-          output-label="Base64编码结果"
-          action-text="编码"
+          :input-label="$t('tools.base64.label.selectFile')"
+          :output-label="$t('tools.base64.label.fileEncodeResult')"
+          :action-text="$t('tools.base64.action.fileEncode')"
           :loading="fileEncoding"
           @submit="encodeFile"
         >
@@ -166,7 +166,7 @@
               drag
             >
               <el-icon style="font-size: 40px; color: #909399;"><UploadFilled /></el-icon>
-              <div style="margin-top: 8px;">将文件拖到此处，或<em>点击上传</em></div>
+              <div style="margin-top: 8px;">{{ $t('tools.base64.placeholder.fileDropzone') }}</div>
             </el-upload>
           </template>
           <template #output>
@@ -175,24 +175,24 @@
               type="textarea"
               :rows="8"
               readonly
-              placeholder="文件编码结果将显示在这里..."
+              :placeholder="$t('tools.base64.placeholder.fileEncodeResult')"
             />
             <div v-if="fileEncodeInfo" style="margin-top: 12px;">
               <el-descriptions :column="3" border size="small">
-                <el-descriptions-item label="文件名">{{ fileEncodeInfo.filename }}</el-descriptions-item>
-                <el-descriptions-item label="MIME类型">{{ fileEncodeInfo.mime_type }}</el-descriptions-item>
-                <el-descriptions-item label="文件大小">{{ fileEncodeInfo.file_size }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('tools.base64.label.fileName')">{{ fileEncodeInfo.filename }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('tools.base64.label.mimeType')">{{ fileEncodeInfo.mime_type }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('tools.base64.label.fileSize')">{{ fileEncodeInfo.file_size }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </template>
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="文件解码" name="file-decode">
+      <el-tab-pane :label="$t('tools.base64.tab.fileDecode')" name="file-decode">
         <ToolSection
-          input-label="输入Base64编码数据"
-          output-label="解码结果"
-          action-text="解码并下载"
+          :input-label="$t('tools.base64.label.inputBase64File')"
+          :output-label="$t('tools.base64.label.decodeFileResult')"
+          :action-text="$t('tools.base64.action.fileDecode')"
           :loading="fileDecoding"
           @submit="decodeFile"
         >
@@ -201,16 +201,16 @@
               v-model="fileDecodeInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Base64编码的文件数据..."
+              :placeholder="$t('tools.base64.placeholder.inputBase64File')"
               clearable
             />
             <div style="margin-top: 12px;">
               <el-input
                 v-model="fileDecodeFilename"
-                placeholder="可选：指定下载文件名"
+                :placeholder="$t('tools.base64.placeholder.outputFileName')"
                 clearable
               >
-                <template #prepend>文件名</template>
+                <template #prepend>{{ $t('tools.base64.label.fileName') }}</template>
               </el-input>
             </div>
           </template>
@@ -223,7 +223,7 @@
                 :underline="false"
               >
                 <el-icon style="margin-right: 4px;"><Download /></el-icon>
-                点击下载解码文件
+                {{ $t('tools.base64.message.clickDownloadDecodedFile') }}
               </el-link>
             </div>
             <div v-else>
@@ -231,7 +231,7 @@
                 type="textarea"
                 :rows="4"
                 readonly
-                placeholder="解码后的下载链接将显示在这里..."
+                :placeholder="$t('tools.base64.placeholder.fileDecodeResult')"
               />
             </div>
           </template>
@@ -247,6 +247,7 @@ import { Key, UploadFilled, Download } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'Base64Tools',
@@ -258,7 +259,9 @@ export default {
     ToolSection
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'encode',
       // Encode / Decode
       encodeInput: '',
@@ -295,7 +298,7 @@ export default {
   methods: {
     async encodeBase64() {
       if (!this.encodeInput.trim()) {
-        ElMessage.warning('请输入要编码的文本')
+        ElMessage.warning(this.$t('tools.base64.message.inputTextRequired'))
         return
       }
 
@@ -307,12 +310,12 @@ export default {
 
         if (response.data.success) {
           this.encodeOutput = response.data.encoded
-          ElMessage.success('编码成功')
+          ElMessage.success(this.$t('tools.base64.message.encodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('编码失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.base64.message.encodeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.encoding = false
       }
@@ -320,7 +323,7 @@ export default {
 
     async decodeBase64() {
       if (!this.decodeInput.trim()) {
-        ElMessage.warning('请输入Base64字符串')
+        ElMessage.warning(this.$t('tools.base64.message.inputBase64Required'))
         return
       }
 
@@ -332,12 +335,12 @@ export default {
 
         if (response.data.success) {
           this.decodeOutput = response.data.decoded
-          ElMessage.success('解码成功')
+          ElMessage.success(this.$t('tools.base64.message.urlSafeDecodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('解码失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.base64.message.urlSafeDecodeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.decoding = false
       }
@@ -345,7 +348,7 @@ export default {
 
     async urlSafeEncode() {
       if (!this.urlSafeEncodeInput.trim()) {
-        ElMessage.warning('请输入要编码的文本')
+        ElMessage.warning(this.$t('tools.base64.message.inputTextRequired'))
         return
       }
 
@@ -357,12 +360,12 @@ export default {
 
         if (response.data.success) {
           this.urlSafeEncodeOutput = response.data.encoded
-          ElMessage.success('URL安全编码成功')
+          ElMessage.success(this.$t('tools.base64.message.urlSafeEncodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('URL安全编码失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.base64.message.urlSafeEncodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.urlSafeEncoding = false
       }
@@ -370,7 +373,7 @@ export default {
 
     async urlSafeDecode() {
       if (!this.urlSafeDecodeInput.trim()) {
-        ElMessage.warning('请输入URL安全Base64字符串')
+        ElMessage.warning(this.$t('tools.base64.message.inputBase64Required'))
         return
       }
 
@@ -382,12 +385,12 @@ export default {
 
         if (response.data.success) {
           this.urlSafeDecodeOutput = response.data.decoded
-          ElMessage.success('URL安全解码成功')
+          ElMessage.success(this.$t('tools.base64.message.urlSafeDecodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('URL安全解码失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.base64.message.urlSafeDecodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.urlSafeDecoding = false
       }
@@ -395,7 +398,7 @@ export default {
 
     async validateBase64() {
       if (!this.validateInput.trim()) {
-        ElMessage.warning('请输入要校验的Base64字符串')
+        ElMessage.warning(this.$t('tools.base64.message.inputValidateRequired'))
         return
       }
 
@@ -408,13 +411,13 @@ export default {
         if (response.data.valid) {
           this.validateResult = {
             valid: true,
-            message: response.data.message || '输入的文本是有效的Base64编码'
+            message: response.data.message || this.$t('tools.base64.message.validBase64')
           }
-          ElMessage.success('校验通过')
+          ElMessage.success(this.$t('tools.base64.message.validatePass'))
         } else {
           this.validateResult = {
             valid: false,
-            message: response.data.error || '输入的文本不是有效的Base64编码'
+            message: response.data.error || this.$t('tools.base64.message.invalidBase64')
           }
         }
       } catch (error) {
@@ -439,7 +442,7 @@ export default {
 
     async encodeFile() {
       if (!this.fileEncodeFile) {
-        ElMessage.warning('请先选择要编码的文件')
+        ElMessage.warning(this.$t('tools.base64.message.selectFileRequired'))
         return
       }
 
@@ -461,12 +464,12 @@ export default {
             mime_type: response.data.mime_type,
             file_size: response.data.file_size
           }
-          ElMessage.success('文件编码成功')
+          ElMessage.success(this.$t('tools.base64.message.fileEncodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('文件编码失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.base64.message.fileEncodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.fileEncoding = false
       }
@@ -474,7 +477,7 @@ export default {
 
     async decodeFile() {
       if (!this.fileDecodeInput.trim()) {
-        ElMessage.warning('请输入Base64编码的文件数据')
+        ElMessage.warning(this.$t('tools.base64.message.inputBase64FileRequired'))
         return
       }
 
@@ -487,12 +490,12 @@ export default {
 
         if (response.data.success) {
           this.fileDecodeDownloadUrl = response.data.download_url
-          ElMessage.success('文件解码成功')
+          ElMessage.success(this.$t('tools.base64.message.fileDecodeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('文件解码失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.base64.message.fileDecodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.fileDecoding = false
       }
@@ -500,3 +503,12 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .el-form-item :deep(.el-form-item__label) { width: auto !important; min-width: 60px; }
+  .el-form-item :deep(.el-form-item__content) { flex: 1; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+}
+</style>

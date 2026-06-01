@@ -1,21 +1,21 @@
 <template>
-  <ToolPage title="API Key生成器" :icon="Key">
+  <ToolPage :title="$t('tools.apikey.title')" :icon="Key">
     <el-tabs v-model="activeTab">
       <!-- 生成Key -->
-      <el-tab-pane label="生成Key" name="generate">
+      <el-tab-pane :label="$t('tools.apikey.tab.generate')" name="generate">
         <div class="tool-section">
           <div class="config-row">
             <div class="config-item">
-              <label class="config-label">类型</label>
+              <label class="config-label">{{ $t('tools.apikey.label.type') }}</label>
               <el-select v-model="genType" style="width: 100%;">
-                <el-option label="随机字符串" value="random" />
-                <el-option label="Base64编码" value="base64" />
-                <el-option label="UUID格式" value="uuid" />
-                <el-option label="十六进制" value="hex" />
+                <el-option :label="$t('tools.apikey.label.typeRandom')" value="random" />
+                <el-option :label="$t('tools.apikey.label.typeBase64')" value="base64" />
+                <el-option :label="$t('tools.apikey.label.typeUuid')" value="uuid" />
+                <el-option :label="$t('tools.apikey.label.typeHex')" value="hex" />
               </el-select>
             </div>
             <div class="config-item">
-              <label class="config-label">长度</label>
+              <label class="config-label">{{ $t('tools.apikey.label.length') }}</label>
               <el-input-number
                 v-model="genLength"
                 :min="16"
@@ -25,16 +25,16 @@
               />
             </div>
             <div class="config-item">
-              <label class="config-label">前缀</label>
+              <label class="config-label">{{ $t('tools.apikey.label.prefix') }}</label>
               <el-input
                 v-model="genPrefix"
-                placeholder="例如 sk_live"
+                :placeholder="$t('tools.apikey.label.prefix')"
                 clearable
                 style="width: 100%;"
               />
             </div>
             <div class="config-item">
-              <label class="config-label">数量</label>
+              <label class="config-label">{{ $t('tools.apikey.label.countLabel') }}</label>
               <el-input-number
                 v-model="genCount"
                 :min="1"
@@ -46,14 +46,14 @@
 
           <div class="action-buttons">
             <el-button type="primary" @click="generateKeys" :loading="generating">
-              生成Key
+              {{ $t('tools.apikey.label.generateKey') }}
             </el-button>
           </div>
 
           <div class="output-section" v-if="generatedKeys.length > 0">
             <div class="result-header">
-              <h4 class="section-title">生成结果 ({{ generatedKeys.length }}个)</h4>
-              <el-button size="small" type="success" @click="copyAllKeys">复制全部</el-button>
+              <h4 class="section-title">{{ $t('tools.apikey.label.generateResult') }} ({{ generatedKeys.length }})</h4>
+              <el-button size="small" type="success" @click="copyAllKeys">{{ $t('tools.apikey.label.copyAll') }}</el-button>
             </div>
             <el-table :data="generatedKeys" stripe style="width: 100%;">
               <el-table-column type="index" label="#" width="50" />
@@ -67,12 +67,12 @@
                   />
                 </template>
               </el-table-column>
-              <el-table-column label="类型" prop="type" width="90" />
-              <el-table-column label="长度" prop="length" width="70" />
-              <el-table-column label="操作" width="80" fixed="right">
+              <el-table-column :label="$t('tools.apikey.label.type')" prop="type" width="90" />
+              <el-table-column :label="$t('tools.apikey.label.length')" prop="length" width="70" />
+              <el-table-column :label="$t('tools.apikey.label.action')" width="80" fixed="right">
                 <template #default="{ row }">
                   <el-button size="small" link type="primary" @click="copyKey(row.prefixed_key)">
-                    复制
+                    {{ $t('tools.apikey.label.copy') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -82,40 +82,40 @@
       </el-tab-pane>
 
       <!-- 验证Key -->
-      <el-tab-pane label="验证Key" name="validate">
+      <el-tab-pane :label="$t('tools.apikey.tab.validate')" name="validate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">Key</h4>
+            <h4 class="section-title">{{ $t('tools.apikey.label.validateKey') }}</h4>
             <el-input
               v-model="valKey"
               type="textarea"
               :rows="3"
-              placeholder="请输入要验证的API Key..."
+              :placeholder="$t('tools.apikey.label.validateKey')"
               clearable
             />
           </div>
 
           <el-collapse class="optional-collapse">
-            <el-collapse-item title="高级选项" name="advanced">
+            <el-collapse-item :title="$t('tools.apikey.label.advancedOptions')" name="advanced">
               <div class="config-row">
                 <div class="config-item">
-                  <label class="config-label">预期类型</label>
-                  <el-select v-model="valExpectedType" clearable placeholder="自动检测" style="width: 100%;">
-                    <el-option label="随机字符串" value="random" />
-                    <el-option label="Base64编码" value="base64" />
-                    <el-option label="UUID格式" value="uuid" />
-                    <el-option label="十六进制" value="hex" />
+                  <label class="config-label">{{ $t('tools.apikey.label.expectedType') }}</label>
+                  <el-select v-model="valExpectedType" clearable :placeholder="$t('tools.apikey.label.autoDetect')" style="width: 100%;">
+                    <el-option :label="$t('tools.apikey.label.typeRandom')" value="random" />
+                    <el-option :label="$t('tools.apikey.label.typeBase64')" value="base64" />
+                    <el-option :label="$t('tools.apikey.label.typeUuid')" value="uuid" />
+                    <el-option :label="$t('tools.apikey.label.typeHex')" value="hex" />
                   </el-select>
                 </div>
                 <div class="config-item">
-                  <label class="config-label">最小长度</label>
+                  <label class="config-label">{{ $t('tools.apikey.label.minLength') }}</label>
                   <el-input-number v-model="valMinLength" :min="1" :max="512" style="width: 100%;" />
                 </div>
                 <div class="config-item">
-                  <label class="config-label">预期前缀</label>
+                  <label class="config-label">{{ $t('tools.apikey.label.expectedPrefix') }}</label>
                   <el-input
                     v-model="valExpectedPrefix"
-                    placeholder="例如 sk_live"
+                    :placeholder="$t('tools.apikey.label.prefix')"
                     clearable
                     style="width: 100%;"
                   />
@@ -126,30 +126,30 @@
 
           <div class="action-buttons">
             <el-button type="primary" @click="validateKey" :loading="validating">
-              验证Key
+              {{ $t('tools.apikey.label.validateKey') }}
             </el-button>
           </div>
 
           <div class="output-section" v-if="validateResult !== null">
             <el-alert
-              :title="validateResult.valid ? 'Key格式有效' : 'Key格式无效'"
+              :title="validateResult.valid ? $t('tools.apikey.label.keyValid') : $t('tools.apikey.label.keyInvalid')"
               :type="validateResult.valid ? 'success' : 'error'"
               show-icon
               style="margin-bottom: 16px;"
             />
             <el-descriptions :column="2" border size="small">
-              <el-descriptions-item label="检测类型">
+              <el-descriptions-item :label="$t('tools.apikey.label.detectedType')">
                 {{ validateResult.detected_type }}
               </el-descriptions-item>
-              <el-descriptions-item label="长度">
+              <el-descriptions-item :label="$t('tools.apikey.label.length')">
                 {{ validateResult.length }}
               </el-descriptions-item>
-              <el-descriptions-item label="包含前缀">
-                {{ validateResult.has_prefix ? '是' : '否' }}
+              <el-descriptions-item :label="$t('tools.apikey.label.hasPrefix')">
+                {{ validateResult.has_prefix ? $t('tools.apikey.label.yesNo').split('/')[0] : $t('tools.apikey.label.yesNo').split('/')[1] }}
               </el-descriptions-item>
             </el-descriptions>
             <div v-if="validateResult.issues && validateResult.issues.length > 0" class="issues-list">
-              <h4 class="section-title" style="color: var(--el-color-danger);">问题列表</h4>
+              <h4 class="section-title" style="color: var(--el-color-danger);">{{ $t('tools.apikey.label.issueList') }}</h4>
               <ul>
                 <li v-for="(issue, idx) in validateResult.issues" :key="idx">{{ issue }}</li>
               </ul>
@@ -159,22 +159,22 @@
       </el-tab-pane>
 
       <!-- Key哈希 -->
-      <el-tab-pane label="Key哈希" name="hash">
+      <el-tab-pane :label="$t('tools.apikey.tab.hash')" name="hash">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">Key</h4>
+            <h4 class="section-title">{{ $t('tools.apikey.label.keyHash') }}</h4>
             <el-input
               v-model="hashKeyInput"
               type="textarea"
               :rows="3"
-              placeholder="请输入要哈希的API Key..."
+              :placeholder="$t('tools.apikey.label.inputKeyHash')"
               clearable
             />
           </div>
 
           <div class="config-row">
             <div class="config-item">
-              <label class="config-label">算法</label>
+              <label class="config-label">{{ $t('tools.apikey.label.algorithm') }}</label>
               <el-select v-model="hashAlgorithm" style="width: 100%;">
                 <el-option label="SHA-256" value="sha256" />
                 <el-option label="SHA-384" value="sha384" />
@@ -186,32 +186,32 @@
 
           <div class="action-buttons">
             <el-button type="primary" @click="hashKey" :loading="hashing">
-              计算哈希
+              {{ $t('tools.apikey.label.calcHash') }}
             </el-button>
           </div>
 
           <div class="output-section" v-if="hashResult">
-            <h4 class="section-title">哈希结果</h4>
+            <h4 class="section-title">{{ $t('tools.apikey.label.hashResult') }}</h4>
             <div class="hash-output-row">
               <el-input
                 :model-value="hashResult.hash"
                 readonly
                 class="key-input"
               />
-              <el-button size="small" @click="copyKey(hashResult.hash)">复制</el-button>
+              <el-button size="small" @click="copyKey(hashResult.hash)">{{ $t('tools.apikey.label.copy') }}</el-button>
             </div>
 
             <el-descriptions :column="2" border size="small" style="margin-top: 12px;">
-              <el-descriptions-item label="算法">
+              <el-descriptions-item :label="$t('tools.apikey.label.algorithm')">
                 {{ hashResult.algorithm }}
               </el-descriptions-item>
-              <el-descriptions-item label="Key长度">
+              <el-descriptions-item :label="$t('tools.apikey.label.keyLength')">
                 {{ hashResult.key_length }}
               </el-descriptions-item>
-              <el-descriptions-item label="哈希长度">
+              <el-descriptions-item :label="$t('tools.apikey.label.hashLength')">
                 {{ hashResult.hash_length }}
               </el-descriptions-item>
-              <el-descriptions-item label="脱敏Key">
+              <el-descriptions-item :label="$t('tools.apikey.label.maskedKey')">
                 {{ hashResult.masked }}
               </el-descriptions-item>
             </el-descriptions>
@@ -282,12 +282,12 @@ export default {
 
         if (response.data.success) {
           this.generatedKeys = response.data.keys
-          ElMessage.success(`成功生成 ${response.data.count} 个Key`)
+          ElMessage.success(this.$t('tools.apikey.message.generatedCount', { count: response.data.count }))
         } else {
-          ElMessage.error(response.data.error || '生成失败')
+          ElMessage.error(response.data.error || this.$t('tools.apikey.message.generateFail'))
         }
       } catch (error) {
-        ElMessage.error('生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.apikey.message.generateFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generating = false
       }
@@ -295,24 +295,24 @@ export default {
 
     copyKey(text) {
       navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('tools.apikey.message.copiedToClipboard'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.apikey.message.copyFail'))
       })
     },
 
     copyAllKeys() {
       const allKeys = this.generatedKeys.map(k => k.prefixed_key).join('\n')
       navigator.clipboard.writeText(allKeys).then(() => {
-        ElMessage.success(`已复制 ${this.generatedKeys.length} 个Key到剪贴板`)
+        ElMessage.success(this.$t('tools.apikey.message.copiedAllKeys', { count: this.generatedKeys.length }))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.apikey.message.copyFail'))
       })
     },
 
     async validateKey() {
       if (!this.valKey.trim()) {
-        ElMessage.warning('请输入要验证的Key')
+        ElMessage.warning(this.$t('tools.apikey.message.inputKeyRequired'))
         return
       }
 
@@ -335,15 +335,15 @@ export default {
         if (response.data.success) {
           this.validateResult = response.data
           if (response.data.valid) {
-            ElMessage.success('Key格式有效')
+            ElMessage.success(this.$t('tools.apikey.message.keyFormatValid'))
           } else {
-            ElMessage.warning('Key格式存在问题')
+            ElMessage.warning(this.$t('tools.apikey.message.keyFormatIssues'))
           }
         } else {
-          ElMessage.error(response.data.error || '验证失败')
+          ElMessage.error(response.data.error || this.$t('tools.apikey.message.validateFail'))
         }
       } catch (error) {
-        ElMessage.error('验证失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.apikey.message.validateFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.validating = false
       }
@@ -351,7 +351,7 @@ export default {
 
     async hashKey() {
       if (!this.hashKeyInput.trim()) {
-        ElMessage.warning('请输入要哈希的Key')
+        ElMessage.warning(this.$t('tools.apikey.message.inputHashKeyRequired'))
         return
       }
 
@@ -365,12 +365,12 @@ export default {
 
         if (response.data.success) {
           this.hashResult = response.data
-          ElMessage.success('哈希计算成功')
+          ElMessage.success(this.$t('tools.apikey.message.hashSuccess'))
         } else {
-          ElMessage.error(response.data.error || '哈希失败')
+          ElMessage.error(response.data.error || this.$t('tools.apikey.message.hashFail'))
         }
       } catch (error) {
-        ElMessage.error('哈希失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.apikey.message.hashFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.hashing = false
       }

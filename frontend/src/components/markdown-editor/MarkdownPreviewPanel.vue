@@ -4,11 +4,11 @@
     <div class="preview-header">
       <div class="header-left">
         <el-icon class="preview-icon"><View /></el-icon>
-        <span>预览</span>
+        <span>{{ $t('tools.markdownEditor.preview') }}</span>
       </div>
       <div class="header-right">
         <span class="current-theme-info">
-          当前主题: {{ currentTypographyThemeName }} + {{ currentCodeThemeName }}
+          {{ $t('tools.markdownEditor.currentTheme') }}: {{ currentTypographyThemeName }} + {{ currentCodeThemeName }}
         </span>
       </div>
     </div>
@@ -65,12 +65,12 @@ export default {
   },
   computed: {
     currentTypographyThemeName() {
-      const theme = getTypographyTheme(this.currentTypographyTheme)
-      return theme ? theme.name : '经典优雅'
+      const key = `tools.markdownEditor.typographyThemes.${this.currentTypographyTheme}`
+      return this.$t(key)
     },
     currentCodeThemeName() {
-      const theme = getCodeTheme(this.currentCodeTheme)
-      return theme ? theme.name : 'GitHub 主题'
+      const key = `tools.markdownEditor.codeThemes.${this.currentCodeTheme}`
+      return this.$t(key)
     }
   },
   watch: {

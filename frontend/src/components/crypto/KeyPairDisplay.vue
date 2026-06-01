@@ -2,7 +2,7 @@
   <div v-if="privateKey || publicKey" class="key-pair-display">
     <el-row :gutter="20">
       <el-col :span="12" class="key-col">
-        <h4>私钥</h4>
+        <h4>{{ t('tools.crypto.shared.privateKey') }}</h4>
         <el-input
           :model-value="privateKey"
           type="textarea"
@@ -10,11 +10,11 @@
           readonly
         />
         <el-button @click="handleCopy(privateKey)" size="small" class="copy-btn">
-          复制私钥
+          {{ t('tools.crypto.shared.copyPrivateKey') }}
         </el-button>
       </el-col>
       <el-col :span="12" class="key-col">
-        <h4>公钥</h4>
+        <h4>{{ t('tools.crypto.shared.publicKey') }}</h4>
         <el-input
           :model-value="publicKey"
           type="textarea"
@@ -22,7 +22,7 @@
           readonly
         />
         <el-button @click="handleCopy(publicKey)" size="small" class="copy-btn">
-          复制公钥
+          {{ t('tools.crypto.shared.copyPublicKey') }}
         </el-button>
       </el-col>
     </el-row>
@@ -31,6 +31,9 @@
 
 <script setup>
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps({
   privateKey: {
@@ -49,9 +52,9 @@ defineProps({
 
 function handleCopy(text) {
   navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('已复制到剪贴板')
+    ElMessage.success(t('common.copySuccess'))
   }).catch(() => {
-    ElMessage.error('复制失败')
+    ElMessage.error(t('common.copyFail'))
   })
 }
 </script>

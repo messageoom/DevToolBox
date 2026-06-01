@@ -7,7 +7,7 @@
     <div class="action-section">
       <slot name="actions">
         <el-button type="primary" :loading="loading" @click="$emit('submit')">
-          {{ actionText }}
+          {{ displayActionText }}
         </el-button>
       </slot>
     </div>
@@ -19,7 +19,12 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const props = defineProps({
   inputLabel: {
     type: String,
     required: true
@@ -30,7 +35,7 @@ defineProps({
   },
   actionText: {
     type: String,
-    default: '执行'
+    default: ''
   },
   loading: {
     type: Boolean,
@@ -43,4 +48,6 @@ defineProps({
 })
 
 defineEmits(['submit'])
+
+const displayActionText = computed(() => props.actionText || t('common.execute'))
 </script>

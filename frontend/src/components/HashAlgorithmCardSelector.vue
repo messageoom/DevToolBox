@@ -3,7 +3,7 @@
     <div class="filter-section">
       <el-input
         v-model="searchText"
-        placeholder="搜索算法..."
+        :placeholder="$t('tools.hash.algorithmSelector.searchPlaceholder')"
         clearable
         class="search-input"
       >
@@ -45,23 +45,6 @@
 <script>
 import { Search } from '@element-plus/icons-vue'
 
-const ALGORITHM_DETAILS = {
-  md5: { label: 'MD5', securityLevel: '低', description: '128位摘要，不推荐安全场景', type: '国际标准' },
-  sha1: { label: 'SHA-1', securityLevel: '低', description: '160位摘要，已不推荐', type: '国际标准' },
-  sha224: { label: 'SHA-224', securityLevel: '中', description: '224位摘要', type: '国际标准' },
-  sha256: { label: 'SHA-256', securityLevel: '高', description: '256位摘要，广泛使用', type: '国际标准' },
-  sha384: { label: 'SHA-384', securityLevel: '高', description: '384位摘要', type: '国际标准' },
-  sha512: { label: 'SHA-512', securityLevel: '高', description: '512位摘要', type: '国际标准' },
-  sha3_224: { label: 'SHA3-224', securityLevel: '高', description: 'SHA-3 224位', type: '国际标准' },
-  sha3_256: { label: 'SHA3-256', securityLevel: '高', description: 'SHA-3 256位', type: '国际标准' },
-  sha3_384: { label: 'SHA3-384', securityLevel: '高', description: 'SHA-3 384位', type: '国际标准' },
-  sha3_512: { label: 'SHA3-512', securityLevel: '高', description: 'SHA-3 512位', type: '国际标准' },
-  blake2b: { label: 'BLAKE2b', securityLevel: '高', description: '快速哈希，最多512位', type: '国际标准' },
-  blake2s: { label: 'BLAKE2s', securityLevel: '高', description: '轻量哈希，最多256位', type: '国际标准' },
-  sm3: { label: 'SM3', securityLevel: '高', description: '国密哈希，256位', type: '国密' },
-  blake3: { label: 'BLAKE3', securityLevel: '高', description: '最新快速哈希', type: '国际标准' }
-}
-
 export default {
   name: 'HashAlgorithmCardSelector',
   components: { Search },
@@ -74,16 +57,36 @@ export default {
     return { searchText: '' }
   },
   computed: {
+    algorithmDetails() {
+      return {
+        md5: { label: 'MD5', securityLevel: this.$t('tools.hash.algorithmSelector.securityLow'), description: this.$t('tools.hash.algorithmSelector.descMd5'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha1: { label: 'SHA-1', securityLevel: this.$t('tools.hash.algorithmSelector.securityLow'), description: this.$t('tools.hash.algorithmSelector.descSha1'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha224: { label: 'SHA-224', securityLevel: this.$t('tools.hash.algorithmSelector.securityMedium'), description: this.$t('tools.hash.algorithmSelector.descSha224'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha256: { label: 'SHA-256', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha256'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha384: { label: 'SHA-384', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha384'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha512: { label: 'SHA-512', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha512'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha3_224: { label: 'SHA3-224', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha3_224'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha3_256: { label: 'SHA3-256', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha3_256'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha3_384: { label: 'SHA3-384', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha3_384'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sha3_512: { label: 'SHA3-512', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSha3_512'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        blake2b: { label: 'BLAKE2b', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descBlake2b'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        blake2s: { label: 'BLAKE2s', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descBlake2s'), type: this.$t('tools.hash.algorithmSelector.typeInternational') },
+        sm3: { label: 'SM3', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descSm3'), type: this.$t('tools.hash.algorithmSelector.typeNational') },
+        blake3: { label: 'BLAKE3', securityLevel: this.$t('tools.hash.algorithmSelector.securityHigh'), description: this.$t('tools.hash.algorithmSelector.descBlake3'), type: this.$t('tools.hash.algorithmSelector.typeInternational') }
+      }
+    },
     filteredAlgorithms() {
       const search = this.searchText.toLowerCase()
       return this.algorithms
-        .map(name => ({ value: name, ...ALGORITHM_DETAILS[name] }))
+        .map(name => ({ value: name, ...this.algorithmDetails[name] }))
         .filter(a => a.label && (!search || a.label.toLowerCase().includes(search) || a.value.toLowerCase().includes(search)))
     }
   },
   methods: {
     getTagType(level) {
-      return level === '高' ? 'success' : level === '中' ? 'warning' : 'danger'
+      const high = this.$t('tools.hash.algorithmSelector.securityHigh')
+      const medium = this.$t('tools.hash.algorithmSelector.securityMedium')
+      return level === high ? 'success' : level === medium ? 'warning' : 'danger'
     }
   }
 }

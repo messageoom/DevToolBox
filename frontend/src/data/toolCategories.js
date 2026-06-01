@@ -2,63 +2,47 @@
  * Shared tool categories data used by both Home.vue and MobileHome.vue.
  */
 
-export const MOBILE_BREAKPOINT = 768
-
 export const toolCategories = [
   {
     id: 'file',
-    name: '文件工具',
-    description: '文件上传、管理与处理',
     icon: 'FolderOpened',
     route: '/file-upload',
-    tools: ['文件上传', '文件管理', '批量处理']
+    tools: ['fileUpload', 'fileManage', 'batchProcess']
   },
   {
     id: 'crypto',
-    name: '加密工具',
-    description: '哈希算法、对称与非对称加密',
     icon: 'Key',
     route: '/crypto-tools',
     tools: ['RSA', 'ECC', 'AES', 'ChaCha20', 'SM2', 'SM4', 'MD5', 'SHA256', 'SM3', 'BLAKE3']
   },
   {
     id: 'data',
-    name: '数据工具',
-    description: '数据格式转换与处理',
     icon: 'DocumentCopy',
     route: '/json-tools',
     tools: ['JSON', 'YAML', 'Markdown', 'Base64']
   },
   {
     id: 'encoding',
-    name: '编码工具',
-    description: '各种编码解码工具',
     icon: 'Lock',
     route: '/base64-tools',
-    tools: ['Base64', 'URL编码', '时间戳']
+    tools: ['base64', 'urlEncode', 'timestamp']
   },
   {
     id: 'time',
-    name: '时间工具',
-    description: '时间戳与日期时间处理',
     icon: 'Clock',
     route: '/timestamp-tools',
-    tools: ['时间戳转换', '日期计算']
+    tools: ['timestampConvert', 'dateCalc']
   },
   {
     id: 'other',
-    name: '其他工具',
-    description: '二维码生成等其他实用工具',
     icon: 'Crop',
     route: '/qr-tools',
-    tools: ['二维码生成', '二维码美化']
+    tools: ['qrGenerate', 'qrBeautify']
   },
   {
     id: 'generator',
-    name: '生成与调试',
-    description: 'UUID、密码、API Key生成及开发调试工具',
     icon: 'MagicStick',
     route: '/uuid-tools',
-    tools: ['UUID生成', '密码生成', 'API Key生成', 'JWT调试', '文本对比']
+    tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff']
   }
 ]

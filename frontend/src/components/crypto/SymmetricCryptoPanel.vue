@@ -1,17 +1,17 @@
 <template>
   <div class="symmetric-crypto-panel">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="加密" name="encrypt">
+      <el-tab-pane :label="t('tools.crypto.shared.encrypt')" name="encrypt">
         <el-form :model="encryptForm" label-width="120px">
-          <el-form-item label="明文">
+          <el-form-item :label="t('tools.crypto.shared.plaintext')">
             <el-input
               v-model="encryptForm.plaintext"
               type="textarea"
               :rows="4"
-              placeholder="请输入要加密的文本..."
+              :placeholder="t('tools.crypto.shared.encryptPlaceholder')"
             />
           </el-form-item>
-          <el-form-item label="密钥">
+          <el-form-item :label="t('tools.crypto.shared.key')">
             <el-input
               v-model="encryptForm.key"
               type="textarea"
@@ -19,10 +19,10 @@
               :placeholder="keyPlaceholder"
             />
             <div v-if="showKeyGenerate" style="margin-top: 5px;">
-              <el-button @click="$emit('generateKey')" size="small">生成密钥</el-button>
+              <el-button @click="$emit('generateKey')" size="small">{{ t('tools.crypto.shared.generateKey') }}</el-button>
             </div>
           </el-form-item>
-          <el-form-item v-if="modes && modes.length > 0" label="模式">
+          <el-form-item v-if="modes && modes.length > 0" :label="t('tools.crypto.shared.mode')"  >
             <el-select v-model="encryptForm.mode">
               <el-option
                 v-for="mode in modes"
@@ -34,10 +34,10 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleEncrypt" :loading="encrypting">
-              {{ algorithm }}加密
+              {{ algorithm }}{{ t('tools.crypto.shared.encrypt') }}
             </el-button>
           </el-form-item>
-          <el-form-item v-if="encryptResult" label="密文">
+          <el-form-item v-if="encryptResult" :label="t('tools.crypto.shared.ciphertext')">
             <el-input
               :model-value="encryptResult"
               type="textarea"
@@ -45,7 +45,7 @@
               readonly
             />
             <el-button @click="handleCopy(encryptResult)" size="small" style="margin-top: 10px;">
-              复制密文
+              {{ t('tools.crypto.shared.copyCiphertext') }}
             </el-button>
           </el-form-item>
           <el-form-item v-if="encryptIV" :label="ivLabel">
@@ -56,23 +56,23 @@
               readonly
             />
             <el-button @click="handleCopy(encryptIV)" size="small" style="margin-top: 10px;">
-              复制{{ ivLabel }}
+              {{ t('tools.crypto.shared.copy') }}{{ ivLabel }}
             </el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="解密" name="decrypt">
+      <el-tab-pane :label="t('tools.crypto.shared.decrypt')" name="decrypt">
         <el-form :model="decryptForm" label-width="120px">
-          <el-form-item label="密文">
+          <el-form-item :label="t('tools.crypto.shared.ciphertext')">
             <el-input
               v-model="decryptForm.ciphertext"
               type="textarea"
               :rows="4"
-              placeholder="请输入要解密的密文..."
+              :placeholder="t('tools.crypto.shared.decryptPlaceholder')"
             />
           </el-form-item>
-          <el-form-item label="密钥">
+          <el-form-item :label="t('tools.crypto.shared.key')">
             <el-input
               v-model="decryptForm.key"
               type="textarea"
@@ -80,7 +80,7 @@
               :placeholder="keyPlaceholder"
             />
           </el-form-item>
-          <el-form-item v-if="modes && modes.length > 0" label="模式">
+          <el-form-item v-if="modes && modes.length > 0" :label="t('tools.crypto.shared.mode')">
             <el-select v-model="decryptForm.mode">
               <el-option
                 v-for="mode in modes"
@@ -103,10 +103,10 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleDecrypt" :loading="decrypting">
-              {{ algorithm }}解密
+              {{ algorithm }}{{ t('tools.crypto.shared.decrypt') }}
             </el-button>
           </el-form-item>
-          <el-form-item v-if="decryptResult" label="明文">
+          <el-form-item v-if="decryptResult" :label="t('tools.crypto.shared.plaintext')">
             <el-input
               :model-value="decryptResult"
               type="textarea"
@@ -114,7 +114,7 @@
               readonly
             />
             <el-button @click="handleCopy(decryptResult)" size="small" style="margin-top: 10px;">
-              复制明文
+              {{ t('tools.crypto.shared.copyPlaintext') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -126,6 +126,9 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   algorithm: { type: String, required: true },
@@ -136,10 +139,10 @@ const props = defineProps({
   decryptResult: { type: String, default: '' },
   encryptIV: { type: String, default: '' },
   showKeyGenerate: { type: Boolean, default: false },
-  keyPlaceholder: { type: String, default: '请输入密钥...' },
+  keyPlaceholder: { type: String, default: '' },
   keyRows: { type: Number, default: 3 },
   ivLabel: { type: String, default: 'IV' },
-  ivPlaceholder: { type: String, default: '请输入IV...' },
+  ivPlaceholder: { type: String, default: '' },
   hasNonce: { type: Boolean, default: false },
   defaultMode: { type: String, default: '' },
   generatedKey: { type: String, default: '' }
@@ -183,11 +186,11 @@ watch(() => props.generatedKey, (val) => {
 
 function handleEncrypt() {
   if (!encryptForm.plaintext.trim()) {
-    ElMessage.warning('请输入要加密的文本')
+    ElMessage.warning(t('tools.crypto.shared.inputPlaintextWarning'))
     return
   }
   if (!encryptForm.key.trim()) {
-    ElMessage.warning('请输入密钥')
+    ElMessage.warning(t('tools.crypto.shared.inputKeyWarning'))
     return
   }
   emit('encrypt', { ...encryptForm })
@@ -195,15 +198,15 @@ function handleEncrypt() {
 
 function handleDecrypt() {
   if (!decryptForm.ciphertext.trim()) {
-    ElMessage.warning('请输入要解密的密文')
+    ElMessage.warning(t('tools.crypto.shared.inputCiphertextWarning'))
     return
   }
   if (!decryptForm.key.trim()) {
-    ElMessage.warning('请输入密钥')
+    ElMessage.warning(t('tools.crypto.shared.inputKeyWarning'))
     return
   }
   if (showDecryptIV.value && !decryptForm.iv.trim()) {
-    ElMessage.warning(`请输入${props.ivLabel}`)
+    ElMessage.warning(t('tools.crypto.shared.inputIvWarning', { label: props.ivLabel }))
     return
   }
   emit('decrypt', { ...decryptForm })
@@ -211,9 +214,9 @@ function handleDecrypt() {
 
 function handleCopy(text) {
   navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('已复制到剪贴板')
+    ElMessage.success(t('common.copySuccess'))
   }).catch(() => {
-    ElMessage.error('复制失败')
+    ElMessage.error(t('common.copyFail'))
   })
 }
 </script>

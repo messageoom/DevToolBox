@@ -4,26 +4,26 @@
     <div class="toolbar-left">
       <el-button @click.stop="$emit('back')" @mousedown.prevent type="primary" plain size="small" tabindex="-1">
         <el-icon><ArrowLeft /></el-icon>
-        返回
+        {{ $t('common.back') }}
       </el-button>
-      <span class="editor-title">Markdown 沉浸式编辑器</span>
+      <span class="editor-title">{{ $t('tools.markdownEditor.title') }}</span>
     </div>
 
     <!-- 中间工具栏 -->
     <div class="toolbar-center">
       <!-- 文本格式化 -->
       <el-button-group size="small">
-        <el-tooltip content="粗体" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.bold')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'bold')" @mousedown.prevent type="default" tabindex="-1">
             <strong>B</strong>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="斜体" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.italic')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'italic')" @mousedown.prevent type="default" tabindex="-1">
             <em>I</em>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="删除线" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.strikethrough')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'strikethrough')" @mousedown.prevent type="default" tabindex="-1">
             <del>S</del>
           </el-button>
@@ -34,13 +34,13 @@
 
       <!-- 标题层级 -->
       <el-button-group size="small">
-        <el-tooltip content="一级标题" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.heading1')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'h1')" @mousedown.prevent type="default" tabindex="-1">H1</el-button>
         </el-tooltip>
-        <el-tooltip content="二级标题" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.heading2')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'h2')" @mousedown.prevent type="default" tabindex="-1">H2</el-button>
         </el-tooltip>
-        <el-tooltip content="三级标题" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.heading3')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'h3')" @mousedown.prevent type="default" tabindex="-1">H3</el-button>
         </el-tooltip>
       </el-button-group>
@@ -49,17 +49,17 @@
 
       <!-- 链接和媒体 -->
       <el-button-group size="small">
-        <el-tooltip content="链接" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.link')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'link')" @mousedown.prevent type="default" tabindex="-1">
             🔗
           </el-button>
         </el-tooltip>
-        <el-tooltip content="图片" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.image')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'image')" @mousedown.prevent type="default" tabindex="-1">
             🖼️
           </el-button>
         </el-tooltip>
-        <el-tooltip content="代码块" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.codeBlock')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'codeblock')" @mousedown.prevent type="default" tabindex="-1">
             {}
           </el-button>
@@ -70,17 +70,17 @@
 
       <!-- 列表和引用 -->
       <el-button-group size="small">
-        <el-tooltip content="无序列表" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.unorderedList')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'unorderedlist')" @mousedown.prevent type="default" tabindex="-1">
             •
           </el-button>
         </el-tooltip>
-        <el-tooltip content="有序列表" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.orderedList')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'orderedlist')" @mousedown.prevent type="default" tabindex="-1">
             1.
           </el-button>
         </el-tooltip>
-        <el-tooltip content="引用" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.blockquote')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'blockquote')" @mousedown.prevent type="default" tabindex="-1">
             "
           </el-button>
@@ -91,17 +91,17 @@
 
       <!-- 其他元素 -->
       <el-button-group size="small">
-        <el-tooltip content="表情符号" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.emoji')" placement="bottom">
           <el-button @click.stop="handleEmojiButtonClick" @mousedown.stop.prevent type="default" tabindex="-1">
             😀
           </el-button>
         </el-tooltip>
-        <el-tooltip content="表格" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.table')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'table')" @mousedown.prevent type="default" tabindex="-1">
             ⊞
           </el-button>
         </el-tooltip>
-        <el-tooltip content="水平线" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.horizontalRule')" placement="bottom">
           <el-button @click.stop="$emit('insert-format', 'hr')" @mousedown.prevent type="default" tabindex="-1">
             ―
           </el-button>
@@ -124,7 +124,7 @@
             @mousedown.stop.prevent
           >
             <div class="emoji-header">
-              <span>选择表情符号</span>
+              <span>{{ $t('tools.markdownEditor.toolbar.selectEmoji') }}</span>
               <el-button @click.stop="showEmojiPicker = false" type="text" size="small">✕</el-button>
             </div>
             <div class="emoji-grid">
@@ -148,12 +148,12 @@
     <div class="toolbar-right">
       <!-- 主题按钮组 -->
       <el-button-group size="small">
-        <el-tooltip content="排版主题" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.typographyTheme')" placement="bottom">
           <el-button @click.stop="toggleTypographyThemes" @mousedown.prevent type="default" tabindex="-1">
             <span class="theme-btn-icon">📖</span>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="代码主题" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.codeTheme')" placement="bottom">
           <el-button @click.stop="toggleCodeThemes" @mousedown.prevent type="default" tabindex="-1">
             <span class="theme-btn-icon">💻</span>
           </el-button>
@@ -164,17 +164,17 @@
 
       <!-- 布局切换按钮 -->
       <el-button-group size="small">
-        <el-tooltip content="分栏视图" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.splitView')" placement="bottom">
           <el-button @click.stop="$emit('switch-layout', 'split')" @mousedown.prevent type="default" tabindex="-1">
             <el-icon><Grid /></el-icon>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="全屏编辑" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.fullscreenEdit')" placement="bottom">
           <el-button @click.stop="$emit('switch-layout', 'editor-fullscreen')" @mousedown.prevent type="default" tabindex="-1">
             <el-icon><Edit /></el-icon>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="全屏预览" placement="bottom">
+        <el-tooltip :content="$t('tools.markdownEditor.toolbar.fullscreenPreview')" placement="bottom">
           <el-button @click.stop="$emit('switch-layout', 'preview-fullscreen')" @mousedown.prevent type="default" tabindex="-1">
             <el-icon><View /></el-icon>
           </el-button>
@@ -185,15 +185,15 @@
 
       <el-button @click.stop="$emit('toggle-preview')" @mousedown.prevent :type="showPreview ? 'primary' : 'default'" size="small" tabindex="-1">
         <el-icon><View /></el-icon>
-        {{ showPreview ? '隐藏预览' : '显示预览' }}
+        {{ showPreview ? $t('tools.markdownEditor.toolbar.hidePreview') : $t('tools.markdownEditor.toolbar.showPreview') }}
       </el-button>
       <el-button @click.stop="$emit('clear-content')" @mousedown.prevent type="danger" plain size="small" tabindex="-1">
         <el-icon><Delete /></el-icon>
-        清空
+        {{ $t('common.clear') }}
       </el-button>
       <el-button @click.stop="$emit('export-markdown')" @mousedown.prevent type="success" size="small" tabindex="-1">
         <el-icon><Download /></el-icon>
-        导出
+        {{ $t('tools.markdownEditor.toolbar.export') }}
       </el-button>
     </div>
 
@@ -213,7 +213,7 @@
           @mousedown.stop.prevent
         >
           <div class="theme-panel-header">
-            <span class="theme-panel-title">📖 排版主题</span>
+            <span class="theme-panel-title">📖 {{ $t('tools.markdownEditor.toolbar.typographyTheme') }}</span>
             <el-button @click.stop="showTypographyThemes = false" type="text" size="small">✕</el-button>
           </div>
           <div class="theme-grid">
@@ -227,14 +227,14 @@
             >
               <div class="theme-preview">
                 <div class="preview-content" :class="`typography-${theme.id}`">
-                  <h3>{{ theme.name }}</h3>
-                  <p>{{ theme.description }}</p>
-                  <p><em>示例文本：{{ theme.sample }}</em></p>
+                  <h3>{{ $t(`tools.markdownEditor.typographyThemes.${theme.id}`) }}</h3>
+                  <p>{{ $t(`tools.markdownEditor.typographyThemes.${theme.id}Desc`) }}</p>
+                  <p><em>{{ $t('tools.markdownEditor.toolbar.sampleText') }}：{{ $t(`tools.markdownEditor.typographyThemes.${theme.id}Sample`) }}</em></p>
                 </div>
               </div>
               <div class="theme-info">
-                <div class="theme-name">{{ theme.name }}</div>
-                <div class="theme-desc">{{ theme.description }}</div>
+                <div class="theme-name">{{ $t(`tools.markdownEditor.typographyThemes.${theme.id}`) }}</div>
+                <div class="theme-desc">{{ $t(`tools.markdownEditor.typographyThemes.${theme.id}Desc`) }}</div>
               </div>
             </div>
           </div>
@@ -258,7 +258,7 @@
           @mousedown.stop.prevent
         >
           <div class="theme-panel-header">
-            <span class="theme-panel-title">💻 代码主题</span>
+            <span class="theme-panel-title">💻 {{ $t('tools.markdownEditor.toolbar.codeTheme') }}</span>
             <el-button @click.stop="showCodeThemes = false" type="text" size="small">✕</el-button>
           </div>
           <div class="theme-grid">
@@ -276,8 +276,8 @@
                 </div>
               </div>
               <div class="theme-info">
-                <div class="theme-name">{{ theme.name }}</div>
-                <div class="theme-desc">{{ theme.description }}</div>
+                <div class="theme-name">{{ $t(`tools.markdownEditor.codeThemes.${theme.id}`) }}</div>
+                <div class="theme-desc">{{ $t(`tools.markdownEditor.codeThemes.${theme.id}Desc`) }}</div>
               </div>
             </div>
           </div>

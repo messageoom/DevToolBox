@@ -1,11 +1,11 @@
 <template>
-  <ToolPage title="Markdown工具" :icon="Document">
+  <ToolPage :title="$t('tools.markdown.title')" :icon="Document">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="Markdown转HTML" name="to-html">
+      <el-tab-pane :label="$t('tools.markdown.tab.mdToHtml')" name="to-html">
         <ToolSection
-          input-label="输入Markdown文本"
-          output-label="HTML输出"
-          action-text="转换"
+          :input-label="$t('tools.markdown.label.inputMarkdown')"
+          :output-label="$t('tools.markdown.label.htmlOutput')"
+          :action-text="$t('tools.markdown.label.convert')"
           :loading="converting"
           :has-output="!!htmlOutput"
           @submit="convertToHtml"
@@ -15,15 +15,15 @@
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Markdown文本..."
+              :placeholder="$t('tools.markdown.label.inputMarkdown') + '...'"
               style="width: 100%;"
             />
           </template>
           <template #actions>
             <el-button type="primary" @click="convertToHtml" :loading="converting">
-              转换
+              {{ $t('tools.markdown.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </template>
           <template #output>
             <el-input
@@ -35,19 +35,19 @@
             />
             <div class="action-section" style="margin-top: 10px;">
               <el-button type="success" @click="downloadHtml" :disabled="!fullHtmlOutput">
-                下载完整HTML文件
+                {{ $t('tools.markdown.label.downloadFullHtml') }}
               </el-button>
             </div>
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="descColumn" size="small" border>
-                <el-descriptions-item label="原始长度">
-                  {{ conversionStats.original_length }} 字符
+                <el-descriptions-item :label="$t('tools.markdown.label.originalLength')">
+                  {{ conversionStats.original_length }} {{ $t('tools.markdown.label.chars') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="HTML长度">
-                  {{ conversionStats.html_length }} 字符
+                <el-descriptions-item :label="$t('tools.markdown.label.htmlLength')">
+                  {{ conversionStats.html_length }} {{ $t('tools.markdown.label.chars') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="完整HTML长度">
-                  {{ conversionStats.full_html_length }} 字符
+                <el-descriptions-item :label="$t('tools.markdown.label.fullHtmlLength')">
+                  {{ conversionStats.full_html_length }} {{ $t('tools.markdown.label.chars') }}
                 </el-descriptions-item>
               </el-descriptions>
             </div>
@@ -55,11 +55,11 @@
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="Markdown转纯文本" name="to-plain">
+      <el-tab-pane :label="$t('tools.markdown.tab.mdToText')" name="to-plain">
         <ToolSection
-          input-label="输入Markdown文本"
-          output-label="纯文本输出"
-          action-text="转换"
+          :input-label="$t('tools.markdown.label.inputMarkdown')"
+          :output-label="$t('tools.markdown.label.textOutput')"
+          :action-text="$t('tools.markdown.label.convert')"
           :loading="converting"
           :has-output="!!plainOutput"
           @submit="convertToPlain"
@@ -69,15 +69,15 @@
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Markdown文本..."
+              :placeholder="$t('tools.markdown.label.inputMarkdown') + '...'"
               style="width: 100%;"
             />
           </template>
           <template #actions>
             <el-button type="primary" @click="convertToPlain" :loading="converting">
-              转换
+              {{ $t('tools.markdown.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </template>
           <template #output>
             <el-input
@@ -89,11 +89,11 @@
             />
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="2" size="small" border>
-                <el-descriptions-item label="原始长度">
-                  {{ conversionStats.original_length }} 字符
+                <el-descriptions-item :label="$t('tools.markdown.label.originalLength')">
+                  {{ conversionStats.original_length }} {{ $t('tools.markdown.label.chars') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="输出长度">
-                  {{ conversionStats.plain_length }} 字符
+                <el-descriptions-item :label="$t('tools.markdown.label.outputLength')">
+                  {{ conversionStats.plain_length }} {{ $t('tools.markdown.label.chars') }}
                 </el-descriptions-item>
               </el-descriptions>
             </div>
@@ -101,27 +101,27 @@
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="转义/反转义" name="escape">
+      <el-tab-pane :label="$t('tools.markdown.tab.escape')" name="escape">
         <div class="tool-section">
           <el-tabs v-model="escapeTab">
-            <el-tab-pane label="转义特殊字符" name="escape">
+            <el-tab-pane :label="$t('tools.markdown.label.escapeSpecialChars')" name="escape">
               <div class="input-section">
-                <h4 class="section-title">输入文本</h4>
+                <h4 class="section-title">{{ $t('tools.markdown.label.inputText') }}</h4>
                 <el-input
                   v-model="escapeInput"
                   type="textarea"
                   :rows="6"
-                  placeholder="输入包含Markdown特殊字符的文本..."
+                  :placeholder="$t('tools.markdown.label.inputText') + '...'"
                   style="width: 100%;"
                 />
               </div>
               <div class="action-section">
                 <el-button type="primary" @click="escapeMarkdown" :loading="escaping">
-                  转义
+                  {{ $t('tools.markdown.label.escapeSpecialChars') }}
                 </el-button>
               </div>
               <div class="output-section" v-if="escapedOutput">
-                <h4 class="section-title">转义后的文本</h4>
+                <h4 class="section-title">{{ $t('tools.markdown.label.escapedText') }}</h4>
                 <el-input
                   v-model="escapedOutput"
                   type="textarea"
@@ -132,24 +132,24 @@
               </div>
             </el-tab-pane>
 
-            <el-tab-pane label="反转义特殊字符" name="unescape">
+            <el-tab-pane :label="$t('tools.markdown.label.unescapeSpecialChars')" name="unescape">
               <div class="input-section">
-                <h4 class="section-title">输入转义文本</h4>
+                <h4 class="section-title">{{ $t('tools.markdown.label.inputEscapedText') }}</h4>
                 <el-input
                   v-model="unescapeInput"
                   type="textarea"
                   :rows="6"
-                  placeholder="输入已转义的Markdown文本..."
+                  :placeholder="$t('tools.markdown.label.inputEscapedText') + '...'"
                   style="width: 100%;"
                 />
               </div>
               <div class="action-section">
                 <el-button type="primary" @click="unescapeMarkdown" :loading="unescaping">
-                  反转义
+                  {{ $t('tools.markdown.label.unescapeSpecialChars') }}
                 </el-button>
               </div>
               <div class="output-section" v-if="unescapedOutput">
-                <h4 class="section-title">反转义后的文本</h4>
+                <h4 class="section-title">{{ $t('tools.markdown.label.unescapedText') }}</h4>
                 <el-input
                   v-model="unescapedOutput"
                   type="textarea"
@@ -163,54 +163,54 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="提取链接和图片" name="extract">
+      <el-tab-pane :label="$t('tools.markdown.tab.extractLinks')" name="extract">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入Markdown文本</h4>
+            <h4 class="section-title">{{ $t('tools.markdown.label.inputMarkdown') }}</h4>
             <el-input
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入包含链接和图片的Markdown文本..."
+              :placeholder="$t('tools.markdown.label.inputMarkdown') + '...'"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="extractLinks" :loading="extracting">
-              提取链接
+              {{ $t('tools.markdown.label.extractLinks') }}
             </el-button>
             <el-button type="primary" @click="extractImages" :loading="extracting">
-              提取图片
+              {{ $t('tools.markdown.label.extractImages') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="extractedLinks.length > 0 || extractedImages.length > 0">
             <div v-if="extractedLinks.length > 0">
-              <h4 class="section-title">提取的链接 ({{ extractedLinks.length }}个)</h4>
+              <h4 class="section-title">{{ $t('tools.markdown.label.extractedLinks') }} ({{ extractedLinks.length }})</h4>
               <el-table :data="extractedLinks" style="width: 100%; margin-bottom: 20px;">
-                <el-table-column prop="text" label="链接文本" width="200"></el-table-column>
+                <el-table-column prop="text" :label="$t('tools.markdown.label.linkText')" width="200"></el-table-column>
                 <el-table-column prop="url" label="URL"></el-table-column>
-                <el-table-column prop="full_match" label="完整匹配" width="200"></el-table-column>
+                <el-table-column prop="full_match" :label="$t('tools.markdown.label.fullMatch')" width="200"></el-table-column>
               </el-table>
             </div>
             <div v-if="extractedImages.length > 0">
-              <h4 class="section-title">提取的图片 ({{ extractedImages.length }}个)</h4>
+              <h4 class="section-title">{{ $t('tools.markdown.label.extractedImages') }} ({{ extractedImages.length }})</h4>
               <el-table :data="extractedImages" style="width: 100%;">
-                <el-table-column prop="alt" label="替代文本" width="150"></el-table-column>
-                <el-table-column prop="url" label="图片URL"></el-table-column>
-                <el-table-column prop="title" label="标题" width="150"></el-table-column>
-                <el-table-column prop="full_match" label="完整匹配" width="200"></el-table-column>
+                <el-table-column prop="alt" :label="$t('tools.markdown.label.altText')" width="150"></el-table-column>
+                <el-table-column prop="url" :label="$t('tools.markdown.label.imageUrl')"></el-table-column>
+                <el-table-column prop="title" :label="$t('tools.markdown.label.title')" width="150"></el-table-column>
+                <el-table-column prop="full_match" :label="$t('tools.markdown.label.fullMatch')" width="200"></el-table-column>
               </el-table>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="HTML表格转Markdown" name="table-convert">
+      <el-tab-pane :label="$t('tools.markdown.tab.htmlTableToMd')" name="table-convert">
         <ToolSection
-          input-label="输入HTML表格"
-          output-label="Markdown表格输出"
-          action-text="转换"
+          :input-label="$t('tools.markdown.label.inputHtmlTable')"
+          :output-label="$t('tools.markdown.label.mdTableOutput')"
+          :action-text="$t('tools.markdown.label.convert')"
           :loading="converting"
           :has-output="!!markdownTableOutput"
           @submit="convertTableToMarkdown"
@@ -220,15 +220,15 @@
               v-model="htmlTableInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入HTML表格代码..."
+              :placeholder="$t('tools.markdown.label.inputHtmlTable') + '...'"
               style="width: 100%;"
             />
           </template>
           <template #actions>
             <el-button type="primary" @click="convertTableToMarkdown" :loading="converting">
-              转换
+              {{ $t('tools.markdown.label.convert') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </template>
           <template #output>
             <el-input
@@ -240,10 +240,10 @@
             />
             <div class="stats" v-if="tableStats">
               <el-descriptions :column="2" size="small" border>
-                <el-descriptions-item label="列数">
+                <el-descriptions-item :label="$t('tools.markdown.label.columnCount')">
                   {{ tableStats.columns_count }}
                 </el-descriptions-item>
-                <el-descriptions-item label="行数">
+                <el-descriptions-item :label="$t('tools.markdown.label.rowCount')">
                   {{ tableStats.rows_count }}
                 </el-descriptions-item>
               </el-descriptions>
@@ -252,35 +252,35 @@
         </ToolSection>
       </el-tab-pane>
 
-      <el-tab-pane label="语法验证" name="validate">
+      <el-tab-pane :label="$t('tools.markdown.tab.syntaxValidate')" name="validate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入Markdown文本</h4>
+            <h4 class="section-title">{{ $t('tools.markdown.label.inputMarkdown') }}</h4>
             <el-input
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入要验证的Markdown文本..."
+              :placeholder="$t('tools.markdown.label.inputMarkdown') + '...'"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="validateMarkdown" :loading="validating">
-              验证语法
+              {{ $t('tools.markdown.label.validateSyntax') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="validationResult">
-            <h4 class="section-title">验证结果</h4>
+            <h4 class="section-title">{{ $t('tools.markdown.label.validateResult') }}</h4>
             <el-alert
-              :title="validationResult.valid ? '语法正确' : '发现语法问题'"
+              :title="validationResult.valid ? $t('tools.markdown.label.syntaxCorrect') : $t('tools.markdown.label.syntaxIssues')"
               :type="validationResult.valid ? 'success' : 'warning'"
-              :description="`发现 ${validationResult.issues_count} 个问题`"
+              :description="$t('tools.markdown.label.issueCount', { count: validationResult.issues_count })"
               show-icon
               style="margin-bottom: 20px;"
             />
             <div v-if="validationResult.issues.length > 0">
-              <h5>问题列表：</h5>
+              <h5>{{ $t('tools.markdown.label.issueList') }}:</h5>
               <el-tag
                 v-for="(issue, index) in validationResult.issues"
                 :key="index"
@@ -294,93 +294,93 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="文档统计" name="stats">
+      <el-tab-pane :label="$t('tools.markdown.tab.docStats')" name="stats">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入Markdown文本</h4>
+            <h4 class="section-title">{{ $t('tools.markdown.label.inputMarkdown') }}</h4>
             <el-input
               v-model="markdownInput"
               type="textarea"
               :rows="8"
-              placeholder="请输入Markdown文本进行统计..."
+              :placeholder="$t('tools.markdown.label.inputMarkdown') + '...'"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="getMarkdownStats" :loading="gettingStats">
-              获取统计
+              {{ $t('tools.markdown.label.docStats') }}
             </el-button>
-            <el-button @click="clearAll">清空</el-button>
+            <el-button @click="clearAll">{{ $t('tools.markdown.label.clear') }}</el-button>
           </div>
           <div class="output-section" v-if="markdownStats">
-            <h4 class="section-title">文档统计</h4>
+            <h4 class="section-title">{{ $t('tools.markdown.label.docStats') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="字符数">
+              <el-descriptions-item :label="$t('tools.markdown.label.charCount')">
                 {{ markdownStats.characters }}
               </el-descriptions-item>
-              <el-descriptions-item label="字符数(不含空格)">
+              <el-descriptions-item :label="$t('tools.markdown.label.charCountNoSpace')">
                 {{ markdownStats.characters_no_spaces }}
               </el-descriptions-item>
-              <el-descriptions-item label="单词数">
+              <el-descriptions-item :label="$t('tools.markdown.label.wordCount')">
                 {{ markdownStats.words }}
               </el-descriptions-item>
-              <el-descriptions-item label="行数">
+              <el-descriptions-item :label="$t('tools.markdown.label.rowCount')">
                 {{ markdownStats.lines }}
               </el-descriptions-item>
-              <el-descriptions-item label="段落数">
+              <el-descriptions-item :label="$t('tools.markdown.label.paragraphCount')">
                 {{ markdownStats.paragraphs }}
               </el-descriptions-item>
-              <el-descriptions-item label="链接数">
+              <el-descriptions-item :label="$t('tools.markdown.label.linkCount')">
                 {{ markdownStats.links }}
               </el-descriptions-item>
-              <el-descriptions-item label="图片数">
+              <el-descriptions-item :label="$t('tools.markdown.label.imageCount')">
                 {{ markdownStats.images }}
               </el-descriptions-item>
-              <el-descriptions-item label="代码块数">
+              <el-descriptions-item :label="$t('tools.markdown.label.codeBlockCount')">
                 {{ markdownStats.code_blocks }}
               </el-descriptions-item>
-              <el-descriptions-item label="行内代码数">
+              <el-descriptions-item :label="$t('tools.markdown.label.inlineCodeCount')">
                 {{ markdownStats.inline_codes }}
               </el-descriptions-item>
-              <el-descriptions-item label="表格数">
+              <el-descriptions-item :label="$t('tools.markdown.label.tableCount')">
                 {{ markdownStats.tables }}
               </el-descriptions-item>
-              <el-descriptions-item label="引用块数">
+              <el-descriptions-item :label="$t('tools.markdown.label.blockquoteCount')">
                 {{ markdownStats.blockquotes }}
               </el-descriptions-item>
             </el-descriptions>
 
-            <h4 class="section-title" style="margin-top: 20px;">标题统计</h4>
+            <h4 class="section-title" style="margin-top: 20px;">{{ $t('tools.markdown.label.headingStats') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="H1标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h1 }}
               </el-descriptions-item>
-              <el-descriptions-item label="H2标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h2 }}
               </el-descriptions-item>
-              <el-descriptions-item label="H3标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h3 }}
               </el-descriptions-item>
-              <el-descriptions-item label="H4标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h4 }}
               </el-descriptions-item>
-              <el-descriptions-item label="H5标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h5 }}
               </el-descriptions-item>
-              <el-descriptions-item label="H6标题">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')">
                 {{ markdownStats.headings.h6 }}
               </el-descriptions-item>
-              <el-descriptions-item label="标题总数" :span="3">
+              <el-descriptions-item :label="$t('tools.markdown.label.headingStats')" :span="3">
                 {{ markdownStats.headings.total }}
               </el-descriptions-item>
             </el-descriptions>
 
-            <h4 class="section-title" style="margin-top: 20px;">列表统计</h4>
+            <h4 class="section-title" style="margin-top: 20px;">{{ $t('tools.markdown.label.listStats') }}</h4>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="无序列表项">
+              <el-descriptions-item :label="$t('tools.markdown.label.unorderedListItems')">
                 {{ markdownStats.lists.unordered }}
               </el-descriptions-item>
-              <el-descriptions-item label="有序列表项">
+              <el-descriptions-item :label="$t('tools.markdown.label.orderedListItems')">
                 {{ markdownStats.lists.ordered }}
               </el-descriptions-item>
             </el-descriptions>
@@ -397,6 +397,7 @@ import { Document } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'MarkdownTools',
@@ -406,7 +407,9 @@ export default {
     ToolSection
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'to-html',
       escapeTab: 'escape',
 
@@ -453,7 +456,7 @@ export default {
   methods: {
     async convertToHtml() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -471,12 +474,12 @@ export default {
             html_length: response.data.html_length,
             full_html_length: response.data.full_html_length
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.markdown.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -484,7 +487,7 @@ export default {
 
     async convertToPlain() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -500,12 +503,12 @@ export default {
             original_length: response.data.original_length,
             plain_length: response.data.plain_length
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.markdown.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -513,7 +516,7 @@ export default {
 
     async escapeMarkdown() {
       if (!this.escapeInput) {
-        ElMessage.warning('请输入文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -525,12 +528,12 @@ export default {
 
         if (response.data.success) {
           this.escapedOutput = response.data.escaped
-          ElMessage.success('转义成功')
+          ElMessage.success(this.$t('tools.markdown.message.escapeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转义失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.escapeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.escaping = false
       }
@@ -538,7 +541,7 @@ export default {
 
     async unescapeMarkdown() {
       if (!this.unescapeInput) {
-        ElMessage.warning('请输入转义文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -550,12 +553,12 @@ export default {
 
         if (response.data.success) {
           this.unescapedOutput = response.data.unescaped
-          ElMessage.success('反转义成功')
+          ElMessage.success(this.$t('tools.markdown.message.unescapeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('反转义失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.unescapeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.unescaping = false
       }
@@ -563,7 +566,7 @@ export default {
 
     async extractLinks() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -576,12 +579,12 @@ export default {
         if (response.data.success) {
           this.extractedLinks = response.data.links
           this.extractedImages = []
-          ElMessage.success(`提取成功，发现 ${response.data.total_links} 个链接`)
+          ElMessage.success(this.$t('tools.markdown.message.extractSuccess') + ' - ' + response.data.total_links)
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('提取失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.extractFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.extracting = false
       }
@@ -589,7 +592,7 @@ export default {
 
     async extractImages() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -602,12 +605,12 @@ export default {
         if (response.data.success) {
           this.extractedImages = response.data.images
           this.extractedLinks = []
-          ElMessage.success(`提取成功，发现 ${response.data.total_images} 个图片`)
+          ElMessage.success(this.$t('tools.markdown.message.extractSuccess') + ' - ' + response.data.total_images)
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('提取失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.extractFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.extracting = false
       }
@@ -615,7 +618,7 @@ export default {
 
     async convertTableToMarkdown() {
       if (!this.htmlTableInput) {
-        ElMessage.warning('请输入HTML表格')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -631,12 +634,12 @@ export default {
             columns_count: response.data.columns_count,
             rows_count: response.data.rows_count
           }
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.markdown.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -644,7 +647,7 @@ export default {
 
     async validateMarkdown() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -657,15 +660,15 @@ export default {
         if (response.data.success) {
           this.validationResult = response.data
           if (response.data.valid) {
-            ElMessage.success('语法验证通过')
+            ElMessage.success(this.$t('tools.markdown.message.validateSuccess'))
           } else {
-            ElMessage.warning(`发现 ${response.data.issues_count} 个语法问题`)
+            ElMessage.warning(this.$t('tools.markdown.label.syntaxIssues') + ' - ' + response.data.issues_count)
           }
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('验证失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.validateFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.validating = false
       }
@@ -673,7 +676,7 @@ export default {
 
     async getMarkdownStats() {
       if (!this.markdownInput) {
-        ElMessage.warning('请输入Markdown文本')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -685,12 +688,12 @@ export default {
 
         if (response.data.success) {
           this.markdownStats = response.data.stats
-          ElMessage.success('统计完成')
+          ElMessage.success(this.$t('tools.markdown.message.statsSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('统计失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.markdown.message.statsFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.gettingStats = false
       }
@@ -698,7 +701,7 @@ export default {
 
     downloadHtml() {
       if (!this.fullHtmlOutput) {
-        ElMessage.warning('没有可下载的HTML内容')
+        ElMessage.warning(this.$t('tools.markdown.message.inputRequired'))
         return
       }
 
@@ -727,9 +730,9 @@ export default {
 
         URL.revokeObjectURL(url)
 
-        ElMessage.success('HTML文件下载成功')
+        ElMessage.success(this.$t('tools.markdown.message.downloadSuccess'))
       } catch (error) {
-        ElMessage.error('下载失败: ' + error.message)
+        ElMessage.error(this.$t('tools.markdown.message.downloadFail') + ': ' + error.message)
       }
     },
 
@@ -758,5 +761,24 @@ export default {
 <style scoped>
 .stats {
   margin-top: var(--dt-spacing-md);
+}
+
+@media (max-width: 768px) {
+  .action-section {
+    flex-direction: column;
+  }
+  .action-section .el-button {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-top: 8px;
+  }
+  .tool-section {
+    flex-direction: column;
+  }
+  .input-section,
+  .output-section {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 </style>

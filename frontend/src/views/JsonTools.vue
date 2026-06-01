@@ -1,12 +1,12 @@
 <template>
-  <ToolPage title="JSON工具" :icon="DocumentCopy">
+  <ToolPage :title="$t('tools.json.title')" :icon="DocumentCopy">
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <!-- 格式化 -->
-      <el-tab-pane label="格式化" name="format">
+      <el-tab-pane :label="$t('tools.json.tab.format')" name="format">
         <ToolSection
-          input-label="输入JSON"
-          output-label="格式化结果"
-          action-text="格式化"
+          :input-label="$t('tools.json.label.inputJson')"
+          :output-label="$t('tools.json.label.formatResult')"
+          :action-text="$t('tools.json.action.format')"
           :loading="formatting"
           @submit="formatJson"
         >
@@ -15,7 +15,7 @@
               v-model="formatInput"
               type="textarea"
               :rows="10"
-              placeholder="请输入JSON字符串..."
+              :placeholder="$t('tools.json.placeholder.inputJson')"
               clearable
             />
           </template>
@@ -25,18 +25,18 @@
               type="textarea"
               :rows="10"
               readonly
-              placeholder="格式化后的JSON将显示在这里..."
+              :placeholder="$t('tools.json.placeholder.formatResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
       <!-- 压缩 -->
-      <el-tab-pane label="压缩" name="minify">
+      <el-tab-pane :label="$t('tools.json.tab.minify')" name="minify">
         <ToolSection
-          input-label="输入JSON"
-          output-label="压缩结果"
-          action-text="压缩"
+          :input-label="$t('tools.json.label.inputJson')"
+          :output-label="$t('tools.json.label.minifyResult')"
+          :action-text="$t('tools.json.action.minify')"
           :loading="minifying"
           @submit="minifyJson"
         >
@@ -45,7 +45,7 @@
               v-model="minifyInput"
               type="textarea"
               :rows="10"
-              placeholder="请输入JSON字符串..."
+              :placeholder="$t('tools.json.placeholder.inputJson')"
               clearable
             />
           </template>
@@ -55,36 +55,36 @@
               type="textarea"
               :rows="10"
               readonly
-              placeholder="压缩后的JSON将显示在这里..."
+              :placeholder="$t('tools.json.placeholder.minifyResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
       <!-- 验证 -->
-      <el-tab-pane label="验证" name="validate">
+      <el-tab-pane :label="$t('tools.json.tab.validate')" name="validate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入JSON</h4>
+            <h4 class="section-title">{{ $t('tools.json.label.inputJson') }}</h4>
             <el-input
               v-model="validateInput"
               type="textarea"
               :rows="10"
-              placeholder="请输入JSON字符串..."
+              :placeholder="$t('tools.json.placeholder.inputJson')"
               clearable
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="validateJson" :loading="validating">
-              验证
+              {{ $t('tools.json.action.validate') }}
             </el-button>
           </div>
           <div class="output-section">
-            <h4 class="section-title">验证结果</h4>
+            <h4 class="section-title">{{ $t('tools.json.label.validateResult') }}</h4>
             <div class="validation-result">
               <el-alert
                 v-if="validationResult"
-                :title="validationResult.valid ? '验证成功' : '验证失败'"
+                :title="validationResult.valid ? $t('tools.json.message.validateSuccess') : $t('tools.json.message.validateFail')"
                 :type="validationResult.valid ? 'success' : 'error'"
                 :description="validationResult.message || validationResult.error"
                 show-icon
@@ -98,11 +98,11 @@
       </el-tab-pane>
 
       <!-- 转义 -->
-      <el-tab-pane label="转义" name="escape">
+      <el-tab-pane :label="$t('tools.json.tab.escape')" name="escape">
         <ToolSection
-          input-label="输入文本"
-          output-label="转义结果"
-          action-text="转义"
+          :input-label="$t('tools.json.label.inputText')"
+          :output-label="$t('tools.json.label.escapeResult')"
+          :action-text="$t('tools.json.action.escape')"
           :loading="escaping"
           @submit="escapeJson"
         >
@@ -111,7 +111,7 @@
               v-model="escapeInput"
               type="textarea"
               :rows="10"
-              placeholder="请输入要转义的文本..."
+              :placeholder="$t('tools.json.placeholder.inputText')"
               clearable
             />
           </template>
@@ -121,18 +121,18 @@
               type="textarea"
               :rows="10"
               readonly
-              placeholder="转义后的字符串将显示在这里..."
+              :placeholder="$t('tools.json.placeholder.escapeResult')"
             />
           </template>
         </ToolSection>
       </el-tab-pane>
 
       <!-- 反转义 -->
-      <el-tab-pane label="反转义" name="unescape">
+      <el-tab-pane :label="$t('tools.json.tab.unescape')" name="unescape">
         <ToolSection
-          input-label="输入JSON字符串"
-          output-label="反转义结果"
-          action-text="反转义"
+          :input-label="$t('tools.json.label.inputJsonString')"
+          :output-label="$t('tools.json.label.unescapeResult')"
+          :action-text="$t('tools.json.action.unescape')"
           :loading="unescaping"
           @submit="unescapeJson"
         >
@@ -141,7 +141,7 @@
               v-model="unescapeInput"
               type="textarea"
               :rows="10"
-              placeholder="请输入JSON字符串..."
+              :placeholder="$t('tools.json.placeholder.inputJson')"
               clearable
             />
           </template>
@@ -151,7 +151,7 @@
               type="textarea"
               :rows="10"
               readonly
-              placeholder="反转义后的文本将显示在这里..."
+              :placeholder="$t('tools.json.placeholder.unescapeResult')"
             />
           </template>
         </ToolSection>
@@ -166,6 +166,7 @@ import { DocumentCopy } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'JsonTools',
@@ -175,7 +176,9 @@ export default {
     ToolSection
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'format',
       // 格式化
       formatInput: '',
@@ -206,7 +209,7 @@ export default {
 
     async formatJson() {
       if (!this.formatInput.trim()) {
-        ElMessage.warning('请输入JSON字符串')
+        ElMessage.warning(this.$t('tools.json.message.inputRequired'))
         return
       }
 
@@ -218,12 +221,12 @@ export default {
 
         if (response.data.success) {
           this.formatOutput = response.data.formatted_json
-          ElMessage.success('格式化成功')
+          ElMessage.success(this.$t('tools.json.message.formatSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('格式化失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.json.message.formatFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.formatting = false
       }
@@ -231,7 +234,7 @@ export default {
 
     async minifyJson() {
       if (!this.minifyInput.trim()) {
-        ElMessage.warning('请输入JSON字符串')
+        ElMessage.warning(this.$t('tools.json.message.inputRequired'))
         return
       }
 
@@ -243,12 +246,12 @@ export default {
 
         if (response.data.success) {
           this.minifyOutput = response.data.minified_json
-          ElMessage.success('压缩成功')
+          ElMessage.success(this.$t('tools.json.message.minifySuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('压缩失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.json.message.minifyFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.minifying = false
       }
@@ -256,7 +259,7 @@ export default {
 
     async validateJson() {
       if (!this.validateInput.trim()) {
-        ElMessage.warning('请输入JSON字符串')
+        ElMessage.warning(this.$t('tools.json.message.inputRequired'))
         return
       }
 
@@ -268,16 +271,16 @@ export default {
 
         this.validationResult = response.data
         if (response.data.valid) {
-          ElMessage.success('JSON格式正确')
+          ElMessage.success(this.$t('tools.json.message.jsonValid'))
         } else {
-          ElMessage.error('JSON格式错误')
+          ElMessage.error(this.$t('tools.json.message.jsonInvalid'))
         }
       } catch (error) {
         this.validationResult = {
           valid: false,
           error: error.response?.data?.error || error.message
         }
-        ElMessage.error('验证失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.json.message.validateFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.validating = false
       }
@@ -285,7 +288,7 @@ export default {
 
     async escapeJson() {
       if (!this.escapeInput.trim()) {
-        ElMessage.warning('请输入要转义的文本')
+        ElMessage.warning(this.$t('tools.json.message.escapeInputRequired'))
         return
       }
 
@@ -297,12 +300,12 @@ export default {
 
         if (response.data.success) {
           this.escapeOutput = response.data.escaped_text
-          ElMessage.success('转义成功')
+          ElMessage.success(this.$t('tools.json.message.escapeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转义失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.json.message.escapeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.escaping = false
       }
@@ -310,7 +313,7 @@ export default {
 
     async unescapeJson() {
       if (!this.unescapeInput.trim()) {
-        ElMessage.warning('请输入JSON字符串')
+        ElMessage.warning(this.$t('tools.json.message.inputRequired'))
         return
       }
 
@@ -322,12 +325,12 @@ export default {
 
         if (response.data.success) {
           this.unescapeOutput = response.data.unescaped_text
-          ElMessage.success('反转义成功')
+          ElMessage.success(this.$t('tools.json.message.unescapeSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('反转义失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.json.message.unescapeFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.unescaping = false
       }
@@ -350,5 +353,14 @@ export default {
   word-wrap: break-word;
   max-height: 300px;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .el-form-item :deep(.el-form-item__label) { width: auto !important; min-width: 70px; }
+  .el-form-item :deep(.el-form-item__content) { flex: 1; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+  .el-row { flex-direction: column; }
+  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
 }
 </style>

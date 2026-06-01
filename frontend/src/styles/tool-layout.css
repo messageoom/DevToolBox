@@ -130,19 +130,28 @@
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .tool-page {
-    padding: var(--dt-spacing-md);
+    padding: var(--dt-spacing-sm);
+  }
+
+  .tool-page--mobile {
+    padding: 0;
   }
 
   .tool-section {
-    gap: var(--dt-spacing-md);
+    gap: var(--dt-spacing-sm);
   }
 
   .config-section {
-    padding: var(--dt-spacing-md);
+    padding: var(--dt-spacing-sm);
   }
 
   .action-section {
     flex-wrap: wrap;
+    padding: var(--dt-spacing-xs) 0;
+  }
+
+  .section-title {
+    margin-bottom: var(--dt-spacing-xs);
   }
 
   .stats-row {
@@ -153,7 +162,15 @@
 
 @media (max-width: 480px) {
   .tool-page {
-    padding: var(--dt-spacing-sm);
+    padding: var(--dt-spacing-xs);
+  }
+
+  .tool-page--mobile {
+    padding: 0;
+  }
+
+  .tool-section {
+    gap: var(--dt-spacing-xs);
   }
 
   .card-header span {

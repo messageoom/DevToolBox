@@ -1,5 +1,13 @@
 /* DevToolBox Design System - CSS Custom Properties */
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
 :root {
   /* Primary */
   --dt-primary: #409eff;
@@ -98,4 +106,13 @@ html.dark {
   --dt-success-light: #1a3a1a;
   --dt-warning-light: #3a2f1a;
   --dt-danger-light: #3a1a1a;
+}
+
+/* Button press feedback */
+.el-button:active:not(.is-disabled) {
+  transform: scale(0.97);
+}
+
+.el-button {
+  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

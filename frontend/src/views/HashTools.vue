@@ -1,16 +1,16 @@
 <template>
-  <ToolPage title="哈希工具" :icon="Lock">
+  <ToolPage :title="$t('tools.hash.title')" :icon="Lock">
     <el-tabs v-model="activeTab">
       <!-- 生成哈希 -->
-      <el-tab-pane label="生成哈希" name="generate">
+      <el-tab-pane :label="$t('tools.hash.tab.generate')" name="generate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入文本</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.inputText') }}</h4>
             <el-input
               v-model="inputText"
               type="textarea"
               :rows="6"
-              placeholder="请输入要生成哈希的文本..."
+              :placeholder="$t('tools.hash.placeholder.inputText')"
               clearable
             />
           </div>
@@ -24,13 +24,13 @@
           <div class="config-section">
             <div class="action-buttons">
               <el-button type="primary" @click="generateHash" :loading="generating">
-                生成哈希
+                {{ $t('tools.hash.action.generateHash') }}
               </el-button>
             </div>
           </div>
 
           <div class="output-section" v-if="hashResult">
-            <h4 class="section-title">哈希结果</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.hashResult') }}</h4>
             <el-input
               v-model="hashResult"
               readonly
@@ -38,31 +38,31 @@
               :rows="4"
             />
             <div class="action-section" style="margin-top: 8px;">
-              <el-button size="small" @click="copyResult">复制</el-button>
+              <el-button size="small" @click="copyResult">{{ $t('common.copy') }}</el-button>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
       <!-- 验证哈希 -->
-      <el-tab-pane label="验证哈希" name="verify">
+      <el-tab-pane :label="$t('tools.hash.tab.verify')" name="verify">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入文本</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.inputText') }}</h4>
             <el-input
               v-model="verifyText"
               type="textarea"
               :rows="4"
-              placeholder="请输入原始文本..."
+              :placeholder="$t('tools.hash.placeholder.inputOriginalText')"
               clearable
             />
           </div>
 
           <div class="input-section">
-            <h4 class="section-title">预期哈希值</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.expectedHash') }}</h4>
             <el-input
               v-model="verifyHash"
-              placeholder="请输入预期的哈希值..."
+              :placeholder="$t('tools.hash.placeholder.inputExpectedHash')"
               clearable
             />
           </div>
@@ -76,16 +76,16 @@
           <div class="config-section">
             <div class="action-buttons">
               <el-button type="primary" @click="verifyHashAction" :loading="verifying">
-                验证哈希
+                {{ $t('tools.hash.action.verifyHash') }}
               </el-button>
             </div>
           </div>
 
           <div class="output-section" v-if="verifyResult !== null">
             <el-alert
-              :title="verifyResult ? '哈希验证通过' : '哈希验证失败'"
+              :title="verifyResult ? $t('tools.hash.message.hashVerified') : $t('tools.hash.message.hashFail')"
               :type="verifyResult ? 'success' : 'error'"
-              :description="verifyResult ? '输入的哈希值与计算结果匹配' : '输入的哈希值与计算结果不匹配'"
+              :description="verifyResult ? $t('tools.hash.message.hashMatchDesc') : $t('tools.hash.message.hashMismatchDesc')"
               show-icon
             />
           </div>
@@ -93,24 +93,24 @@
       </el-tab-pane>
 
       <!-- HMAC -->
-      <el-tab-pane label="HMAC" name="hmac">
+      <el-tab-pane :label="$t('tools.hash.tab.hmac')" name="hmac">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入文本</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.inputText') }}</h4>
             <el-input
               v-model="hmacText"
               type="textarea"
               :rows="4"
-              placeholder="请输入消息文本..."
+              :placeholder="$t('tools.hash.placeholder.inputMessageText')"
               clearable
             />
           </div>
 
           <div class="input-section">
-            <h4 class="section-title">密钥</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.secretKey') }}</h4>
             <el-input
               v-model="hmacKey"
-              placeholder="请输入HMAC密钥..."
+              :placeholder="$t('tools.hash.placeholder.inputHmacKey')"
               clearable
               show-password
             />
@@ -125,13 +125,13 @@
           <div class="config-section">
             <div class="action-buttons">
               <el-button type="primary" @click="generateHMAC" :loading="generatingHMAC">
-                生成HMAC
+                {{ $t('tools.hash.action.generateHmac') }}
               </el-button>
             </div>
           </div>
 
           <div class="output-section" v-if="hmacResult">
-            <h4 class="section-title">HMAC结果</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.hmacResult') }}</h4>
             <el-input
               v-model="hmacResult"
               readonly
@@ -139,20 +139,20 @@
               :rows="4"
             />
             <div class="action-section" style="margin-top: 8px;">
-              <el-button size="small" @click="copyHmacResult">复制</el-button>
+              <el-button size="small" @click="copyHmacResult">{{ $t('common.copy') }}</el-button>
             </div>
           </div>
         </div>
       </el-tab-pane>
 
       <!-- 密码哈希 -->
-      <el-tab-pane label="密码哈希" name="password">
+      <el-tab-pane :label="$t('tools.hash.tab.passwordHash')" name="password">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">密码</h4>
+            <h4 class="section-title">{{ $t('tools.hash.label.password') }}</h4>
             <el-input
               v-model="passwordText"
-              placeholder="请输入密码..."
+              :placeholder="$t('tools.hash.placeholder.inputPassword')"
               clearable
               show-password
             />
@@ -162,7 +162,7 @@
             <el-tab-pane label="bcrypt" name="bcrypt">
               <div class="config-section">
                 <el-form label-width="80px">
-                  <el-form-item label="轮数">
+                  <el-form-item :label="$t('tools.hash.bcryptForm.rounds')">
                     <el-slider v-model="bcryptRounds" :min="4" :max="14" :step="1" show-stops style="width: 200px;" />
                     <span style="margin-left: 10px; color: var(--dt-text-secondary);">{{ bcryptRounds }}</span>
                   </el-form-item>
@@ -170,29 +170,29 @@
               </div>
               <div class="action-buttons">
                 <el-button type="primary" @click="generateBcrypt" :loading="generatingPassword">
-                  生成bcrypt哈希
+                  {{ $t('tools.hash.action.generateBcrypt') }}
                 </el-button>
               </div>
               <div class="output-section" v-if="bcryptResult">
-                <h4 class="section-title">bcrypt哈希</h4>
+                <h4 class="section-title">{{ $t('tools.hash.label.bcryptHash') }}</h4>
                 <el-input v-model="bcryptResult" readonly />
               </div>
 
-              <el-divider>验证bcrypt</el-divider>
+              <el-divider>{{ $t('tools.hash.bcryptForm.verifyBcrypt') }}</el-divider>
               <div class="input-section">
-                <el-input v-model="bcryptVerifyPassword" placeholder="输入密码验证..." show-password />
+                <el-input v-model="bcryptVerifyPassword" :placeholder="$t('tools.hash.placeholder.inputPasswordVerify')" show-password />
               </div>
               <div class="input-section">
-                <el-input v-model="bcryptVerifyHash" placeholder="输入bcrypt哈希值..." />
+                <el-input v-model="bcryptVerifyHash" :placeholder="$t('tools.hash.placeholder.inputBcryptHash')" />
               </div>
               <div class="action-buttons">
                 <el-button type="primary" @click="verifyBcrypt" :loading="verifyingBcrypt">
-                  验证
+                  {{ $t('tools.hash.action.verify') }}
                 </el-button>
               </div>
               <div class="output-section" v-if="bcryptVerifyResult !== null">
                 <el-alert
-                  :title="bcryptVerifyResult ? '密码匹配' : '密码不匹配'"
+                  :title="bcryptVerifyResult ? $t('tools.hash.message.passwordMatch') : $t('tools.hash.message.passwordMismatch')"
                   :type="bcryptVerifyResult ? 'success' : 'error'"
                   show-icon
                 />
@@ -202,16 +202,16 @@
             <el-tab-pane label="PBKDF2" name="pbkdf2">
               <div class="config-section">
                 <el-form label-width="80px">
-                  <el-form-item label="盐值">
-                    <el-input v-model="pbkdf2Salt" placeholder="留空则自动生成" clearable style="width: 300px;" />
+                  <el-form-item :label="$t('tools.hash.pbkdf2Form.salt')">
+                    <el-input v-model="pbkdf2Salt" :placeholder="$t('tools.hash.pbkdf2Form.saltPlaceholder')" clearable style="width: 300px;" />
                   </el-form-item>
-                  <el-form-item label="迭代次数">
+                  <el-form-item :label="$t('tools.hash.pbkdf2Form.iterations')">
                     <el-input-number v-model="pbkdf2Iterations" :min="1000" :max="500000" :step="10000" />
                   </el-form-item>
-                  <el-form-item label="密钥长度">
+                  <el-form-item :label="$t('tools.hash.pbkdf2Form.keyLength')">
                     <el-input-number v-model="pbkdf2Dklen" :min="16" :max="128" :step="8" />
                   </el-form-item>
-                  <el-form-item label="算法">
+                  <el-form-item :label="$t('tools.hash.pbkdf2Form.algorithm')">
                     <el-select v-model="pbkdf2Algorithm">
                       <el-option label="SHA-256" value="sha256" />
                       <el-option label="SHA-384" value="sha384" />
@@ -222,14 +222,14 @@
               </div>
               <div class="action-buttons">
                 <el-button type="primary" @click="generatePBKDF2" :loading="generatingPassword">
-                  生成PBKDF2
+                  {{ $t('tools.hash.action.generatePbkdf2') }}
                 </el-button>
               </div>
               <div class="output-section" v-if="pbkdf2Result">
-                <h4 class="section-title">PBKDF2结果</h4>
+                <h4 class="section-title">{{ $t('tools.hash.label.pbkdf2Result') }}</h4>
                 <el-input v-model="pbkdf2Result" readonly />
                 <div style="margin-top: 8px; color: var(--dt-text-secondary); font-size: 12px;">
-                  盐值: {{ pbkdf2ResultSalt }} | 迭代: {{ pbkdf2Iterations }} | 长度: {{ pbkdf2Dklen }}字节
+                  {{ $t('tools.hash.message.pbkdf2Meta', { salt: pbkdf2ResultSalt, iterations: pbkdf2Iterations, length: pbkdf2Dklen }) }}
                 </div>
               </div>
             </el-tab-pane>
@@ -244,6 +244,7 @@
 import { ElMessage } from 'element-plus'
 import { Lock } from '@element-plus/icons-vue'
 import axios from 'axios'
+import { useDeviceStore } from '@/stores/device.js'
 import HashAlgorithmCardSelector from '@/components/HashAlgorithmCardSelector.vue'
 import ToolPage from '@/components/ToolPage.vue'
 
@@ -255,7 +256,9 @@ export default {
     ToolPage
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'generate',
       algorithm: 'sha256',
       availableAlgorithms: [],
@@ -306,7 +309,7 @@ export default {
   methods: {
     async generateHash() {
       if (!this.inputText.trim()) {
-        ElMessage.warning('请输入要生成哈希的文本')
+        ElMessage.warning(this.$t('tools.hash.message.inputTextRequired'))
         return
       }
 
@@ -319,12 +322,12 @@ export default {
 
         if (response.data.success) {
           this.hashResult = response.data.hash
-          ElMessage.success('哈希生成成功')
+          ElMessage.success(this.$t('tools.hash.message.hashSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('哈希生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.hashFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generating = false
       }
@@ -332,11 +335,11 @@ export default {
 
     async verifyHashAction() {
       if (!this.verifyText.trim()) {
-        ElMessage.warning('请输入原始文本')
+        ElMessage.warning(this.$t('tools.hash.message.inputOriginalRequired'))
         return
       }
       if (!this.verifyHash.trim()) {
-        ElMessage.warning('请输入预期哈希值')
+        ElMessage.warning(this.$t('tools.hash.message.inputExpectedRequired'))
         return
       }
 
@@ -351,15 +354,15 @@ export default {
         if (response.data.success) {
           this.verifyResult = response.data.valid
           if (response.data.valid) {
-            ElMessage.success('哈希验证通过')
+            ElMessage.success(this.$t('tools.hash.message.verifySuccess'))
           } else {
-            ElMessage.error('哈希验证失败：不匹配')
+            ElMessage.error(this.$t('tools.hash.message.verifyMismatch'))
           }
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('验证失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.verifyFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.verifying = false
       }
@@ -367,11 +370,11 @@ export default {
 
     async generateHMAC() {
       if (!this.hmacText.trim()) {
-        ElMessage.warning('请输入消息文本')
+        ElMessage.warning(this.$t('tools.hash.message.inputMessageRequired'))
         return
       }
       if (!this.hmacKey.trim()) {
-        ElMessage.warning('请输入HMAC密钥')
+        ElMessage.warning(this.$t('tools.hash.message.inputHmacKeyRequired'))
         return
       }
 
@@ -385,12 +388,12 @@ export default {
 
         if (response.data.success) {
           this.hmacResult = response.data.hmac
-          ElMessage.success('HMAC生成成功')
+          ElMessage.success(this.$t('tools.hash.message.hmacSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('HMAC生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.hmacFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generatingHMAC = false
       }
@@ -398,7 +401,7 @@ export default {
 
     async generateBcrypt() {
       if (!this.passwordText) {
-        ElMessage.warning('请输入密码')
+        ElMessage.warning(this.$t('tools.hash.message.inputPasswordRequired'))
         return
       }
 
@@ -411,12 +414,12 @@ export default {
 
         if (response.data.success) {
           this.bcryptResult = response.data.hash
-          ElMessage.success('bcrypt哈希生成成功')
+          ElMessage.success(this.$t('tools.hash.message.bcryptSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('bcrypt生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.bcryptFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generatingPassword = false
       }
@@ -424,11 +427,11 @@ export default {
 
     async verifyBcrypt() {
       if (!this.bcryptVerifyPassword) {
-        ElMessage.warning('请输入密码')
+        ElMessage.warning(this.$t('tools.hash.message.inputPasswordRequired'))
         return
       }
       if (!this.bcryptVerifyHash) {
-        ElMessage.warning('请输入bcrypt哈希值')
+        ElMessage.warning(this.$t('tools.hash.message.inputBcryptHash'))
         return
       }
 
@@ -442,15 +445,15 @@ export default {
         if (response.data.success) {
           this.bcryptVerifyResult = response.data.valid
           if (response.data.valid) {
-            ElMessage.success('密码匹配')
+            ElMessage.success(this.$t('tools.hash.message.passwordMatch'))
           } else {
-            ElMessage.error('密码不匹配')
+            ElMessage.error(this.$t('tools.hash.message.passwordMismatch'))
           }
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('验证失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.verifyFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.verifyingBcrypt = false
       }
@@ -458,7 +461,7 @@ export default {
 
     async generatePBKDF2() {
       if (!this.passwordText) {
-        ElMessage.warning('请输入密码')
+        ElMessage.warning(this.$t('tools.hash.message.inputPasswordRequired'))
         return
       }
 
@@ -476,12 +479,12 @@ export default {
         if (response.data.success) {
           this.pbkdf2Result = response.data.derived_key
           this.pbkdf2ResultSalt = response.data.salt
-          ElMessage.success('PBKDF2生成成功')
+          ElMessage.success(this.$t('tools.hash.message.pbkdf2Success'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('PBKDF2生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.hash.message.pbkdf2Fail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generatingPassword = false
       }
@@ -489,13 +492,13 @@ export default {
 
     copyResult() {
       navigator.clipboard.writeText(this.hashResult).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('common.copied'))
       })
     },
 
     copyHmacResult() {
       navigator.clipboard.writeText(this.hmacResult).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('common.copied'))
       })
     }
   }
@@ -511,5 +514,14 @@ export default {
 
 .algorithm-selector {
   margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .el-descriptions :deep(.el-descriptions__body) { width: 100%; }
+  .el-descriptions :deep(.el-descriptions__label) { min-width: 80px; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+  .el-row { flex-direction: column; }
+  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
 }
 </style>

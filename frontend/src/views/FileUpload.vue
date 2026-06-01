@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <el-icon class="card-icon"><Upload /></el-icon>
-          <span>文件上传</span>
+          <span>{{ $t('tools.fileUpload.title') }}</span>
         </div>
       </template>
 
@@ -24,29 +24,29 @@
         >
           <el-icon class="el-icon--upload"><upload-filled /></el-icon>
           <div class="el-upload__text">
-            将文件拖到此处，或<em>点击上传</em>
+            {{ $t('tools.fileUpload.dropzone') }}
           </div>
           <template #tip>
             <div class="el-upload__tip">
-              支持多种文件格式，单文件最大50MB，最多9个文件
+              {{ $t('tools.fileUpload.hint') }}
             </div>
           </template>
         </el-upload>
 
         <div class="upload-actions">
-          <el-button @click="clearFiles">清空列表</el-button>
-          <el-button type="primary" @click="submitUpload" :loading="uploading">开始上传</el-button>
+          <el-button @click="clearFiles">{{ $t('tools.fileUpload.clearList') }}</el-button>
+          <el-button type="primary" @click="submitUpload" :loading="uploading">{{ $t('tools.fileUpload.startUpload') }}</el-button>
         </div>
       </div>
 
       <!-- 已上传文件列表 -->
       <div class="uploaded-files" v-if="Object.keys(categorizedFiles).length > 0">
-        <h3>已上传的文件</h3>
+        <h3>{{ $t('tools.fileUpload.uploadedFiles') }}</h3>
 
         <!-- 图片文件 -->
         <div v-if="displayFiles.images && displayFiles.images.total > 0" class="file-category">
           <div class="category-header">
-            <h4>🖼️ 图片文件</h4>
+            <h4>🖼️ {{ $t('tools.fileUpload.imageFiles') }}</h4>
             <span class="file-count">({{ displayFiles.images.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -59,10 +59,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -70,7 +70,7 @@
           </div>
           <div v-if="displayFiles.images.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('images')">
-              查看更多 ({{ displayFiles.images.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -79,7 +79,7 @@
         <!-- 文档文件 -->
         <div v-if="displayFiles.documents && displayFiles.documents.total > 0" class="file-category">
           <div class="category-header">
-            <h4>📄 文档文件</h4>
+            <h4>📄 {{ $t('tools.fileUpload.documentFiles') }}</h4>
             <span class="file-count">({{ displayFiles.documents.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -92,10 +92,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -103,7 +103,7 @@
           </div>
           <div v-if="displayFiles.documents.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('documents')">
-              查看更多 ({{ displayFiles.documents.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -112,7 +112,7 @@
         <!-- 数据文件 -->
         <div v-if="displayFiles.data && displayFiles.data.total > 0" class="file-category">
           <div class="category-header">
-            <h4>📊 数据文件</h4>
+            <h4>📊 {{ $t('tools.fileUpload.dataFiles') }}</h4>
             <span class="file-count">({{ displayFiles.data.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -125,10 +125,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -136,7 +136,7 @@
           </div>
           <div v-if="displayFiles.data.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('data')">
-              查看更多 ({{ displayFiles.data.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -145,7 +145,7 @@
         <!-- 压缩文件 -->
         <div v-if="displayFiles.archives && displayFiles.archives.total > 0" class="file-category">
           <div class="category-header">
-            <h4>📦 压缩文件</h4>
+            <h4>📦 {{ $t('tools.fileUpload.archiveFiles') }}</h4>
             <span class="file-count">({{ displayFiles.archives.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -158,10 +158,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -169,7 +169,7 @@
           </div>
           <div v-if="displayFiles.archives.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('archives')">
-              查看更多 ({{ displayFiles.archives.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -178,7 +178,7 @@
         <!-- 媒体文件 -->
         <div v-if="displayFiles.media && displayFiles.media.total > 0" class="file-category">
           <div class="category-header">
-            <h4>🎵 媒体文件</h4>
+            <h4>🎵 {{ $t('tools.fileUpload.mediaFiles') }}</h4>
             <span class="file-count">({{ displayFiles.media.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -191,10 +191,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -202,7 +202,7 @@
           </div>
           <div v-if="displayFiles.media.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('media')">
-              查看更多 ({{ displayFiles.media.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -211,7 +211,7 @@
         <!-- 其他文件 -->
         <div v-if="displayFiles.others && displayFiles.others.total > 0" class="file-category">
           <div class="category-header">
-            <h4>📁 其他文件</h4>
+            <h4>📁 {{ $t('tools.fileUpload.otherFiles') }}</h4>
             <span class="file-count">({{ displayFiles.others.total }})</span>
           </div>
           <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
@@ -224,10 +224,10 @@
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
                 <div class="file-actions">
                   <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    下载
+                    {{ $t('tools.fileUpload.download') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    删除
+                    {{ $t('tools.fileUpload.delete') }}
                   </el-button>
                 </div>
               </div>
@@ -235,7 +235,7 @@
           </div>
           <div v-if="displayFiles.others.hasMore" class="view-more">
             <el-button type="text" @click="viewMoreFiles('others')">
-              查看更多 ({{ displayFiles.others.remaining }} 个文件)
+              {{ $t('tools.fileUpload.viewMore') }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -244,7 +244,7 @@
 
       <!-- 如果没有文件 -->
       <div v-else class="no-files">
-        <el-empty description="暂无上传的文件" />
+        <el-empty :description="$t('tools.fileUpload.noFiles')" />
       </div>
     </el-card>
   </div>
@@ -254,6 +254,7 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Upload, UploadFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'FileUpload',
@@ -262,12 +263,13 @@ export default {
     UploadFilled
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       uploadUrl: '/api/file-upload/upload',
       fileList: [],
       uploadedFiles: [],
       uploading: false,
-      screenWidth: window.innerWidth
     }
   },
   computed: {
@@ -311,16 +313,10 @@ export default {
 
     // 动态计算每行显示的文件数量
     filesPerRow() {
-      if (this.screenWidth >= 1200) {
-        return 6 // 大屏幕显示6个
-      } else if (this.screenWidth >= 992) {
-        return 5 // 中等屏幕显示5个
-      } else if (this.screenWidth >= 768) {
-        return 4 // 平板显示4个
-      } else if (this.screenWidth >= 576) {
-        return 3 // 小屏幕显示3个
+      if (this.deviceStore.isMobile) {
+        return 2
       } else {
-        return 2 // 超小屏幕显示2个
+        return 6
       }
     },
 
@@ -342,13 +338,6 @@ export default {
   },
   mounted() {
     this.loadUploadedFiles()
-    // 监听窗口大小变化
-    window.addEventListener('resize', this.handleResize)
-  },
-
-  beforeUnmount() {
-    // 移除事件监听器
-    window.removeEventListener('resize', this.handleResize)
   },
   methods: {
     customUpload(options) {
@@ -364,7 +353,7 @@ export default {
       // 检查文件大小（限制为50MB）
       const isLt50M = file.size / 1024 / 1024 < 50
       if (!isLt50M) {
-        ElMessage.error('上传文件大小不能超过 50MB!')
+        ElMessage.error(this.$t('tools.fileUpload.fileSizeExceeded'))
         return false
       }
       // 不返回false，让文件正常添加到列表中
@@ -373,7 +362,7 @@ export default {
 
     async submitUpload() {
       if (this.fileList.length === 0) {
-        ElMessage.warning('请先选择文件')
+        ElMessage.warning(this.$t('tools.fileUpload.selectFileFirst'))
         return
       }
 
@@ -421,11 +410,11 @@ export default {
           }
           this.loadUploadedFiles()
         } else {
-          ElMessage.error('上传失败')
+          ElMessage.error(this.$t('tools.fileUpload.uploadFail'))
         }
       } catch (error) {
         console.error('Upload error:', error)
-        ElMessage.error('上传失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.fileUpload.uploadFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.uploading = false
       }
@@ -438,13 +427,13 @@ export default {
         this.fileList = []
         this.loadUploadedFiles()
       } else {
-        ElMessage.error('上传失败')
+        ElMessage.error(this.$t('tools.fileUpload.uploadFail'))
       }
     },
 
     handleUploadError(err, file, fileList) {
       this.uploading = false
-      ElMessage.error('上传失败: ' + err.message)
+      ElMessage.error(this.$t('tools.fileUpload.uploadFail') + ': ' + err.message)
     },
 
     handleFileChange(file, fileList) {
@@ -473,11 +462,11 @@ export default {
     async deleteFile(filename) {
       try {
         await ElMessageBox.confirm(
-          `确定要删除文件 "${filename}" 吗？`,
-          '确认删除',
+          this.$t('tools.fileUpload.confirmDelete', { name: filename }),
+          this.$t('tools.fileUpload.confirmDeleteTitle'),
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: this.$t('tools.fileUpload.confirmBtn'),
+            cancelButtonText: this.$t('tools.fileUpload.cancelBtn'),
             type: 'warning',
           }
         )
@@ -489,7 +478,7 @@ export default {
         }
       } catch (error) {
         if (error !== 'cancel') {
-          ElMessage.error('删除失败')
+          ElMessage.error(this.$t('tools.fileUpload.deleteFail'))
         }
       }
     },
@@ -533,11 +522,6 @@ export default {
           from: 'upload'
         }
       })
-    },
-
-    handleResize() {
-      // 更新屏幕宽度
-      this.screenWidth = window.innerWidth
     }
   }
 }

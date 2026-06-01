@@ -3,43 +3,37 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <el-button
-          v-if="deviceStore.isTablet"
-          class="sidebar-toggle"
-          link
-          @click="sidebarOpen = !sidebarOpen"
-        >
-          <el-icon :size="20">
-            <Expand v-if="!sidebarOpen" />
-            <Fold v-else />
-          </el-icon>
-        </el-button>
         <h1 class="app-title">DevToolBox</h1>
       </div>
       <div class="header-right">
+        <el-dropdown @command="switchLang" class="lang-dropdown" trigger="click">
+          <span class="lang-toggle">{{ locale === 'zh' ? '中文' : 'EN' }}</span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="zh">中文</el-dropdown-item>
+              <el-dropdown-item command="en">English</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <el-switch
           :model-value="themeStore.isDark"
           inline-prompt
-          active-text="暗黑"
-          inactive-text="亮色"
+          :active-text="t('app.dark')"
+          :inactive-text="t('app.light')"
           @change="themeStore.toggleTheme()"
           class="theme-switch"
         />
       </div>
     </header>
 
-    <!-- Sidebar (desktop + tablet only) -->
+    <!-- Sidebar (desktop only) -->
     <aside
       v-if="!deviceStore.isMobile"
       class="app-sidebar"
-      :class="{
-        'sidebar-collapsed': isSidebarCollapsed,
-        'sidebar-overlay': deviceStore.isTablet && sidebarOpen,
-        'sidebar-hidden': deviceStore.isTablet && !sidebarOpen,
-      }"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     >
-      <!-- Collapse toggle (desktop only) -->
-      <div v-if="deviceStore.isDesktop" class="sidebar-collapse-btn">
+      <!-- Collapse toggle -->
+      <div class="sidebar-collapse-btn">
         <el-button @click="isSidebarCollapsed = !isSidebarCollapsed" link>
           <el-icon>
             <Expand v-if="isSidebarCollapsed" />
@@ -50,7 +44,7 @@
 
       <el-menu
         :default-active="currentPath"
-        :collapse="deviceStore.isDesktop && isSidebarCollapsed"
+        :collapse="isSidebarCollapsed"
         :collapse-transition="false"
         router
         class="sidebar-menu"
@@ -59,7 +53,7 @@
         <!-- Home -->
         <el-menu-item index="/">
           <el-icon><HomeFilled /></el-icon>
-          <template #title>首页</template>
+          <template #title>{{ t('app.home') }}</template>
         </el-menu-item>
 
         <!-- Dynamic categories from toolCategories data -->
@@ -67,7 +61,7 @@
           <el-sub-menu :index="'cat-' + category.id">
             <template #title>
               <el-icon><component :is="getIcon(category.icon)" /></el-icon>
-              <span>{{ category.name }}</span>
+              <span>{{ t('categories.' + category.id + '.name') }}</span>
             </template>
             <el-menu-item
               v-for="tool in category.items"
@@ -81,13 +75,6 @@
       </el-menu>
     </aside>
 
-    <!-- Tablet backdrop for sidebar overlay -->
-    <div
-      v-if="deviceStore.isTablet && sidebarOpen"
-      class="sidebar-backdrop"
-      @click="sidebarOpen = false"
-    />
-
     <!-- Main content -->
     <main
       class="app-content"
@@ -97,7 +84,11 @@
       }"
     >
       <div class="content-wrapper" :class="{ 'content-wrapper--padded': !isMarkdownEditor }">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <transition name="page-fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </div>
     </main>
 
@@ -120,6 +111,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useDeviceStore } from '@/stores/device.js'
 import { useThemeStore } from '@/stores/theme.js'
 import { toolCategories } from '@/data/toolCategories.js'
@@ -134,11 +126,12 @@ import {
   Fold,
   Crop,
   MagicStick,
-  Sunny,
-  Moon,
+  Upload,
+  Grid,
 } from '@element-plus/icons-vue'
 
 // --- Stores ---
+const { t, locale } = useI18n()
 const deviceStore = useDeviceStore()
 const themeStore = useThemeStore()
 const route = useRoute()
@@ -146,7 +139,6 @@ const router = useRouter()
 
 // --- Reactive state ---
 const isSidebarCollapsed = ref(false)
-const sidebarOpen = ref(false)
 
 // --- Computed ---
 const currentPath = computed(() => route.path)
@@ -154,8 +146,7 @@ const currentPath = computed(() => route.path)
 const isMarkdownEditor = computed(() => route.path === '/markdown-editor')
 
 const layoutClasses = computed(() => ({
-  'layout-desktop': deviceStore.isDesktop,
-  'layout-tablet': deviceStore.isTablet,
+  'layout-desktop': !deviceStore.isMobile,
   'layout-mobile': deviceStore.isMobile,
 }))
 
@@ -167,36 +158,36 @@ const layoutClasses = computed(() => ({
 const sidebarCategories = computed(() => {
   const categoryToolMap = {
     file: [
-      { label: '文件上传', route: '/file-upload' },
+      { label: t('sidebar.fileUpload'), route: '/file-upload' },
     ],
     data: [
-      { label: 'JSON工具', route: '/json-tools' },
-      { label: 'YAML工具', route: '/yaml-tools' },
-      { label: 'Markdown工具', route: '/markdown-tools' },
-      { label: '数据互转', route: '/data-conversion' },
-      { label: 'Markdown编辑器', route: '/markdown-editor' },
+      { label: t('sidebar.jsonTools'), route: '/json-tools' },
+      { label: t('sidebar.yamlTools'), route: '/yaml-tools' },
+      { label: t('sidebar.markdownTools'), route: '/markdown-tools' },
+      { label: t('sidebar.dataConversion'), route: '/data-conversion' },
+      { label: t('sidebar.markdownEditor'), route: '/markdown-editor' },
     ],
     encoding: [
-      { label: 'Base64工具', route: '/base64-tools' },
-      { label: 'URL工具', route: '/url-tools' },
+      { label: t('sidebar.base64Tools'), route: '/base64-tools' },
+      { label: t('sidebar.urlTools'), route: '/url-tools' },
     ],
     crypto: [
-      { label: '哈希工具', route: '/hash-tools' },
-      { label: '加密工具', route: '/crypto-tools' },
+      { label: t('sidebar.hashTools'), route: '/hash-tools' },
+      { label: t('sidebar.cryptoTools'), route: '/crypto-tools' },
     ],
     time: [
-      { label: '时间戳工具', route: '/timestamp-tools' },
-      { label: '时间计算器', route: '/time-calculator' },
+      { label: t('sidebar.timestampTools'), route: '/timestamp-tools' },
+      { label: t('sidebar.timeCalculator'), route: '/time-calculator' },
     ],
     other: [
-      { label: '二维码工具', route: '/qr-tools' },
+      { label: t('sidebar.qrTools'), route: '/qr-tools' },
     ],
     generator: [
-      { label: 'UUID生成器', route: '/uuid-tools' },
-      { label: '密码生成器', route: '/password-tools' },
-      { label: 'API Key生成器', route: '/apikey-tools' },
-      { label: 'JWT调试器', route: '/jwt-debugger' },
-      { label: '文本对比', route: '/diff-tool' },
+      { label: t('sidebar.uuidTools'), route: '/uuid-tools' },
+      { label: t('sidebar.passwordTools'), route: '/password-tools' },
+      { label: t('sidebar.apikeyTools'), route: '/apikey-tools' },
+      { label: t('sidebar.jwtDebugger'), route: '/jwt-debugger' },
+      { label: t('sidebar.diffTool'), route: '/diff-tool' },
     ],
   }
 
@@ -210,16 +201,23 @@ const sidebarCategories = computed(() => {
  * Mobile bottom navigation tabs - show top-level categories.
  * Picked 5 key categories to fit the bottom bar.
  */
-const mobileNavTabs = [
-  { label: '首页', route: '/', icon: HomeFilled, matchPrefix: '' },
-  { label: '数据', route: '/json-tools', icon: DocumentCopy, matchPrefix: '/json-tools,/yaml-tools,/markdown-tools,/data-conversion,/markdown-editor' },
-  { label: '编码', route: '/base64-tools', icon: Lock, matchPrefix: '/base64-tools,/url-tools' },
-  { label: '加密', route: '/hash-tools', icon: Key, matchPrefix: '/hash-tools,/crypto-tools' },
-  { label: '时间', route: '/timestamp-tools', icon: Clock, matchPrefix: '/timestamp-tools,/time-calculator' },
-  { label: '生成', route: '/uuid-tools', icon: MagicStick, matchPrefix: '/uuid-tools,/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
-]
+const mobileNavTabs = computed(() => [
+  { label: t('mobileNav.home'), route: '/', icon: HomeFilled, matchPrefix: '' },
+  { label: t('mobileNav.file'), route: '/file-upload', icon: Upload, matchPrefix: '/file-upload' },
+  { label: t('mobileNav.data'), route: '/json-tools', icon: DocumentCopy, matchPrefix: '/json-tools,/yaml-tools,/markdown-tools,/data-conversion,/markdown-editor' },
+  { label: t('mobileNav.encoding'), route: '/base64-tools', icon: Lock, matchPrefix: '/base64-tools,/url-tools' },
+  { label: t('mobileNav.crypto'), route: '/hash-tools', icon: Key, matchPrefix: '/hash-tools,/crypto-tools' },
+  { label: t('mobileNav.time'), route: '/timestamp-tools', icon: Clock, matchPrefix: '/timestamp-tools,/time-calculator' },
+  { label: t('mobileNav.generator'), route: '/uuid-tools', icon: MagicStick, matchPrefix: '/uuid-tools,/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
+  { label: t('mobileNav.qr'), route: '/qr-tools', icon: Grid, matchPrefix: '/qr-tools' },
+])
 
 // --- Methods ---
+function switchLang(lang) {
+  locale.value = lang
+  localStorage.setItem('dt-lang', lang)
+}
+
 function getIcon(iconName) {
   const iconMap = {
     FolderOpened,
@@ -240,33 +238,19 @@ function isTabActive(tab) {
 }
 
 function onMenuSelect(index) {
-  // Auto-collapse markdown editor to give full viewport
   if (index === '/markdown-editor') {
     isSidebarCollapsed.value = true
-  }
-  // Close tablet sidebar overlay on navigation
-  if (deviceStore.isTablet) {
-    sidebarOpen.value = false
-  }
-}
-
-function handleResize() {
-  deviceStore.checkDevice()
-  // Auto-collapse sidebar on resize to tablet
-  if (deviceStore.isTablet) {
-    sidebarOpen.value = false
   }
 }
 
 // --- Lifecycle ---
 onMounted(() => {
   themeStore.initTheme()
-  deviceStore.checkDevice()
-  window.addEventListener('resize', handleResize)
+  deviceStore.initListener()
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
+  deviceStore.cleanupListener()
 })
 </script>
 
@@ -317,15 +301,6 @@ onBeforeUnmount(() => {
     "sidebar content";
 }
 
-/* Tablet: header row + content (sidebar overlays) */
-.layout-tablet {
-  grid-template-columns: 1fr;
-  grid-template-rows: var(--dt-header-height) 1fr;
-  grid-template-areas:
-    "header"
-    "content";
-}
-
 /* Mobile: header + content + bottom nav */
 .layout-mobile {
   grid-template-columns: 1fr;
@@ -372,6 +347,23 @@ onBeforeUnmount(() => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: var(--dt-spacing-sm);
+}
+
+.lang-dropdown {
+  cursor: pointer;
+}
+
+.lang-toggle {
+  font-size: var(--dt-font-size-sm);
+  color: var(--dt-text-regular);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color var(--dt-transition-fast);
+}
+
+.lang-toggle:hover {
+  color: var(--dt-primary);
 }
 
 .theme-switch {
@@ -424,35 +416,6 @@ onBeforeUnmount(() => {
   --el-menu-hover-bg-color: var(--dt-bg-hover);
 }
 
-/* Tablet: sidebar overlays content */
-.sidebar-overlay {
-  position: fixed;
-  top: var(--dt-header-height);
-  left: 0;
-  bottom: 0;
-  width: var(--dt-sidebar-width);
-  box-shadow: var(--dt-shadow-lg);
-  z-index: 200;
-}
-
-.sidebar-overlay .sidebar-menu {
-  width: var(--dt-sidebar-width);
-}
-
-.sidebar-hidden {
-  display: none;
-}
-
-.sidebar-backdrop {
-  position: fixed;
-  top: var(--dt-header-height);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 190;
-}
-
 /* =========================================
    Content
    ========================================= */
@@ -484,6 +447,19 @@ onBeforeUnmount(() => {
 }
 
 /* =========================================
+   Page Transition
+   ========================================= */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+
+/* =========================================
    Mobile Bottom Navigation
    ========================================= */
 .app-bottom-nav {
@@ -507,15 +483,38 @@ onBeforeUnmount(() => {
   color: var(--dt-text-secondary);
   transition: color var(--dt-transition-fast);
   gap: 2px;
+  min-width: 0;
+}
+
+.bottom-nav-item .el-icon {
+  font-size: 18px;
 }
 
 .bottom-nav-item.active {
   color: var(--dt-primary);
 }
 
+.bottom-nav-item:active {
+  background: var(--dt-bg-hover);
+  border-radius: 4px;
+}
+
 .bottom-nav-label {
-  font-size: var(--dt-font-size-xs);
+  font-size: 10px;
   line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 48px;
+}
+
+/* =========================================
+   Mobile responsive overrides
+   ========================================= */
+@media (max-width: 768px) {
+  .content-wrapper--padded {
+    padding: var(--dt-spacing-xs) !important;
+  }
 }
 
 /* =========================================

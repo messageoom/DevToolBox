@@ -1,17 +1,17 @@
 <template>
-  <ToolPage title="JWT Debugger" :icon="Unlock">
+  <ToolPage :title="$t('tools.jwt.title')" :icon="Unlock">
     <div class="jwt-debugger">
       <!-- Input Section -->
       <div class="input-section">
         <div class="section-header">
-          <h4 class="section-title">JWT Token</h4>
-          <el-button size="small" @click="clearToken">清空</el-button>
+          <h4 class="section-title">{{ $t('tools.jwt.jwtToken') }}</h4>
+          <el-button size="small" @click="clearToken">{{ $t('tools.jwt.clear') }}</el-button>
         </div>
         <el-input
           v-model="token"
           type="textarea"
           :rows="6"
-          placeholder="请输入JWT token..."
+          :placeholder="$t('tools.jwt.placeholder')"
           clearable
         />
       </div>
@@ -27,8 +27,8 @@
         <el-card class="jwt-card header-card">
           <template #header>
             <div class="card-header-row">
-              <span>Header (ALGORITHM)</span>
-              <el-button size="small" @click="copyToClipboard(headerJson)">复制</el-button>
+              <span>{{ $t('tools.jwt.header') }}</span>
+              <el-button size="small" @click="copyToClipboard(headerJson)">{{ $t('common.copy') }}</el-button>
             </div>
           </template>
           <el-input
@@ -44,8 +44,8 @@
         <el-card class="jwt-card payload-card">
           <template #header>
             <div class="card-header-row">
-              <span>Payload (DATA)</span>
-              <el-button size="small" @click="copyToClipboard(payloadJson)">复制</el-button>
+              <span>{{ $t('tools.jwt.payload') }}</span>
+              <el-button size="small" @click="copyToClipboard(payloadJson)">{{ $t('common.copy') }}</el-button>
             </div>
           </template>
           <el-input
@@ -57,32 +57,32 @@
           />
           <div v-if="hasSpecialClaims" class="claims-section">
             <el-descriptions :column="1" border size="small">
-              <el-descriptions-item v-if="parsed.payload.exp !== undefined" label="过期时间">
+              <el-descriptions-item v-if="parsed.payload.exp !== undefined" :label="$t('tools.jwt.expirationTime')">
                 {{ formatTimestamp(parsed.payload.exp) }}
                 <el-tag
                   :type="isExpired(parsed.payload.exp) ? 'danger' : 'success'"
                   size="small"
                   style="margin-left: 8px;"
                 >
-                  {{ isExpired(parsed.payload.exp) ? '已过期' : '有效' }}
+                  {{ isExpired(parsed.payload.exp) ? $t('tools.jwt.expired') : $t('tools.jwt.valid') }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.iat !== undefined" label="签发时间">
+              <el-descriptions-item v-if="parsed.payload.iat !== undefined" :label="$t('tools.jwt.issuedAt')">
                 {{ formatTimestamp(parsed.payload.iat) }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.nbf !== undefined" label="生效时间">
+              <el-descriptions-item v-if="parsed.payload.nbf !== undefined" :label="$t('tools.jwt.notBefore')">
                 {{ formatTimestamp(parsed.payload.nbf) }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.iss !== undefined" label="签发者">
+              <el-descriptions-item v-if="parsed.payload.iss !== undefined" :label="$t('tools.jwt.issuer')">
                 {{ parsed.payload.iss }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.sub !== undefined" label="主题">
+              <el-descriptions-item v-if="parsed.payload.sub !== undefined" :label="$t('tools.jwt.subject')">
                 {{ parsed.payload.sub }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.aud !== undefined" label="受众">
+              <el-descriptions-item v-if="parsed.payload.aud !== undefined" :label="$t('tools.jwt.audience')">
                 {{ parsed.payload.aud }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="parsed.payload.jti !== undefined" label="JWT ID">
+              <el-descriptions-item v-if="parsed.payload.jti !== undefined" :label="$t('tools.jwt.jwtId')">
                 {{ parsed.payload.jti }}
               </el-descriptions-item>
             </el-descriptions>
@@ -93,22 +93,22 @@
         <el-card class="jwt-card signature-card">
           <template #header>
             <div class="card-header-row">
-              <span>Signature (VERIFY)</span>
-              <el-button size="small" @click="copyToClipboard(parsed.signature)">复制</el-button>
+              <span>{{ $t('tools.jwt.signature') }}</span>
+              <el-button size="small" @click="copyToClipboard(parsed.signature)">{{ $t('common.copy') }}</el-button>
             </div>
           </template>
           <div class="signature-content">
             <code class="signature-code">{{ truncatedSignature }}</code>
           </div>
           <el-alert
-            title="提示"
+            :title="$t('tools.jwt.tip')"
             type="info"
             :closable="false"
             show-icon
             style="margin-top: 12px;"
           >
             <template #default>
-              签名验证需要密钥，此工具仅做解析展示
+              {{ $t('tools.jwt.signatureTip') }}
             </template>
           </el-alert>
         </el-card>
@@ -184,7 +184,7 @@ export default {
           payload: null,
           signature: '',
           isValid: false,
-          error: '无效的JWT格式：token必须包含三个部分（header.payload.signature）'
+          error: this.$t('tools.jwt.invalidFormat')
         }
         this.headerJson = ''
         this.payloadJson = ''
@@ -212,7 +212,7 @@ export default {
           payload: null,
           signature: '',
           isValid: false,
-          error: '解析失败：' + (err.message || '无效的JWT token')
+          error: this.$t('tools.jwt.parseFail') + '：' + (err.message || this.$t('tools.jwt.invalidJwt'))
         }
         this.headerJson = ''
         this.payloadJson = ''
@@ -243,7 +243,7 @@ export default {
 
     formatTimestamp(ts) {
       const num = typeof ts === 'string' ? parseInt(ts, 10) : ts
-      if (isNaN(num)) return '无效时间戳'
+      if (isNaN(num)) return this.$t('tools.jwt.invalidTimestamp')
       const date = new Date(num * 1000)
       return date.toLocaleString('zh-CN', {
         year: 'numeric',
@@ -258,9 +258,9 @@ export default {
     copyToClipboard(text) {
       if (!text) return
       navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('common.copySuccess'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('common.copyFail'))
       })
     },
 

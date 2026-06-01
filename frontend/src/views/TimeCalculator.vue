@@ -1,22 +1,22 @@
 <template>
-  <ToolPage title="时间计算器" :icon="Calendar">
+  <ToolPage :title="$t('tools.timeCalc.title')" :icon="Calendar">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="时间计算" name="calculate">
+      <el-tab-pane :label="$t('tools.timeCalc.tab.timeCalc')" name="calculate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">基础时间</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.baseTime') }}</h4>
             <el-input-number
               v-model="baseTimestamp"
               :min="0"
               :precision="0"
-              placeholder="请输入基础时间戳..."
+              :placeholder="$t('tools.timeCalc.label.baseTime') + '...'"
               style="width: 100%; margin-bottom: 10px;"
             />
             <el-row :gutter="10">
               <el-col :xs="24" :sm="8" :md="8">
-                <el-select v-model="calcOperation" placeholder="操作" style="width: 100%;">
-                  <el-option label="加" value="add"></el-option>
-                  <el-option label="减" value="subtract"></el-option>
+                <el-select v-model="calcOperation" :placeholder="$t('tools.timeCalc.label.operation')" style="width: 100%;">
+                  <el-option :label="$t('tools.timeCalc.label.add')" value="add"></el-option>
+                  <el-option :label="$t('tools.timeCalc.label.subtract')" value="subtract"></el-option>
                 </el-select>
               </el-col>
               <el-col :xs="24" :sm="8" :md="8">
@@ -24,16 +24,16 @@
                   v-model="calcAmount"
                   :min="1"
                   :precision="0"
-                  placeholder="数量"
+                  :placeholder="$t('tools.timeCalc.label.amount')"
                   style="width: 100%;"
                 />
               </el-col>
               <el-col :xs="24" :sm="8" :md="8">
-                <el-select v-model="calcUnit" placeholder="单位" style="width: 100%;">
-                  <el-option label="秒" value="seconds"></el-option>
-                  <el-option label="分钟" value="minutes"></el-option>
-                  <el-option label="小时" value="hours"></el-option>
-                  <el-option label="天" value="days"></el-option>
+                <el-select v-model="calcUnit" :placeholder="$t('tools.timeCalc.label.unit')" style="width: 100%;">
+                  <el-option :label="$t('tools.timeCalc.label.seconds')" value="seconds"></el-option>
+                  <el-option :label="$t('tools.timeCalc.label.minutes')" value="minutes"></el-option>
+                  <el-option :label="$t('tools.timeCalc.label.hours')" value="hours"></el-option>
+                  <el-option :label="$t('tools.timeCalc.label.days')" value="days"></el-option>
 
                 </el-select>
               </el-col>
@@ -41,28 +41,28 @@
           </div>
           <div class="action-section">
             <el-button type="primary" @click="calculateTime" :loading="calculating">
-              计算
+              {{ $t('tools.timeCalc.label.calc') }}
             </el-button>
           </div>
           <div class="output-section" v-if="calculatedResult">
-            <h4 class="section-title">计算结果</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.calcResult') }}</h4>
             <el-descriptions :column="1" border>
-              <el-descriptions-item label="原始时间戳">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.originalTimestamp')">
                 {{ calculatedResult.original_timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="原始时间">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.originalTime')">
                 {{ calculatedResult.original_datetime }}
               </el-descriptions-item>
-              <el-descriptions-item label="结果时间戳">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.resultTimestamp')">
                 {{ calculatedResult.result_timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="结果时间">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.resultTime')">
                 {{ calculatedResult.result_datetime }}
               </el-descriptions-item>
-              <el-descriptions-item label="时间差(秒)">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.timeDiffSeconds')">
                 {{ calculatedResult.difference_seconds }}
               </el-descriptions-item>
-              <el-descriptions-item label="操作">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.operation')">
                 {{ calculatedResult.operation }}
               </el-descriptions-item>
             </el-descriptions>
@@ -70,81 +70,81 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="时间差计算" name="difference">
+      <el-tab-pane :label="$t('tools.timeCalc.tab.timeDiff')" name="difference">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">时间范围</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.timeRange') }}</h4>
             <el-row :gutter="10">
               <el-col :xs="24" :sm="12" :md="12">
                 <el-input
                   v-model="startTime"
-                  placeholder="开始时间 (时间戳或日期时间字符串)"
+                  :placeholder="$t('tools.timeCalc.label.startTime')"
                   style="width: 100%;"
                 />
               </el-col>
               <el-col :xs="24" :sm="12" :md="12">
                 <el-input
                   v-model="endTime"
-                  placeholder="结束时间 (时间戳或日期时间字符串)"
+                  :placeholder="$t('tools.timeCalc.label.endTime')"
                   style="width: 100%;"
                 />
               </el-col>
             </el-row>
             <el-radio-group v-model="timeType" style="margin-top: 10px;">
-              <el-radio label="timestamp">时间戳</el-radio>
-              <el-radio label="datetime_string">日期时间字符串</el-radio>
+              <el-radio label="timestamp">{{ $t('tools.timeCalc.label.timestamp') }}</el-radio>
+              <el-radio label="datetime_string">{{ $t('tools.timeCalc.label.datetimeString') }}</el-radio>
             </el-radio-group>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="calculateDifference" :loading="diffCalculating">
-              计算差值
+              {{ $t('tools.timeCalc.label.calcDiff') }}
             </el-button>
           </div>
           <div class="output-section" v-if="timeDifference">
-            <h4 class="section-title">时间差结果</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.timeDiffResult') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="开始时间">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.startTime')">
                 {{ timeDifference.start_time }}
               </el-descriptions-item>
-              <el-descriptions-item label="结束时间">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.endTime')">
                 {{ timeDifference.end_time }}
               </el-descriptions-item>
-              <el-descriptions-item label="总秒数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.totalSeconds')">
                 {{ timeDifference.difference.total_seconds }}
               </el-descriptions-item>
-              <el-descriptions-item label="天数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.days')">
                 {{ timeDifference.difference.days }}
               </el-descriptions-item>
-              <el-descriptions-item label="小时">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.hours')">
                 {{ timeDifference.difference.hours }}
               </el-descriptions-item>
-              <el-descriptions-item label="分钟">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.minutes')">
                 {{ timeDifference.difference.minutes }}
               </el-descriptions-item>
-              <el-descriptions-item label="秒">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.seconds')">
                 {{ timeDifference.difference.seconds }}
               </el-descriptions-item>
-              <el-descriptions-item label="人类可读" :span="2">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.humanReadable')" :span="2">
                 {{ timeDifference.difference.human_readable }}
               </el-descriptions-item>
-              <el-descriptions-item label="方向" :span="2">
-                {{ timeDifference.direction === 'positive' ? '正向' : '负向' }}
+              <el-descriptions-item :label="$t('tools.timeCalc.label.direction')" :span="2">
+                {{ timeDifference.direction === 'positive' ? $t('tools.timeCalc.label.forward') : $t('tools.timeCalc.label.backward') }}
               </el-descriptions-item>
             </el-descriptions>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="工作日计算" name="business-days">
+      <el-tab-pane :label="$t('tools.timeCalc.tab.workdayCalc')" name="business-days">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">日期范围</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.dateRange') }}</h4>
             <el-row :gutter="10">
               <el-col :xs="24" :sm="12" :md="12">
                 <el-date-picker
                   v-model="startDate"
                   type="date"
-                  placeholder="开始日期"
+                  :placeholder="$t('tools.timeCalc.label.startDate')"
                   format="YYYY-MM-DD"
                   value-format="YYYY-MM-DD"
                   style="width: 100%;"
@@ -154,7 +154,7 @@
                 <el-date-picker
                   v-model="endDate"
                   type="date"
-                  placeholder="结束日期"
+                  :placeholder="$t('tools.timeCalc.label.endDate')"
                   format="YYYY-MM-DD"
                   value-format="YYYY-MM-DD"
                   style="width: 100%;"
@@ -162,33 +162,33 @@
               </el-col>
             </el-row>
             <el-checkbox v-model="includeWeekends" style="margin-top: 10px;">
-              包含周末
+              {{ $t('tools.timeCalc.label.includeWeekends') }}
             </el-checkbox>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="calculateBusinessDays" :loading="businessCalculating">
-              计算工作日
+              {{ $t('tools.timeCalc.label.calcWorkdays') }}
             </el-button>
           </div>
           <div class="output-section" v-if="businessDaysResult">
-            <h4 class="section-title">工作日计算结果</h4>
+            <h4 class="section-title">{{ $t('tools.timeCalc.label.workdayResult') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="开始日期">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.startDate')">
                 {{ businessDaysResult.start_date }}
               </el-descriptions-item>
-              <el-descriptions-item label="结束日期">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.endDate')">
                 {{ businessDaysResult.end_date }}
               </el-descriptions-item>
-              <el-descriptions-item label="工作日数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.workdays')">
                 {{ businessDaysResult.business_days }}
               </el-descriptions-item>
-              <el-descriptions-item label="总天数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.totalDays')">
                 {{ businessDaysResult.total_days }}
               </el-descriptions-item>
-              <el-descriptions-item label="周末天数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.weekendDays')">
                 {{ businessDaysResult.weekend_days }}
               </el-descriptions-item>
-              <el-descriptions-item label="节假日数">
+              <el-descriptions-item :label="$t('tools.timeCalc.label.holidayDays')">
                 {{ businessDaysResult.holiday_days }}
               </el-descriptions-item>
             </el-descriptions>
@@ -203,6 +203,7 @@
 import { ElMessage } from 'element-plus'
 import { Calendar } from '@element-plus/icons-vue'
 import axios from 'axios'
+import { useDeviceStore } from '@/stores/device.js'
 import ToolPage from '@/components/ToolPage.vue'
 
 export default {
@@ -212,7 +213,9 @@ export default {
     ToolPage
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'calculate',
       // 时间计算相关
       baseTimestamp: null,
@@ -243,7 +246,7 @@ export default {
   methods: {
     async calculateTime() {
       if (this.baseTimestamp === null || this.baseTimestamp < 0) {
-        ElMessage.warning('请输入有效的基础时间戳')
+        ElMessage.warning(this.$t('tools.timeCalc.message.inputValidTimestamp'))
         return
       }
 
@@ -258,12 +261,12 @@ export default {
 
         if (response.data.success) {
           this.calculatedResult = response.data
-          ElMessage.success('计算成功')
+          ElMessage.success(this.$t('tools.timeCalc.message.calcSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('计算失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timeCalc.message.calcFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.calculating = false
       }
@@ -271,7 +274,7 @@ export default {
 
     async calculateDifference() {
       if (!this.startTime || !this.endTime) {
-        ElMessage.warning('请输入开始时间和结束时间')
+        ElMessage.warning(this.$t('tools.timeCalc.message.inputStartEnd'))
         return
       }
 
@@ -285,12 +288,12 @@ export default {
 
         if (response.data.success) {
           this.timeDifference = response.data
-          ElMessage.success('计算成功')
+          ElMessage.success(this.$t('tools.timeCalc.message.calcSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('计算失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timeCalc.message.calcFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.diffCalculating = false
       }
@@ -298,7 +301,7 @@ export default {
 
     async calculateBusinessDays() {
       if (!this.startDate || !this.endDate) {
-        ElMessage.warning('请选择开始日期和结束日期')
+        ElMessage.warning(this.$t('tools.timeCalc.message.selectStartEnd'))
         return
       }
 
@@ -312,12 +315,12 @@ export default {
 
         if (response.data.success) {
           this.businessDaysResult = response.data
-          ElMessage.success('计算成功')
+          ElMessage.success(this.$t('tools.timeCalc.message.calcSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('计算失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timeCalc.message.calcFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.businessCalculating = false
       }
@@ -325,3 +328,14 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .el-form-item :deep(.el-form-item__label) { width: auto !important; min-width: 70px; }
+  .el-form-item :deep(.el-form-item__content) { flex: 1; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
+  .el-row { flex-direction: column; }
+  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
+}
+</style>

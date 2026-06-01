@@ -8,7 +8,7 @@
               返回
             </el-button>
             <h2>{{ categoryTitle }}</h2>
-            <span class="file-count">共 {{ filteredFiles.length }} 个文件</span>
+            <span class="file-count">{{ $t('tools.fileUpload.fileCount', { count: filteredFiles.length }) }}</span>
           </div>
         </template>
 
@@ -16,19 +16,19 @@
         <div class="search-section">
           <el-input
             v-model="searchText"
-            placeholder="搜索文件名..."
+            :placeholder="$t('tools.fileUpload.searchPlaceholder')"
             clearable
             prefix-icon="Search"
             style="width: 300px; margin-right: 20px;"
           />
-          <el-select v-model="sortBy" placeholder="排序方式" style="width: 120px;">
-            <el-option label="按名称" value="name" />
-            <el-option label="按大小" value="size" />
-            <el-option label="按时间" value="time" />
+          <el-select v-model="sortBy" :placeholder="$t('tools.fileUpload.sortBy')" style="width: 120px;">
+            <el-option :label="$t('tools.fileUpload.sortByName')" value="name" />
+            <el-option :label="$t('tools.fileUpload.sortBySize')" value="size" />
+            <el-option :label="$t('tools.fileUpload.sortByTime')" value="time" />
           </el-select>
-          <el-select v-model="sortOrder" placeholder="排序顺序" style="width: 120px; margin-left: 10px;">
-            <el-option label="升序" value="asc" />
-            <el-option label="降序" value="desc" />
+          <el-select v-model="sortOrder" :placeholder="$t('tools.fileUpload.sortOrder')" style="width: 120px; margin-left: 10px;">
+            <el-option :label="$t('tools.fileUpload.sortAsc')" value="asc" />
+            <el-option :label="$t('tools.fileUpload.sortDesc')" value="desc" />
           </el-select>
         </div>
 
@@ -50,11 +50,11 @@
             <div class="file-actions-section">
               <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
                 <el-icon><Download /></el-icon>
-                下载
+                {{ $t('tools.fileUpload.download') }}
               </el-button>
               <el-button size="small" type="danger" @click="deleteFile(file.name)">
                 <el-icon><Delete /></el-icon>
-                删除
+                {{ $t('tools.fileUpload.delete') }}
               </el-button>
             </div>
           </div>
@@ -76,7 +76,7 @@
         <!-- 空状态 -->
         <div v-else class="empty-state">
           <el-empty
-            :description="`暂无${categoryTitle}`"
+            :description="$t('tools.fileUpload.noFiles')"
             :image-size="80"
           />
         </div>
@@ -106,20 +106,19 @@ export default {
       currentPage: 1,
       pageSize: 20,
       allFiles: [],
-      isMobile: false
     }
   },
   computed: {
     categoryTitle() {
       const titles = {
-        images: '🖼️ 图片文件',
-        documents: '📄 文档文件',
-        data: '📊 数据文件',
-        archives: '📦 压缩文件',
-        media: '🎵 媒体文件',
-        others: '📁 其他文件'
+        images: '🖼️ ' + this.$t('tools.fileUpload.imageFiles'),
+        documents: '📄 ' + this.$t('tools.fileUpload.documentFiles'),
+        data: '📊 ' + this.$t('tools.fileUpload.dataFiles'),
+        archives: '📦 ' + this.$t('tools.fileUpload.archiveFiles'),
+        media: '🎵 ' + this.$t('tools.fileUpload.mediaFiles'),
+        others: '📁 ' + this.$t('tools.fileUpload.otherFiles')
       }
-      return titles[this.category] || '文件列表'
+      return titles[this.category] || this.$t('tools.fileUpload.title')
     },
 
     filteredFiles() {
@@ -177,20 +176,13 @@ export default {
 
   mounted() {
     this.category = this.$route.params.category
-    this.checkDevice()
     this.loadFiles()
-    window.addEventListener('resize', this.checkDevice)
   },
 
   beforeUnmount() {
-    window.removeEventListener('resize', this.checkDevice)
   },
 
   methods: {
-    checkDevice() {
-      this.isMobile = window.innerWidth <= 768
-    },
-
     async loadFiles() {
       try {
         const response = await axios.get('/api/file-upload/files')
@@ -200,7 +192,7 @@ export default {
         }
       } catch (error) {
         console.error('加载文件列表失败:', error)
-        ElMessage.error('加载文件列表失败')
+        ElMessage.error(this.$t('tools.fileUpload.loadFail'))
       }
     },
 
@@ -256,11 +248,11 @@ export default {
     async deleteFile(filename) {
       try {
         await ElMessageBox.confirm(
-          `确定要删除文件 "${filename}" 吗？`,
-          '确认删除',
+          this.$t('tools.fileUpload.confirmDelete', { name: filename }),
+          this.$t('tools.fileUpload.confirmDeleteTitle'),
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: this.$t('tools.fileUpload.confirmBtn'),
+            cancelButtonText: this.$t('tools.fileUpload.cancelBtn'),
             type: 'warning',
           }
         )
@@ -272,7 +264,7 @@ export default {
         }
       } catch (error) {
         if (error !== 'cancel') {
-          ElMessage.error('删除失败')
+          ElMessage.error(this.$t('tools.fileUpload.deleteFail'))
         }
       }
     },

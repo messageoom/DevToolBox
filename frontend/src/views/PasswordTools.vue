@@ -1,12 +1,12 @@
 <template>
-  <ToolPage title="密码生成器" :icon="Lock">
+  <ToolPage :title="$t('tools.password.title')" :icon="Lock">
     <el-tabs v-model="activeTab">
 
       <!-- 密码生成 -->
-      <el-tab-pane label="密码生成" name="generate">
+      <el-tab-pane :label="$t('tools.password.tab.generate')" name="generate">
         <div class="tool-section">
           <el-form label-width="120px" label-position="right">
-            <el-form-item label="密码长度">
+            <el-form-item :label="$t('tools.password.labels.passwordLength')">
               <div class="slider-row">
                 <el-slider
                   v-model="generateForm.length"
@@ -26,25 +26,25 @@
               </div>
             </el-form-item>
 
-            <el-form-item label="字符类型">
+            <el-form-item :label="$t('tools.password.labels.charTypes')">
               <el-checkbox-group v-model="generateForm.charset">
-                <el-checkbox label="uppercase">大写字母 (A-Z)</el-checkbox>
-                <el-checkbox label="lowercase">小写字母 (a-z)</el-checkbox>
-                <el-checkbox label="numbers">数字 (0-9)</el-checkbox>
-                <el-checkbox label="symbols">特殊符号 (!@#$...)</el-checkbox>
+                <el-checkbox label="uppercase">{{ $t('tools.password.labels.uppercase') }}</el-checkbox>
+                <el-checkbox label="lowercase">{{ $t('tools.password.labels.lowercase') }}</el-checkbox>
+                <el-checkbox label="numbers">{{ $t('tools.password.labels.numbers') }}</el-checkbox>
+                <el-checkbox label="symbols">{{ $t('tools.password.labels.symbols') }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
 
-            <el-form-item label="排除歧义字符">
+            <el-form-item :label="$t('tools.password.labels.excludeAmbiguous')">
               <el-switch
                 v-model="generateForm.excludeAmbiguous"
-                active-text="排除"
-                inactive-text="包含"
+                :active-text="$t('tools.password.labels.exclude')"
+                :inactive-text="$t('tools.password.labels.include')"
               />
-              <span class="hint-text">排除易混淆字符: l/I/1, O/0</span>
+              <span class="hint-text">{{ $t('tools.password.labels.excludeAmbiguousDesc') }}</span>
             </el-form-item>
 
-            <el-form-item label="生成数量">
+            <el-form-item :label="$t('tools.password.labels.generateCount')">
               <el-input-number
                 v-model="generateForm.count"
                 :min="1"
@@ -55,16 +55,16 @@
 
             <el-form-item>
               <el-button type="primary" @click="generatePasswords" :loading="generating">
-                生成密码
+                {{ $t('tools.password.labels.generatePassword') }}
               </el-button>
             </el-form-item>
           </el-form>
 
           <div class="result-section" v-if="generatedPasswords.length > 0">
             <div class="result-header">
-              <h4 class="section-title">生成结果</h4>
+              <h4 class="section-title">{{ $t('tools.password.labels.generateResult') }}</h4>
               <el-button size="small" type="success" @click="copyAllPasswords">
-                复制全部
+                {{ $t('tools.password.labels.copyAll') }}
               </el-button>
             </div>
             <div class="password-list">
@@ -91,7 +91,7 @@
                     type="primary"
                     @click="copyPassword(pwd)"
                   >
-                    复制
+                    {{ $t('tools.password.labels.copy') }}
                   </el-button>
                 </div>
               </div>
@@ -101,24 +101,24 @@
       </el-tab-pane>
 
       <!-- 强度检测 -->
-      <el-tab-pane label="强度检测" name="strength">
+      <el-tab-pane :label="$t('tools.password.tab.strengthCheck')" name="strength">
         <div class="tool-section">
           <el-form label-width="120px" label-position="right">
-            <el-form-item label="输入密码">
+            <el-form-item :label="$t('tools.password.labels.inputPassword')">
               <el-input
                 v-model="strengthPassword"
-                placeholder="请输入要检测的密码..."
+                :placeholder="$t('tools.password.labels.inputPassword')"
                 show-password
                 clearable
                 @input="onPasswordInput"
               />
             </el-form-item>
             <el-form-item v-if="strengthPassword.length > 0">
-              <span class="hint-text">当前长度: {{ strengthPassword.length }} 个字符</span>
+              <span class="hint-text">{{ $t('tools.password.labels.currentLength', { length: strengthPassword.length }) }}</span>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="checkStrength" :loading="checkingStrength">
-                检测强度
+                {{ $t('tools.password.labels.checkStrength') }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -137,38 +137,38 @@
             </div>
 
             <el-descriptions :column="2" border style="margin-top: 20px;">
-              <el-descriptions-item label="密码长度">
+              <el-descriptions-item :label="$t('tools.password.labels.passwordLengthLabel')">
                 {{ strengthResult.length }}
               </el-descriptions-item>
-              <el-descriptions-item label="强度等级">
+              <el-descriptions-item :label="$t('tools.password.labels.strengthLevel')">
                 <el-tag :type="getLevelTagType(strengthResult.score)">
                   {{ strengthResult.level }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="包含大写字母">
+              <el-descriptions-item :label="$t('tools.password.labels.hasUppercase')">
                 <el-tag :type="strengthResult.has_uppercase ? 'success' : 'info'" size="small">
-                  {{ strengthResult.has_uppercase ? '是' : '否' }}
+                  {{ strengthResult.has_uppercase ? $t('tools.password.labels.yes') : $t('tools.password.labels.no') }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="包含小写字母">
+              <el-descriptions-item :label="$t('tools.password.labels.hasLowercase')">
                 <el-tag :type="strengthResult.has_lowercase ? 'success' : 'info'" size="small">
-                  {{ strengthResult.has_lowercase ? '是' : '否' }}
+                  {{ strengthResult.has_lowercase ? $t('tools.password.labels.yes') : $t('tools.password.labels.no') }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="包含数字">
+              <el-descriptions-item :label="$t('tools.password.labels.hasNumbers')">
                 <el-tag :type="strengthResult.has_numbers ? 'success' : 'info'" size="small">
-                  {{ strengthResult.has_numbers ? '是' : '否' }}
+                  {{ strengthResult.has_numbers ? $t('tools.password.labels.yes') : $t('tools.password.labels.no') }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="包含特殊符号">
+              <el-descriptions-item :label="$t('tools.password.labels.hasSymbols')">
                 <el-tag :type="strengthResult.has_symbols ? 'success' : 'info'" size="small">
-                  {{ strengthResult.has_symbols ? '是' : '否' }}
+                  {{ strengthResult.has_symbols ? $t('tools.password.labels.yes') : $t('tools.password.labels.no') }}
                 </el-tag>
               </el-descriptions-item>
             </el-descriptions>
 
             <div class="suggestions-section" v-if="strengthResult.suggestions.length > 0">
-              <h4 class="section-title">改进建议</h4>
+              <h4 class="section-title">{{ $t('tools.password.labels.suggestions') }}</h4>
               <div class="suggestion-tags">
                 <el-tag
                   v-for="(suggestion, index) in strengthResult.suggestions"
@@ -185,10 +185,10 @@
       </el-tab-pane>
 
       <!-- 助记密码 -->
-      <el-tab-pane label="助记密码" name="passphrase">
+      <el-tab-pane :label="$t('tools.password.tab.mnemonic')" name="passphrase">
         <div class="tool-section">
           <el-form label-width="120px" label-position="right">
-            <el-form-item label="单词数量">
+            <el-form-item :label="$t('tools.password.labels.wordCount')">
               <div class="slider-row">
                 <el-slider
                   v-model="passphraseForm.wordCount"
@@ -209,35 +209,35 @@
               </div>
             </el-form-item>
 
-            <el-form-item label="分隔符">
+            <el-form-item :label="$t('tools.password.labels.separator')">
               <el-select v-model="passphraseForm.separator">
-                <el-option label="短横线 (-)" value="-" />
-                <el-option label="下划线 (_)" value="_" />
-                <el-option label="空格" value=" " />
-                <el-option label="点号 (.)" value="." />
+                <el-option :label="$t('tools.password.labels.separatorDash')" value="-" />
+                <el-option :label="$t('tools.password.labels.separatorUnderscore')" value="_" />
+                <el-option :label="$t('tools.password.labels.separatorSpace')" value=" " />
+                <el-option :label="$t('tools.password.labels.separatorDot')" value="." />
               </el-select>
             </el-form-item>
 
-            <el-form-item label="首字母大写">
+            <el-form-item :label="$t('tools.password.labels.capitalize')">
               <el-switch v-model="passphraseForm.capitalize" />
             </el-form-item>
 
-            <el-form-item label="包含数字">
+            <el-form-item :label="$t('tools.password.labels.includeNumbers')">
               <el-switch v-model="passphraseForm.includeNumber" />
             </el-form-item>
 
             <el-form-item>
               <el-button type="primary" @click="generatePassphrase" :loading="generatingPassphrase">
-                生成助记密码
+                {{ $t('tools.password.labels.generateMnemonic') }}
               </el-button>
             </el-form-item>
           </el-form>
 
           <div class="passphrase-result" v-if="passphraseResult">
             <div class="result-header">
-              <h4 class="section-title">生成结果</h4>
+              <h4 class="section-title">{{ $t('tools.password.labels.mnemonicResult') }}</h4>
               <el-button size="small" type="primary" @click="copyPassphrase">
-                复制
+                {{ $t('tools.password.labels.copy') }}
               </el-button>
             </div>
             <div class="passphrase-display">
@@ -306,7 +306,7 @@ export default {
   methods: {
     async generatePasswords() {
       if (this.generateForm.charset.length === 0) {
-        ElMessage.warning('请至少选择一种字符类型')
+        ElMessage.warning(this.$t('tools.password.messages.selectCharType'))
         return
       }
 
@@ -325,12 +325,12 @@ export default {
         if (response.data.success) {
           this.generatedPasswords = response.data.passwords
           this.visiblePasswords = {}
-          ElMessage.success(`成功生成 ${response.data.passwords.length} 个密码`)
+          ElMessage.success(this.$t('tools.password.messages.generatedCount', { count: response.data.passwords.length }))
         } else {
-          ElMessage.error(response.data.error || '生成失败')
+          ElMessage.error(response.data.error || this.$t('tools.password.messages.generateFail'))
         }
       } catch (error) {
-        ElMessage.error('生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.password.messages.generateFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generating = false
       }
@@ -348,18 +348,18 @@ export default {
 
     copyPassword(pwd) {
       navigator.clipboard.writeText(pwd).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('tools.password.messages.copiedToClipboard'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.password.messages.copyFail'))
       })
     },
 
     copyAllPasswords() {
       const text = this.generatedPasswords.join('\n')
       navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success('已复制全部密码到剪贴板')
+        ElMessage.success(this.$t('tools.password.messages.copiedAllPasswords'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.password.messages.copyFail'))
       })
     },
 
@@ -369,7 +369,7 @@ export default {
 
     async checkStrength() {
       if (!this.strengthPassword) {
-        ElMessage.warning('请输入密码')
+        ElMessage.warning(this.$t('tools.password.messages.inputPasswordRequired'))
         return
       }
 
@@ -381,12 +381,12 @@ export default {
 
         if (response.data.success) {
           this.strengthResult = response.data
-          ElMessage.success('检测完成')
+          ElMessage.success(this.$t('tools.password.messages.checkComplete'))
         } else {
-          ElMessage.error(response.data.error || '检测失败')
+          ElMessage.error(response.data.error || this.$t('tools.password.messages.checkFail'))
         }
       } catch (error) {
-        ElMessage.error('检测失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.password.messages.checkFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.checkingStrength = false
       }
@@ -420,12 +420,12 @@ export default {
 
         if (response.data.success) {
           this.passphraseResult = response.data
-          ElMessage.success('助记密码生成成功')
+          ElMessage.success(this.$t('tools.password.messages.mnemonicSuccess'))
         } else {
-          ElMessage.error(response.data.error || '生成失败')
+          ElMessage.error(response.data.error || this.$t('tools.password.messages.generateFail'))
         }
       } catch (error) {
-        ElMessage.error('生成失败: ' + (error.response?.data?.error || error.message))
+        ElMessage.error(this.$t('tools.password.messages.generateFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.generatingPassphrase = false
       }
@@ -434,9 +434,9 @@ export default {
     copyPassphrase() {
       if (!this.passphraseResult) return
       navigator.clipboard.writeText(this.passphraseResult.passphrase).then(() => {
-        ElMessage.success('已复制到剪贴板')
+        ElMessage.success(this.$t('tools.password.messages.copiedToClipboard'))
       }).catch(() => {
-        ElMessage.error('复制失败')
+        ElMessage.error(this.$t('tools.password.messages.copyFail'))
       })
     }
   }

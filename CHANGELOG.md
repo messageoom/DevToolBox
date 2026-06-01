@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-06-01
+
+### Added
+
+- 国际化 (i18n)：中英双语实时切换，覆盖前端 33 个文件、后端 GUI + 锁页面
+- vue-i18n 集成：Element Plus 组件跟随语言切换
+- 语言切换 UI：顶部下拉菜单，选择保存到 localStorage
+- 原生 GUI 中英文切换：pywebview 控制面板支持语言切换
+- 锁页面双语：根据用户语言设置显示中文或英文
+- 移动端底部导航：8 个入口（新增文件上传、二维码），图标/文字紧凑排列
+- 移动端首页：列表式分类布局，替代卡片网格，节省屏幕空间
+- 移动端工具页：去除 el-card 嵌套，内容铺满屏宽，padding 最小化
+- 页面切换过渡动画：200ms fade 淡入淡出
+- 按钮/导航触摸反馈：active 缩放、背景高亮
+
+### Changed
+
+- deviceStore 简化为两档（mobile ≤768px / desktop >768px），统一全局 resize 监听
+- tool-layout.css 移动端 padding 从 16-20px 缩减至 4-8px
+- 9 个视图补充 `@media` 响应式 CSS
+- FileUpload、TimestampTools、FileCategory 去除重复 resize 监听，复用 deviceStore
+- CryptoTools 移动端去除额外 padding wrapper
+
+### Fixed
+
+- UuidTools、PasswordTools 标签页标题显示英文（`tabs` → `tab` 键名拼写错误）
+- Web 页面出现多余滚动条（html/body overflow 修正）
+
 ## [2.0.1] - 2025-06-01
 
 ### Added

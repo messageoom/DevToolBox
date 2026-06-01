@@ -1,34 +1,34 @@
 <template>
-  <ToolPage title="时间戳工具" :icon="Clock">
+  <ToolPage :title="$t('tools.timestamp.title')" :icon="Clock">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="当前时间" name="current">
+      <el-tab-pane :label="$t('tools.timestamp.tab.currentTime')" name="current">
         <div class="tool-section">
           <div class="action-section">
             <el-button type="primary" @click="getCurrentTimestamp" :loading="loading">
-              获取当前时间戳
+              {{ $t('tools.timestamp.label.getCurrentTimestamp') }}
             </el-button>
           </div>
           <div class="output-section" v-if="currentTimestamp">
-            <h4 class="section-title">时间戳信息</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.timestampInfo') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="时间戳(秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampSeconds')">
                 {{ currentTimestamp.timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="时间戳(毫秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampMillis')">
                 {{ currentTimestamp.timestamp_ms }}
               </el-descriptions-item>
-              <el-descriptions-item label="ISO格式" :span="2">
+              <el-descriptions-item :label="$t('tools.timestamp.label.isoFormat')" :span="2">
                 {{ currentTimestamp.datetime }}
               </el-descriptions-item>
-              <el-descriptions-item label="本地时间" :span="2">
+              <el-descriptions-item :label="$t('tools.timestamp.label.localTime')" :span="2">
                 {{ currentTimestamp.local_time }}
               </el-descriptions-item>
             </el-descriptions>
 
-            <h4 class="section-title" style="margin-top: 30px;">多时区时间</h4>
+            <h4 class="section-title" style="margin-top: 30px;">{{ $t('tools.timestamp.label.multiTimezone') }}</h4>
             <el-alert
-              title="当前时区信息"
-              :description="`检测到的当前时区: ${currentTimestamp.current_timezone}`"
+              :title="$t('tools.timestamp.label.currentTimezone')"
+              :description="$t('tools.timestamp.label.detectedTimezone') + ': ' + currentTimestamp.current_timezone"
               type="info"
               style="margin-bottom: 20px;"
               show-icon
@@ -54,46 +54,46 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="转换时间戳" name="convert">
+      <el-tab-pane :label="$t('tools.timestamp.tab.convertTimestamp')" name="convert">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入时间戳</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.inputTimestamp') }}</h4>
             <el-input-number
               v-model="timestampInput"
               :min="0"
               :precision="0"
-              placeholder="请输入时间戳..."
+              :placeholder="$t('tools.timestamp.label.inputTimestamp') + '...'"
               style="width: 100%;"
             />
             <el-radio-group v-model="timestampType" style="margin-top: 10px;">
-              <el-radio label="seconds">秒</el-radio>
-              <el-radio label="milliseconds">毫秒</el-radio>
+              <el-radio label="seconds">{{ $t('tools.timestamp.label.seconds') }}</el-radio>
+              <el-radio label="milliseconds">{{ $t('tools.timestamp.label.milliseconds') }}</el-radio>
             </el-radio-group>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertTimestamp" :loading="converting">
-              转换
+              {{ $t('tools.timestamp.label.convert') }}
             </el-button>
           </div>
           <div class="output-section" v-if="convertedTimestamp">
-            <h4 class="section-title">转换结果</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.convertResult') }}</h4>
             <el-descriptions :column="1" border>
-              <el-descriptions-item label="时间戳(秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampSeconds')">
                 {{ convertedTimestamp.timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="时间戳(毫秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampMillis')">
                 {{ convertedTimestamp.timestamp_ms }}
               </el-descriptions-item>
-              <el-descriptions-item label="ISO格式">
+              <el-descriptions-item :label="$t('tools.timestamp.label.isoFormat')">
                 {{ convertedTimestamp.datetime }}
               </el-descriptions-item>
-              <el-descriptions-item label="北京时间">
+              <el-descriptions-item :label="$t('tools.timestamp.label.beijingTime')">
                 {{ convertedTimestamp.formatted.beijing }}
               </el-descriptions-item>
-              <el-descriptions-item label="本地时间">
+              <el-descriptions-item :label="$t('tools.timestamp.label.localTime')">
                 {{ convertedTimestamp.formatted.local }}
               </el-descriptions-item>
-              <el-descriptions-item label="UTC时间">
+              <el-descriptions-item :label="$t('tools.timestamp.label.utcTime')">
                 {{ convertedTimestamp.formatted.utc }}
               </el-descriptions-item>
             </el-descriptions>
@@ -101,57 +101,57 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="解析日期时间" name="parse">
+      <el-tab-pane :label="$t('tools.timestamp.tab.parseDatetime')" name="parse">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">输入日期时间字符串</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.inputDatetime') }}</h4>
             <el-input
               v-model="datetimeString"
-              placeholder="请输入日期时间字符串..."
+              :placeholder="$t('tools.timestamp.label.inputDatetime') + '...'"
               style="width: 100%; margin-bottom: 10px;"
             />
             <el-input
               v-model="formatString"
-              placeholder="格式字符串 (如: %Y-%m-%d %H:%M:%S)"
+              :placeholder="$t('tools.timestamp.label.formatString') + ' (%Y-%m-%d %H:%M:%S)'"
               style="width: 100%;"
             />
           </div>
           <div class="action-section">
             <el-button type="primary" @click="parseDatetime" :loading="parsing">
-              解析
+              {{ $t('tools.timestamp.label.parse') }}
             </el-button>
           </div>
           <div class="output-section" v-if="parsedResult">
-            <h4 class="section-title">解析结果</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.parseResult') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="时间戳(秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampSeconds')">
                 {{ parsedResult.timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="时间戳(毫秒)">
+              <el-descriptions-item :label="$t('tools.timestamp.label.timestampMillis')">
                 {{ parsedResult.timestamp_ms }}
               </el-descriptions-item>
-              <el-descriptions-item label="ISO格式">
+              <el-descriptions-item :label="$t('tools.timestamp.label.isoFormat')">
                 {{ parsedResult.datetime }}
               </el-descriptions-item>
-              <el-descriptions-item label="年">
+              <el-descriptions-item :label="$t('tools.timestamp.label.year')">
                 {{ parsedResult.parsed.year }}
               </el-descriptions-item>
-              <el-descriptions-item label="月">
+              <el-descriptions-item :label="$t('tools.timestamp.label.month')">
                 {{ parsedResult.parsed.month }}
               </el-descriptions-item>
-              <el-descriptions-item label="日">
+              <el-descriptions-item :label="$t('tools.timestamp.label.day')">
                 {{ parsedResult.parsed.day }}
               </el-descriptions-item>
-              <el-descriptions-item label="时">
+              <el-descriptions-item :label="$t('tools.timestamp.label.hour')">
                 {{ parsedResult.parsed.hour }}
               </el-descriptions-item>
-              <el-descriptions-item label="分">
+              <el-descriptions-item :label="$t('tools.timestamp.label.minute')">
                 {{ parsedResult.parsed.minute }}
               </el-descriptions-item>
-              <el-descriptions-item label="秒">
+              <el-descriptions-item :label="$t('tools.timestamp.label.second')">
                 {{ parsedResult.parsed.second }}
               </el-descriptions-item>
-              <el-descriptions-item label="星期" :span="2">
+              <el-descriptions-item :label="$t('tools.timestamp.label.weekday')" :span="2">
                 {{ parsedResult.parsed.weekday }} ({{ parsedResult.parsed.isoweekday }})
               </el-descriptions-item>
             </el-descriptions>
@@ -159,40 +159,40 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="时间加减" name="add-time">
+      <el-tab-pane :label="$t('tools.timestamp.tab.timeOffset')" name="add-time">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">基准时间</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.baseTime') }}</h4>
             <el-input
               v-model="addTimeBaseTime"
-              placeholder="请输入基准时间 (时间戳或日期时间字符串)..."
+              :placeholder="$t('tools.timestamp.label.baseTime') + '...'"
               style="width: 100%; margin-bottom: 10px;"
             />
             <el-radio-group v-model="addTimeType" style="margin-bottom: 10px;">
-              <el-radio label="timestamp">时间戳</el-radio>
-              <el-radio label="datetime_string">日期时间字符串</el-radio>
+              <el-radio label="timestamp">{{ $t('tools.timestamp.label.timestamp') }}</el-radio>
+              <el-radio label="datetime_string">{{ $t('tools.timestamp.label.datetimeString') }}</el-radio>
             </el-radio-group>
             <el-input
               v-model="addTimeFormat"
-              placeholder="格式字符串 (如: %Y-%m-%d %H:%M:%S)"
+              :placeholder="$t('tools.timestamp.label.formatString') + ' (%Y-%m-%d %H:%M:%S)'"
               style="width: 100%; margin-bottom: 15px;"
             />
 
-            <h4 class="section-title">时间偏移量</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.timeOffset') }}</h4>
             <div v-for="(item, index) in addTimeAdditions" :key="index" class="addition-row">
-              <el-select v-model="item.unit" placeholder="选择单位" style="width: 160px;">
-                <el-option label="年" value="years" />
-                <el-option label="月" value="months" />
-                <el-option label="周" value="weeks" />
-                <el-option label="天" value="days" />
-                <el-option label="小时" value="hours" />
-                <el-option label="分钟" value="minutes" />
-                <el-option label="秒" value="seconds" />
+              <el-select v-model="item.unit" :placeholder="$t('tools.timestamp.label.selectUnit')" style="width: 160px;">
+                <el-option :label="$t('tools.timestamp.label.yearUnit')" value="years" />
+                <el-option :label="$t('tools.timestamp.label.monthUnit')" value="months" />
+                <el-option :label="$t('tools.timestamp.label.weekUnit')" value="weeks" />
+                <el-option :label="$t('tools.timestamp.label.dayUnit')" value="days" />
+                <el-option :label="$t('tools.timestamp.label.hourUnit')" value="hours" />
+                <el-option :label="$t('tools.timestamp.label.minuteUnit')" value="minutes" />
+                <el-option :label="$t('tools.timestamp.label.secondUnit')" value="seconds" />
               </el-select>
               <el-input-number
                 v-model="item.amount"
                 :precision="0"
-                placeholder="数量"
+                :placeholder="$t('tools.timestamp.label.amount')"
                 style="width: 160px; margin-left: 10px;"
               />
               <el-button
@@ -205,33 +205,33 @@
               />
             </div>
             <el-button type="primary" plain @click="addAdditionRow" style="margin-top: 10px;">
-              添加偏移量
+              {{ $t('tools.timestamp.label.addOffset') }}
             </el-button>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="addTime" :loading="addTimeLoading">
-              计算
+              {{ $t('tools.timestamp.label.calcResult') }}
             </el-button>
           </div>
           <div class="output-section" v-if="addTimeResult">
-            <h4 class="section-title">计算结果</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.calcResult') }}</h4>
             <el-descriptions :column="descColumn" border>
-              <el-descriptions-item label="原始时间">
+              <el-descriptions-item :label="$t('tools.timestamp.label.originalTime')">
                 {{ addTimeResult.original_time }}
               </el-descriptions-item>
-              <el-descriptions-item label="结果时间戳">
+              <el-descriptions-item :label="$t('tools.timestamp.label.resultTimestamp')">
                 {{ addTimeResult.result_timestamp }}
               </el-descriptions-item>
-              <el-descriptions-item label="结果日期时间" :span="2">
+              <el-descriptions-item :label="$t('tools.timestamp.label.resultDatetime')" :span="2">
                 {{ addTimeResult.result_datetime }}
               </el-descriptions-item>
             </el-descriptions>
-            <h4 class="section-title" style="margin-top: 20px;">操作列表</h4>
+            <h4 class="section-title" style="margin-top: 20px;">{{ $t('tools.timestamp.label.operationList') }}</h4>
             <el-descriptions :column="1" border>
               <el-descriptions-item
                 v-for="(op, index) in addTimeResult.operations"
                 :key="index"
-                :label="'操作 ' + (index + 1)"
+                :label="$t('tools.timestamp.label.operationList') + ' ' + (index + 1)"
               >
                 {{ op }}
               </el-descriptions-item>
@@ -240,39 +240,39 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="批量计算" name="batch-calculate">
+      <el-tab-pane :label="$t('tools.timestamp.tab.batchCalc')" name="batch-calculate">
         <div class="tool-section">
           <div class="input-section">
-            <h4 class="section-title">批量时间输入</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.batchTimeInput') }}</h4>
             <el-input
               v-model="batchBaseTimes"
               type="textarea"
               :rows="6"
-              placeholder="请输入多个时间 (每行一个，支持时间戳或日期时间字符串)..."
+              :placeholder="$t('tools.timestamp.label.batchTimeInput') + '...'"
               style="width: 100%; margin-bottom: 15px;"
             />
             <el-row :gutter="15">
               <el-col :xs="24" :sm="12" :md="6">
-                <div class="field-label">操作类型</div>
+                <div class="field-label">{{ $t('tools.timestamp.label.operationType') }}</div>
                 <el-select v-model="batchOperation" style="width: 100%;">
-                  <el-option label="加" value="add" />
-                  <el-option label="减" value="subtract" />
+                  <el-option :label="$t('tools.timestamp.label.addSub')" value="add" />
+                  <el-option :label="$t('tools.timestamp.label.subtract')" value="subtract" />
                 </el-select>
               </el-col>
               <el-col :xs="24" :sm="12" :md="6">
-                <div class="field-label">单位</div>
+                <div class="field-label">{{ $t('tools.timestamp.label.unit') }}</div>
                 <el-select v-model="batchUnit" style="width: 100%;">
-                  <el-option label="年" value="years" />
-                  <el-option label="月" value="months" />
-                  <el-option label="周" value="weeks" />
-                  <el-option label="天" value="days" />
-                  <el-option label="小时" value="hours" />
-                  <el-option label="分钟" value="minutes" />
-                  <el-option label="秒" value="seconds" />
+                  <el-option :label="$t('tools.timestamp.label.yearUnit')" value="years" />
+                  <el-option :label="$t('tools.timestamp.label.monthUnit')" value="months" />
+                  <el-option :label="$t('tools.timestamp.label.weekUnit')" value="weeks" />
+                  <el-option :label="$t('tools.timestamp.label.dayUnit')" value="days" />
+                  <el-option :label="$t('tools.timestamp.label.hourUnit')" value="hours" />
+                  <el-option :label="$t('tools.timestamp.label.minuteUnit')" value="minutes" />
+                  <el-option :label="$t('tools.timestamp.label.secondUnit')" value="seconds" />
                 </el-select>
               </el-col>
               <el-col :xs="24" :sm="12" :md="6">
-                <div class="field-label">数量</div>
+                <div class="field-label">{{ $t('tools.timestamp.label.amount') }}</div>
                 <el-input-number
                   v-model="batchAmount"
                   :precision="0"
@@ -280,43 +280,43 @@
                 />
               </el-col>
               <el-col :xs="24" :sm="12" :md="6">
-                <div class="field-label">输入类型</div>
+                <div class="field-label">{{ $t('tools.timestamp.label.inputType') }}</div>
                 <el-select v-model="batchType" style="width: 100%;">
-                  <el-option label="时间戳" value="timestamp" />
-                  <el-option label="日期时间字符串" value="datetime_string" />
+                  <el-option :label="$t('tools.timestamp.label.timestamp')" value="timestamp" />
+                  <el-option :label="$t('tools.timestamp.label.datetimeString')" value="datetime_string" />
                 </el-select>
               </el-col>
             </el-row>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="batchCalculate" :loading="batchLoading">
-              批量计算
+              {{ $t('tools.timestamp.label.batchCalc') }}
             </el-button>
           </div>
           <div class="output-section" v-if="batchResults && batchResults.length > 0">
-            <h4 class="section-title">计算结果</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.calcResult') }}</h4>
             <el-table :data="batchResults" border stripe style="width: 100%;">
-              <el-table-column type="index" label="序号" width="70" align="center" />
-              <el-table-column prop="original" label="原始时间" min-width="180" />
-              <el-table-column prop="result_timestamp" label="结果时间戳" min-width="160" />
-              <el-table-column prop="result_datetime" label="结果日期时间" min-width="200" />
+              <el-table-column type="index" :label="$t('tools.timestamp.label.index')" width="70" align="center" />
+              <el-table-column prop="original" :label="$t('tools.timestamp.label.originalTime')" min-width="180" />
+              <el-table-column prop="result_timestamp" :label="$t('tools.timestamp.label.resultTimestamp')" min-width="160" />
+              <el-table-column prop="result_datetime" :label="$t('tools.timestamp.label.resultDatetime')" min-width="200" />
             </el-table>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="格式参考" name="formats">
+      <el-tab-pane :label="$t('tools.timestamp.tab.formatRef')" name="formats">
         <div class="tool-section">
           <div class="action-section">
             <el-button type="primary" @click="fetchFormats" :loading="formatsLoading">
-              获取格式参考
+              {{ $t('tools.timestamp.label.getFormatRef') }}
             </el-button>
           </div>
           <div class="output-section" v-if="formatsList && formatsList.length > 0">
-            <h4 class="section-title">日期时间格式参考</h4>
+            <h4 class="section-title">{{ $t('tools.timestamp.label.formatRefTitle') }}</h4>
             <el-table :data="formatsList" border stripe style="width: 100%;">
-              <el-table-column prop="format_name" label="格式名称" min-width="200" />
-              <el-table-column prop="format_pattern" label="格式模式" min-width="300" />
+              <el-table-column prop="format_name" :label="$t('tools.timestamp.label.formatName')" min-width="200" />
+              <el-table-column prop="format_pattern" :label="$t('tools.timestamp.label.formatPattern')" min-width="300" />
             </el-table>
           </div>
         </div>
@@ -330,6 +330,7 @@ import { ElMessage } from 'element-plus'
 import { Clock, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
+import { useDeviceStore } from '@/stores/device.js'
 
 export default {
   name: 'TimestampTools',
@@ -339,7 +340,9 @@ export default {
     ToolPage
   },
   data() {
+    const deviceStore = useDeviceStore()
     return {
+      deviceStore,
       activeTab: 'current',
       loading: false,
       currentTimestamp: null,
@@ -376,7 +379,7 @@ export default {
   },
   computed: {
     descColumn() {
-      return window.innerWidth <= 768 ? 1 : 2
+      return this.deviceStore.isMobile ? 1 : 2
     }
   },
   methods: {
@@ -386,12 +389,12 @@ export default {
         const response = await axios.get('/api/timestamp-tools/current')
         if (response.data.success) {
           this.currentTimestamp = response.data
-          ElMessage.success('获取成功')
+          ElMessage.success(this.$t('tools.timestamp.message.getSuccess'))
         } else {
-          ElMessage.error('获取失败')
+          ElMessage.error(this.$t('tools.timestamp.message.getFail'))
         }
       } catch (error) {
-        ElMessage.error('获取失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.getFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.loading = false
       }
@@ -399,7 +402,7 @@ export default {
 
     async convertTimestamp() {
       if (this.timestampInput === null || this.timestampInput < 0) {
-        ElMessage.warning('请输入有效的时间戳')
+        ElMessage.warning(this.$t('tools.timestamp.message.inputTimestampRequired'))
         return
       }
 
@@ -412,12 +415,12 @@ export default {
 
         if (response.data.success) {
           this.convertedTimestamp = response.data
-          ElMessage.success('转换成功')
+          ElMessage.success(this.$t('tools.timestamp.message.convertSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('转换失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.convertFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.converting = false
       }
@@ -425,7 +428,7 @@ export default {
 
     async parseDatetime() {
       if (!this.datetimeString) {
-        ElMessage.warning('请输入日期时间字符串')
+        ElMessage.warning(this.$t('tools.timestamp.message.inputDatetimeRequired'))
         return
       }
 
@@ -438,12 +441,12 @@ export default {
 
         if (response.data.success) {
           this.parsedResult = response.data
-          ElMessage.success('解析成功')
+          ElMessage.success(this.$t('tools.timestamp.message.parseSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('解析失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.parseFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.parsing = false
       }
@@ -460,11 +463,11 @@ export default {
 
     async addTime() {
       if (!this.addTimeBaseTime) {
-        ElMessage.warning('请输入基准时间')
+        ElMessage.warning(this.$t('tools.timestamp.message.inputBaseTimeRequired'))
         return
       }
       if (this.addTimeAdditions.some(item => item.amount === null || item.amount === undefined)) {
-        ElMessage.warning('请填写所有偏移量数值')
+        ElMessage.warning(this.$t('tools.timestamp.message.fillAllOffsetValues'))
         return
       }
 
@@ -482,12 +485,12 @@ export default {
 
         if (response.data.success) {
           this.addTimeResult = response.data
-          ElMessage.success('计算成功')
+          ElMessage.success(this.$t('tools.timestamp.message.calcSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('计算失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.calcFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.addTimeLoading = false
       }
@@ -501,11 +504,11 @@ export default {
         .filter(line => line.length > 0)
 
       if (times.length === 0) {
-        ElMessage.warning('请输入至少一个时间')
+        ElMessage.warning(this.$t('tools.timestamp.message.inputAtLeastOneTime'))
         return
       }
       if (this.batchAmount === null || this.batchAmount === undefined) {
-        ElMessage.warning('请填写数量')
+        ElMessage.warning(this.$t('tools.timestamp.message.fillAmount'))
         return
       }
 
@@ -521,12 +524,12 @@ export default {
 
         if (response.data.success) {
           this.batchResults = response.data.results
-          ElMessage.success('批量计算成功')
+          ElMessage.success(this.$t('tools.timestamp.message.batchCalcSuccess'))
         } else {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error('批量计算失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.batchCalcFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.batchLoading = false
       }
@@ -539,12 +542,12 @@ export default {
         const response = await axios.get('/api/timestamp-tools/formats')
         if (response.data.success) {
           this.formatsList = response.data.formats
-          ElMessage.success('获取成功')
+          ElMessage.success(this.$t('tools.timestamp.message.getSuccess'))
         } else {
-          ElMessage.error('获取失败')
+          ElMessage.error(this.$t('tools.timestamp.message.getFail'))
         }
       } catch (error) {
-        ElMessage.error('获取失败: ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.timestamp.message.getFail') + ': ' + error.response?.data?.error || error.message)
       } finally {
         this.formatsLoading = false
       }

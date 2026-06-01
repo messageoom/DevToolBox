@@ -14,5 +14,11 @@ export default {
 </script>
 
 <style scoped>
-/* 页面级样式可以在这里添加 */
+/* Page-level styles can be added here */
+
+@media (max-width: 768px) {
+  :deep(.markdown-editor-page) {
+    padding: 0 !important;
+  }
+}
 </style>

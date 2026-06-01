@@ -4,7 +4,7 @@
     <div class="filter-section">
       <el-input
         v-model="searchText"
-        placeholder="搜索算法..."
+        :placeholder="$t('tools.crypto.algorithmSelector.searchPlaceholder')"
         clearable
         class="search-input"
       >
@@ -14,17 +14,17 @@
       </el-input>
       
       <div class="filters">
-        <span class="filter-label">安全级别:</span>
+        <span class="filter-label">{{ $t('tools.crypto.algorithmSelector.securityLevel') }}</span>
         <el-checkbox-group v-model="securityLevels" class="filter-group">
-          <el-checkbox label="高">高</el-checkbox>
-          <el-checkbox label="中">中</el-checkbox>
-          <el-checkbox label="低">低</el-checkbox>
+          <el-checkbox label="High">{{ $t('tools.crypto.algorithmSelector.levelHigh') }}</el-checkbox>
+          <el-checkbox label="Medium">{{ $t('tools.crypto.algorithmSelector.levelMedium') }}</el-checkbox>
+          <el-checkbox label="Low">{{ $t('tools.crypto.algorithmSelector.levelLow') }}</el-checkbox>
         </el-checkbox-group>
         
-        <span class="filter-label">类型:</span>
+        <span class="filter-label">{{ $t('tools.crypto.algorithmSelector.type') }}</span>
         <el-checkbox-group v-model="algorithmTypes" class="filter-group">
-          <el-checkbox label="国际标准">国际标准</el-checkbox>
-          <el-checkbox label="国密">国密</el-checkbox>
+          <el-checkbox label="International">{{ $t('tools.crypto.algorithmSelector.international') }}</el-checkbox>
+          <el-checkbox label="National">{{ $t('tools.crypto.algorithmSelector.national') }}</el-checkbox>
         </el-checkbox-group>
       </div>
     </div>
@@ -35,7 +35,7 @@
         <el-tab-pane 
           v-for="category in categories" 
           :key="category.value" 
-          :label="category.label" 
+          :label="$t(category.labelKey)" 
           :name="category.value"
         />
       </el-tabs>
@@ -61,24 +61,24 @@
                 </el-icon>
               </div>
               <div class="algorithm-info">
-                <h3 class="algorithm-name">{{ algorithm.label }}</h3>
+                <h3 class="algorithm-name">{{ $t(algorithm.labelKey) }}</h3>
                 <div class="algorithm-tags">
                   <el-tag 
                     :type="getSecurityLevelTagType(algorithm.securityLevel)" 
                     size="small"
                     class="tag"
                   >
-                    安全级别{{ algorithm.securityLevel }}
+                    {{ $t('tools.crypto.algorithmSelector.securityLevel') }}{{ $t('tools.crypto.algorithmSelector.level' + algorithm.securityLevel) }}
                   </el-tag>
                   <el-tag 
                     type="info" 
                     size="small"
                     class="tag"
                   >
-                    {{ algorithm.type }}
+                    {{ $t('tools.crypto.algorithmSelector.type' + algorithm.type) }}
                   </el-tag>
                 </div>
-                <p class="algorithm-description">{{ algorithm.description }}</p>
+                <p class="algorithm-description">{{ $t(algorithm.descriptionKey) }}</p>
               </div>
             </div>
           </el-card>
@@ -133,109 +133,104 @@ export default {
     return {
       activeCategory: this.category,
       searchText: '',
-      securityLevels: ['高', '中', '低'],
-      algorithmTypes: ['国际标准', '国密'],
+      securityLevels: ['High', 'Medium', 'Low'],
+      algorithmTypes: ['International', 'National'],
       categories: [
-        { label: '非对称加密', value: 'asymmetric' },
-        { label: '对称加密', value: 'symmetric' },
-        { label: '哈希算法', value: 'hash' }
+        { labelKey: 'tools.crypto.algorithmSelector.categoryAsymmetric', value: 'asymmetric' },
+        { labelKey: 'tools.crypto.algorithmSelector.categorySymmetric', value: 'symmetric' },
+        { labelKey: 'tools.crypto.algorithmSelector.categoryHash', value: 'hash' }
       ],
       algorithmDetails: {
-        // 非对称加密算法
         'RSA': {
-          label: 'RSA',
-          description: '经典的公钥加密算法，广泛用于数据加密和数字签名',
+          labelKey: 'tools.crypto.algorithmSelector.rsaLabel',
+          descriptionKey: 'tools.crypto.algorithmSelector.rsaDesc',
           icon: 'Key',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'ECC': {
-          label: 'ECC',
-          description: '椭圆曲线加密算法，提供与RSA相当的安全性但密钥更短',
+          labelKey: 'tools.crypto.algorithmSelector.eccLabel',
+          descriptionKey: 'tools.crypto.algorithmSelector.eccDesc',
           icon: 'Lock',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'Ed25519': {
-          label: 'Ed25519',
-          description: '高效的数字签名算法，基于扭曲爱德华曲线',
+          labelKey: 'tools.crypto.algorithmSelector.ed25519Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.ed25519Desc',
           icon: 'Document',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'SM2': {
-          label: 'SM2',
-          description: '国家商用密码算法，用于数字签名和密钥交换',
+          labelKey: 'tools.crypto.algorithmSelector.sm2Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sm2Desc',
           icon: 'Key',
-          securityLevel: '高',
-          type: '国密'
+          securityLevel: 'High',
+          type: 'National'
         },
-        
-        // 对称加密算法
         'AES': {
-          label: 'AES',
-          description: '高级加密标准，广泛使用的对称加密算法',
+          labelKey: 'tools.crypto.algorithmSelector.aesLabel',
+          descriptionKey: 'tools.crypto.algorithmSelector.aesDesc',
           icon: 'Unlock',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'ChaCha20': {
-          label: 'ChaCha20',
-          description: '高性能流加密算法，适用于移动设备',
+          labelKey: 'tools.crypto.algorithmSelector.chacha20Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.chacha20Desc',
           icon: 'Link',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'SM4': {
-          label: 'SM4',
-          description: '国家商用密码算法，分组密码算法',
+          labelKey: 'tools.crypto.algorithmSelector.sm4Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sm4Desc',
           icon: 'Unlock',
-          securityLevel: '高',
-          type: '国密'
+          securityLevel: 'High',
+          type: 'National'
         },
-        
-        // 哈希算法
         'MD5': {
-          label: 'MD5',
-          description: '消息摘要算法5，128位哈希函数',
+          labelKey: 'tools.crypto.algorithmSelector.md5Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.md5Desc',
           icon: 'Document',
-          securityLevel: '低',
-          type: '国际标准'
+          securityLevel: 'Low',
+          type: 'International'
         },
         'SHA1': {
-          label: 'SHA1',
-          description: '安全哈希算法1，160位哈希函数',
+          labelKey: 'tools.crypto.algorithmSelector.sha1Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sha1Desc',
           icon: 'Lock',
-          securityLevel: '低',
-          type: '国际标准'
+          securityLevel: 'Low',
+          type: 'International'
         },
         'SHA256': {
-          label: 'SHA256',
-          description: 'SHA-2系列哈希函数，256位输出',
+          labelKey: 'tools.crypto.algorithmSelector.sha256Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sha256Desc',
           icon: 'Key',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'SHA3_256': {
-          label: 'SHA3-256',
-          description: 'SHA-3系列哈希函数，256位输出',
+          labelKey: 'tools.crypto.algorithmSelector.sha3_256Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sha3_256Desc',
           icon: 'Key',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         },
         'SM3': {
-          label: 'SM3',
-          description: '国家商用密码算法，256位密码杂凑算法',
+          labelKey: 'tools.crypto.algorithmSelector.sm3Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.sm3Desc',
           icon: 'Lock',
-          securityLevel: '高',
-          type: '国密'
+          securityLevel: 'High',
+          type: 'National'
         },
         'BLAKE3': {
-          label: 'BLAKE3',
-          description: '现代哈希函数，性能优异且安全',
+          labelKey: 'tools.crypto.algorithmSelector.blake3Label',
+          descriptionKey: 'tools.crypto.algorithmSelector.blake3Desc',
           icon: 'Document',
-          securityLevel: '高',
-          type: '国际标准'
+          securityLevel: 'High',
+          type: 'International'
         }
       }
     }
@@ -248,14 +243,13 @@ export default {
       console.log('AlgorithmCardSelector - algorithmsInCategory:', algorithmsInCategory)
       
       const filtered = algorithmsInCategory
-        .filter(algo => this.algorithmDetails[algo]) // 只显示有详细信息的算法
+        .filter(algo => this.algorithmDetails[algo])
         .filter(algo => {
           const algorithm = this.algorithmDetails[algo];
-          
-          // 搜索过滤
-          if (this.searchText && 
-              !algorithm.label.toLowerCase().includes(this.searchText.toLowerCase()) &&
-              !algorithm.description.toLowerCase().includes(this.searchText.toLowerCase())) {
+
+          if (this.searchText &&
+              !this.$t(algorithm.labelKey).toLowerCase().includes(this.searchText.toLowerCase()) &&
+              !this.$t(algorithm.descriptionKey).toLowerCase().includes(this.searchText.toLowerCase())) {
             return false;
           }
           
@@ -300,9 +294,9 @@ export default {
     },
     getSecurityLevelTagType(securityLevel) {
       switch (securityLevel) {
-        case '高': return 'success';
-        case '中': return 'warning';
-        case '低': return 'danger';
+        case 'High': return 'success';
+        case 'Medium': return 'warning';
+        case 'Low': return 'danger';
         default: return '';
       }
     }

@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import logging
 
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 # 兼容处理导入，支持从不同目录运行
 try:
@@ -131,7 +131,8 @@ def create_app(access_token=None):
         if request.path.startswith('/api/'):
             return jsonify({'error': 'Unauthorized', 'success': False}), 401
 
-        return get_lock_page_html(), 403
+        lang = config.get('ui', {}).get('language', 'zh')
+        return get_lock_page_html(lang), 403
 
     # Cookie 设置
     @app.after_request
