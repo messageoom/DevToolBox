@@ -192,37 +192,16 @@ class DevToolBoxBuilder:
         if sys.platform == "win32":
             script_content = (
                 '@echo off\n'
-                'echo ========================================\n'
-                'echo    DevToolBox - 开发工具箱\n'
-                'echo ========================================\n'
-                'echo.\n'
-                'echo 正在启动服务...\n'
-                'echo.\n'
                 'cd /d "%~dp0"\n'
                 f'start "" "{exe_name}"\n'
-                'echo.\n'
-                'echo 服务已启动，请在浏览器中访问:\n'
-                'echo http://localhost:5000\n'
-                'echo.\n'
-                'pause\n'
             )
             script_name = "启动DevToolBox.bat"
         else:
             script_content = (
                 '#!/bin/bash\n'
-                'echo "========================================"\n'
-                'echo "    DevToolBox - 开发工具箱"\n'
-                'echo "========================================"\n'
-                'echo ""\n'
-                'echo "正在启动服务..."\n'
-                'echo ""\n'
+                'cd "$(dirname "$0")"\n'
                 f'chmod +x "{exe_name}"\n'
                 f'./"{exe_name}" &\n'
-                'echo ""\n'
-                'echo "服务已启动，请在浏览器中访问:"\n'
-                'echo "http://localhost:5000"\n'
-                'echo ""\n'
-                'read -p "按回车键退出..."\n'
             )
             script_name = "启动DevToolBox.sh"
 
@@ -239,10 +218,16 @@ class DevToolBoxBuilder:
 
 ## 快速开始
 
-### 方法1：运行启动脚本
-双击运行 `启动DevToolBox.bat` (Windows) 或 `启动DevToolBox.sh` (Linux/Mac)
+双击运行可执行文件，浏览器将自动打开。
+首次访问会自动生成安全 Token，确保只有本机用户可以访问。
 
-### 方法2：直接运行
+### 系统托盘
+启动后最小化到系统托盘，右键菜单：
+- 打开浏览器
+- 复制访问地址
+- 退出
+
+### 手动运行
 ```bash
 # Windows
 DevToolBox-windows-x64.exe
@@ -253,9 +238,6 @@ DevToolBox-windows-x64.exe
 # Linux
 ./DevToolBox-linux-x64
 ```
-
-### 访问应用
-启动后，在浏览器中访问：http://localhost:5000
 
 ## 功能介绍
 
@@ -273,7 +255,7 @@ DevToolBox 集成了 20 个开发工具：
 ## 故障排除
 
 - 服务无法启动：检查端口 5000 是否被占用
-- 无法访问网页：确认服务已正常启动，检查防火墙设置
+- 无法访问网页：通过托盘菜单"复制访问地址"获取带 Token 的完整 URL
 
 ## 技术支持
 

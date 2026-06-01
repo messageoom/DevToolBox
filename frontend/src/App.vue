@@ -62,6 +62,12 @@
           <template #title>首页</template>
         </el-menu-item>
 
+        <!-- Settings -->
+        <el-menu-item index="/settings">
+          <el-icon><Setting /></el-icon>
+          <template #title>Settings</template>
+        </el-menu-item>
+
         <!-- Dynamic categories from toolCategories data -->
         <template v-for="category in sidebarCategories" :key="category.id">
           <el-sub-menu :index="'cat-' + category.id">
@@ -136,6 +142,7 @@ import {
   MagicStick,
   Sunny,
   Moon,
+  Setting,
 } from '@element-plus/icons-vue'
 
 // --- Stores ---

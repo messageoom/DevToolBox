@@ -1,9 +1,9 @@
-from flask import Flask, Blueprint, send_from_directory, request
+from flask import Flask, Blueprint, send_from_directory, request, jsonify, g
 from flask_cors import CORS
 import os
 import logging
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 # 兼容处理导入，支持从不同目录运行
 try:
@@ -21,6 +21,7 @@ try:
     from .modules.uuid_tools import uuid_tools_bp
     from .modules.password_tools import password_tools_bp
     from .modules.apikey_tools import apikey_tools_bp
+    from .modules.settings import settings_bp
 except ImportError:
     try:
         from modules.file_upload import file_upload_bp
@@ -37,6 +38,7 @@ except ImportError:
         from modules.uuid_tools import uuid_tools_bp
         from modules.password_tools import password_tools_bp
         from modules.apikey_tools import apikey_tools_bp
+        from modules.settings import settings_bp
     except ImportError:
         from backend.modules.file_upload import file_upload_bp
         from backend.modules.json_tools import json_tools_bp
@@ -52,13 +54,25 @@ except ImportError:
         from backend.modules.uuid_tools import uuid_tools_bp
         from backend.modules.password_tools import password_tools_bp
         from backend.modules.apikey_tools import apikey_tools_bp
+        from backend.modules.settings import settings_bp
 
-def create_app():
+# Lock page for unauthorized access
+try:
+    from .utils.lock_page import get_lock_page_html
+except ImportError:
+    try:
+        from utils.lock_page import get_lock_page_html
+    except ImportError:
+        from backend.utils.lock_page import get_lock_page_html
+
+
+def create_app(access_token=None):
     app = Flask(__name__)
 
     # 安全配置
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
     app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
+    app.config['ACCESS_TOKEN'] = access_token
 
     # CORS 配置
     allowed_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
@@ -66,10 +80,71 @@ def create_app():
         r"/api/*": {
             "origins": allowed_origins,
             "methods": ["GET", "POST", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type"],
+            "allow_headers": ["Content-Type", "X-Access-Token"],
             "max_age": 3600
         }
     })
+
+    # Token 认证中间件
+    @app.before_request
+    def check_access_token():
+        token = app.config.get('ACCESS_TOKEN')
+        if not token:
+            return None
+
+        # Check if token is disabled via config
+        try:
+            from utils.config_manager import load_config
+        except ImportError:
+            try:
+                from backend.utils.config_manager import load_config
+            except ImportError:
+                from backend.utils.config_manager import load_config
+        config = load_config()
+        if not config.get('security', {}).get('token_enabled', True):
+            return None
+
+        # Exempt paths
+        if request.path in ('/favicon.ico', '/robots.txt'):
+            return None
+
+        provided = (
+            request.args.get('token') or
+            request.cookies.get('devtoolbox_token') or
+            request.headers.get('X-Access-Token')
+        )
+
+        if provided == token:
+            g.token_valid = True
+            return None
+
+        # Check temp tokens
+        temp_tokens = config.get('security', {}).get('temp_tokens', [])
+        from datetime import datetime
+        now = datetime.utcnow().isoformat()
+        for t in temp_tokens:
+            if t.get('token') == provided and t.get('expires_at', '') > now:
+                g.token_valid = True
+                return None
+
+        # Unauthorized
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Unauthorized', 'success': False}), 401
+
+        return get_lock_page_html(), 403
+
+    # Cookie 设置
+    @app.after_request
+    def set_token_cookie(response):
+        if getattr(g, 'token_valid', False):
+            response.set_cookie(
+                'devtoolbox_token',
+                app.config['ACCESS_TOKEN'],
+                max_age=31536000,
+                httponly=True,
+                samesite='Lax'
+            )
+        return response
 
     # 注册蓝图
     app.register_blueprint(file_upload_bp, url_prefix='/api/file-upload')
@@ -86,6 +161,7 @@ def create_app():
     app.register_blueprint(uuid_tools_bp, url_prefix='/api/uuid-tools')
     app.register_blueprint(password_tools_bp, url_prefix='/api/password-tools')
     app.register_blueprint(apikey_tools_bp, url_prefix='/api/apikey-tools')
+    app.register_blueprint(settings_bp, url_prefix='/api/settings')
 
     # 前端静态文件服务（打包模式）
     frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')
@@ -107,11 +183,48 @@ def create_app():
     return app
 
 if __name__ == '__main__':
+    import uuid
+
     logging.basicConfig(level=logging.INFO)
-    app = create_app()
-    import socket
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    logging.info(f"本机IP地址: {local_ip}")
-    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    app.run(host='0.0.0.0', port=5000, debug=debug)
+
+    host = os.environ.get('FLASK_HOST', '0.0.0.0')
+    port = int(os.environ.get('FLASK_PORT', '5000'))
+    no_token = os.environ.get('DEVTOOLBOX_NO_TOKEN', '').lower() == '1'
+    no_tray = os.environ.get('DEVTOOLBOX_NO_TRAY', '').lower() == '1'
+
+    access_token = None if no_token else uuid.uuid4().hex
+    app = create_app(access_token=access_token)
+
+    no_gui = os.environ.get('DEVTOOLBOX_NO_GUI', '').lower() == '1'
+
+    if access_token and not no_gui:
+        # Native GUI mode (pywebview) with fallback to tray/console
+        try:
+            from utils.gui_window import run_gui_app
+            run_gui_app(app, host, port, access_token, __version__)
+        except ImportError:
+            try:
+                from backend.utils.gui_window import run_gui_app
+                run_gui_app(app, host, port, access_token, __version__)
+            except ImportError:
+                no_gui = True
+
+    if access_token and no_gui:
+        # Tray mode fallback
+        try:
+            from utils.tray_app import run_tray_app, run_console_app
+        except ImportError:
+            try:
+                from backend.utils.tray_app import run_tray_app, run_console_app
+            except ImportError:
+                no_tray = True
+
+        if no_tray:
+            run_console_app(app, host, port, access_token, __version__)
+        else:
+            run_tray_app(app, host, port, access_token, __version__)
+
+    if not access_token:
+        # Dev mode: no token, no gui, no tray
+        debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+        app.run(host=host, port=port, debug=debug)

@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2025-06-01
+
+### Added
+
+- pywebview 原生桌面 GUI 窗口：macOS 风格暗色 UI，双击 exe 即弹出控制面板
+- GUI 概览页：服务器状态、局域网地址、一键打开浏览器/复制 URL/打开存储目录
+- GUI 安全页：Token 启用/禁用/刷新、临时令牌管理
+- GUI 存储页：自定义存储路径（原生文件夹选择器）、文件大小限制、自动清理
+- GUI 网络页：端口/绑定地址配置
+- GUI 关于页：版本、Python、运行时长等信息
+- UUID 安全 Token 访问控制 + macOS 风格锁页面板
+- 系统托盘集成（pystray），pywebview 不可用时自动降级
+- Settings API（`/api/settings`）：配置管理、Token 操作、运行状态
+- Settings 前端页面：Web 端配置管理（供局域网访问使用）
+- JSON 配置持久化（`devtoolbox_config.json`）
+- 智能局域网 IP 检测：自动绕过 VPN/虚拟网卡，获取真实物理网卡 IP
+
+### Changed
+
+- 存储路径统一：`file_upload`、`data_conversion` 均读取 `config_manager`，GUI 修改全局生效
+- 启动流程：pywebview GUI 优先 → system tray 降级 → console 降级
+- CI 支持 `DEVTOOLBOX_NO_GUI=1` 环境变量跳过 GUI 模式
+
+### Removed
+
+- 旧 tkinter GUI（`gui_app.py`），由 pywebview 替代
+
 ## [2.0.0] - 2025-05-31
 
 ### Added

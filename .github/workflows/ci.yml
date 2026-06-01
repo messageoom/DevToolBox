@@ -100,7 +100,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpango1.0-dev libharfbuzz-dev libffi-dev libjpeg-dev zlib1g-dev
+          sudo apt-get install -y libpango1.0-dev libharfbuzz-dev libffi-dev libjpeg-dev zlib1g-dev libgirepository1.0-dev gir1.2-webkit2-4.1
 
       - name: Install frontend dependencies
         run: cd frontend && npm ci

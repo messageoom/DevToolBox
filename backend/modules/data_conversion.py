@@ -31,11 +31,27 @@ import markdown_it
 
 data_conversion_bp = Blueprint('data_conversion', __name__)
 
-UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+
+def _get_upload_folder():
+    try:
+        from utils.config_manager import load_config, get_upload_dir
+    except ImportError:
+        try:
+            from backend.utils.config_manager import load_config, get_upload_dir
+        except ImportError:
+            load_config = get_upload_dir = None
+    if load_config and get_upload_dir:
+        folder = get_upload_dir(load_config())
+    else:
+        folder = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'uploads')
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    return folder
+
+
+UPLOAD_FOLDER = None
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -416,8 +432,8 @@ def upload_pdf():
             return jsonify({'error': '没有选择文件'}), 400
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(str(file.filename))  # 确保filename是字符串类型
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            filename = secure_filename(str(file.filename))
+            file_path = os.path.join(_get_upload_folder(), filename)
             file.save(file_path)
 
             return jsonify({
@@ -440,7 +456,7 @@ def pdf_to_markdown():
             return jsonify({'error': '请提供filename字段'}), 400
 
         filename = data['filename']
-        file_path = safe_join(UPLOAD_FOLDER, filename)
+        file_path = safe_join(_get_upload_folder(), filename)
         if file_path is None:
             return jsonify({'error': '无效的文件名'}), 403
 

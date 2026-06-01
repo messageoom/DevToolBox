@@ -31,6 +31,16 @@ def get_upload_folder():
     from flask import current_app
     upload_folder = current_app.config.get('UPLOAD_FOLDER')
     if not upload_folder:
+        try:
+            from utils.config_manager import load_config, get_upload_dir
+        except ImportError:
+            try:
+                from backend.utils.config_manager import load_config, get_upload_dir
+            except ImportError:
+                load_config = get_upload_dir = None
+        if load_config and get_upload_dir:
+            upload_folder = get_upload_dir(load_config())
+    if not upload_folder:
         upload_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'uploads')
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
