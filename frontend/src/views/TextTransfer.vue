@@ -1,6 +1,16 @@
 <template>
   <ToolPage :title="t('tools.transfer.title')" :icon="ChatDotRound">
     <div class="transfer-container" :class="{ 'transfer-mobile': deviceStore.isMobile }">
+
+      <!-- Connection status banner -->
+      <transition name="banner-slide">
+        <div v-if="!connected" class="connection-banner">
+          <span class="material-symbols-rounded banner-icon">wifi_off</span>
+          <span>{{ t('tools.transfer.disconnected') }}</span>
+          <span class="banner-retrying">{{ t('tools.transfer.retrying') }}</span>
+        </div>
+      </transition>
+
       <!-- Mobile: horizontal device strip -->
       <div v-if="deviceStore.isMobile" class="mobile-device-strip">
         <div
@@ -10,9 +20,7 @@
           :class="{ active: activePeer?.nodeId === peer.nodeId }"
           @click="selectPeer(peer)"
         >
-          <div class="avatar-circle" :style="{ background: getAvatarColor(peer.nodeId) }">
-            {{ peer.name.charAt(0) }}
-          </div>
+          <img class="avatar-identicon" :src="generateIdenticon(peer.nodeId)" />
         </div>
         <div
           class="mobile-device-avatar"
@@ -27,10 +35,23 @@
       <div v-if="!deviceStore.isMobile" class="transfer-sidebar">
         <div class="sidebar-header">
           <span class="sidebar-title">{{ t('tools.transfer.onlineDevices') }}</span>
-          <span class="peer-count">{{ peers.length }}</span>
+          <span class="peer-count">{{ peers.length + 1 }}</span>
           <span class="connect-dot" :class="{ on: connected }"></span>
         </div>
+
         <div class="peer-list">
+          <!-- Self (current device) -->
+          <div class="peer-item self-item" @click="showRenameDialog">
+            <img class="avatar-identicon" :src="generateIdenticon(myId)" />
+            <div class="peer-info">
+              <div class="peer-name">
+                {{ myName || t('tools.transfer.unnamed') }}
+                <span class="self-tag">{{ t('tools.transfer.thisDevice') }}</span>
+              </div>
+            </div>
+            <span class="material-symbols-rounded rename-icon">edit</span>
+          </div>
+
           <div
             v-for="peer in peers"
             :key="peer.nodeId"
@@ -38,9 +59,7 @@
             :class="{ active: activePeer?.nodeId === peer.nodeId }"
             @click="selectPeer(peer)"
           >
-            <div class="avatar-circle" :style="{ background: getAvatarColor(peer.nodeId) }">
-              {{ peer.name.charAt(0) }}
-            </div>
+            <img class="avatar-identicon" :src="generateIdenticon(peer.nodeId)" />
             <div class="peer-info">
               <div class="peer-name">{{ peer.name }}</div>
               <div class="peer-ip">{{ peer.ip }}</div>
@@ -48,7 +67,8 @@
             <div class="online-dot"></div>
           </div>
           <div v-if="peers.length === 0" class="empty-peers">
-            {{ t('tools.transfer.noDevices') }}
+            <span class="material-symbols-rounded empty-peers-icon">devices</span>
+            <span>{{ t('tools.transfer.noDevices') }}</span>
           </div>
         </div>
         <div class="group-chat-entry" :class="{ active: !activePeer }" @click="selectGroupChat()">
@@ -65,9 +85,7 @@
         <!-- Chat header -->
         <div class="chat-header">
           <template v-if="activePeer">
-            <div class="avatar-circle small" :style="{ background: getAvatarColor(activePeer.nodeId) }">
-              {{ activePeer.name.charAt(0) }}
-            </div>
+            <img class="avatar-identicon small" :src="generateIdenticon(activePeer.nodeId)" />
             <span class="chat-target-name">{{ activePeer.name }}</span>
           </template>
           <template v-else>
@@ -78,37 +96,51 @@
 
         <!-- Messages -->
         <div class="chat-messages" ref="messagesContainer">
+          <!-- Empty state -->
           <div v-if="activeMessages.length === 0" class="empty-messages">
-            {{ t('tools.transfer.noMessages') }}
+            <span class="material-symbols-rounded empty-chat-icon">chat</span>
+            <p class="empty-chat-title">{{ t('tools.transfer.noMessages') }}</p>
+            <p class="empty-chat-hint">{{ activePeer ? t('tools.transfer.hintPeer') : t('tools.transfer.hintGroup') }}</p>
           </div>
-          <div
-            v-for="msg in activeMessages"
-            :key="msg.id"
-            class="message-row"
-            :class="{ 'message-sent': msg.direction === 'sent', 'message-received': msg.direction === 'received' }"
-          >
-            <div class="message-bubble" :class="{ 'bubble-sent': msg.direction === 'sent', 'bubble-received': msg.direction === 'received' }">
-              <div v-if="msg.direction === 'received'" class="message-sender">{{ msg.peerName }}</div>
-              <div v-if="msg.type === 'code'" class="message-code">
-                <pre><code>{{ msg.content }}</code></pre>
-              </div>
-              <div v-else class="message-text">{{ msg.content }}</div>
-              <div class="message-meta">
-                <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                <span v-if="msg.secure" class="secure-badge">E2E</span>
-                <span v-if="msg.direction === 'sent'" class="sent-check">✓✓</span>
-              </div>
-            </div>
-            <el-button
-              v-if="msg.direction === 'received'"
-              class="copy-btn"
-              link
-              size="small"
-              @click="copyText(msg.content)"
+
+          <template v-for="(msg, idx) in activeMessages" :key="msg.id">
+            <!-- Time separator -->
+            <div
+              v-if="shouldShowTimeSeparator(activeMessages, idx)"
+              class="time-separator"
             >
-              {{ t('common.copy') }}
-            </el-button>
-          </div>
+              <span>{{ formatTimeSeparator(msg.timestamp) }}</span>
+            </div>
+
+            <!-- Message -->
+            <transition name="msg-pop" appear>
+              <div
+                class="message-row"
+                :class="{ 'message-sent': msg.direction === 'sent', 'message-received': msg.direction === 'received' }"
+              >
+                <div class="message-bubble" :class="{ 'bubble-sent': msg.direction === 'sent', 'bubble-received': msg.direction === 'received' }">
+                  <div v-if="msg.direction === 'received'" class="message-sender">{{ msg.peerName }}</div>
+                  <div v-if="msg.type === 'code'" class="message-code">
+                    <pre><code>{{ msg.content }}</code></pre>
+                  </div>
+                  <div v-else class="message-text" v-html="linkify(msg.content)"></div>
+                  <div class="message-meta">
+                    <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+                    <span v-if="msg.secure" class="secure-badge">E2E</span>
+                    <span v-if="msg.direction === 'sent'" class="sent-check">✓✓</span>
+                  </div>
+                </div>
+                <el-button
+                  class="copy-btn"
+                  link
+                  size="small"
+                  @click="copyText(msg.content)"
+                >
+                  {{ t('common.copy') }}
+                </el-button>
+              </div>
+            </transition>
+          </template>
         </div>
 
         <!-- Input area -->
@@ -140,6 +172,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Rename dialog -->
+    <el-dialog
+      v-model="renameDialogVisible"
+      :title="t('tools.transfer.renameTitle')"
+      width="360px"
+      :close-on-click-modal="true"
+    >
+      <el-input v-model="renameInput" :placeholder="t('tools.transfer.renamePlaceholder')" maxlength="20" @keydown.enter="confirmRename" />
+      <template #footer>
+        <el-button @click="renameDialogVisible = false">{{ t('tools.transfer.cancel') }}</el-button>
+        <el-button type="primary" @click="confirmRename">{{ t('tools.transfer.confirm') }}</el-button>
+      </template>
+    </el-dialog>
   </ToolPage>
 </template>
 
@@ -155,6 +201,7 @@ const { t } = useI18n()
 const deviceStore = useDeviceStore()
 
 const {
+  myId,
   myName,
   connected,
   peers,
@@ -170,16 +217,65 @@ const {
 const inputText = ref('')
 const useEncryption = ref(false)
 const messagesContainer = ref(null)
+const renameDialogVisible = ref(false)
+const renameInput = ref('')
 
 const AVATAR_COLORS = [
   '#7c3aed', '#4f46e5', '#0891b2', '#059669',
-  '#d97706', '#dc2626', '#db2777', '#7c3aed',
+  '#d97706', '#dc2626', '#db2777', '#2563eb',
 ]
 
-function getAvatarColor(id) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash)
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+function hashStr(str) {
+  let h = 0
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h)
+  return h
+}
+
+function hashBytes(str) {
+  const bytes = []
+  let h = hashStr(str)
+  for (let i = 0; i < 20; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i % str.length) + i * 31) | 0
+    bytes.push(Math.abs(h))
+  }
+  return bytes
+}
+
+const IDENTICON_COLORS = [
+  ['#7c3aed','#ede9fe'],['#4f46e5','#e0e7ff'],['#0891b2','#cffafe'],
+  ['#059669','#d1fae5'],['#d97706','#fef3c7'],['#dc2626','#fee2e2'],
+  ['#db2777','#fce7f3'],['#2563eb','#dbeafe'],['#7c2d12','#ffedd5'],
+  ['#475569','#e2e8f0'],['#15803d','#dcfce7'],['#9333ea','#f3e8ff'],
+]
+
+function generateIdenticon(id) {
+  if (!id) id = 'default'
+  const bytes = hashBytes(id)
+  const [fg, bg] = IDENTICON_COLORS[Math.abs(bytes[0]) % IDENTICON_COLORS.length]
+  const grid = 5
+  const cell = 8
+  const pad = 4
+  const size = grid * cell + pad * 2
+
+  let rects = `<rect width="${size}" height="${size}" fill="${bg}" rx="6"/>`
+
+  // 5x5 symmetric grid: only compute left 3 columns, mirror
+  for (let row = 0; row < grid; row++) {
+    for (let col = 0; col < 3; col++) {
+      const byteIdx = row * 3 + col
+      if (bytes[byteIdx + 2] % 2 === 0) continue
+      const x = pad + col * cell
+      const y = pad + row * cell
+      rects += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${fg}"/>`
+      // Mirror (skip center column)
+      if (col < 2) {
+        const mx = pad + (grid - 1 - col) * cell
+        rects += `<rect x="${mx}" y="${y}" width="${cell}" height="${cell}" fill="${fg}"/>`
+      }
+    }
+  }
+
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${rects}</svg>`)}`
 }
 
 function formatTime(ts) {
@@ -187,10 +283,49 @@ function formatTime(ts) {
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
+function formatTimeSeparator(ts) {
+  const d = new Date(ts)
+  const now = new Date()
+  const isToday = d.toDateString() === now.toDateString()
+  const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+  if (isToday) return time
+  return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')} ${time}`
+}
+
+function shouldShowTimeSeparator(msgs, idx) {
+  if (idx === 0) return true
+  const prev = msgs[idx - 1].timestamp
+  const curr = msgs[idx].timestamp
+  return curr - prev > 5 * 60 * 1000 // 5 min gap
+}
+
+function linkify(text) {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  return escaped.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>'
+  )
+}
+
 function copyText(text) {
   navigator.clipboard.writeText(text).then(() => {
     ElMessage.success(t('common.copySuccess'))
   })
+}
+
+function showRenameDialog() {
+  renameInput.value = myName.value || ''
+  renameDialogVisible.value = true
+}
+
+function confirmRename() {
+  const name = renameInput.value.trim()
+  if (!name) return
+  rename(name)
+  renameDialogVisible.value = false
 }
 
 function handleSend() {
@@ -210,6 +345,9 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 </script>
 
 <style scoped>
+/* =========================================
+   Layout
+   ========================================= */
 .transfer-container {
   display: flex;
   height: calc(100vh - 160px);
@@ -218,6 +356,7 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   border-radius: var(--dt-radius-md);
   overflow: hidden;
   background: var(--dt-bg-card);
+  position: relative;
 }
 
 .transfer-mobile {
@@ -225,6 +364,50 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   height: calc(100vh - 140px);
 }
 
+/* =========================================
+   Connection status banner
+   ========================================= */
+.connection-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--dt-warning) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--dt-warning) 30%, transparent);
+  color: var(--dt-warning);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.banner-icon {
+  font-size: 16px;
+}
+
+.banner-retrying {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.banner-slide-enter-active,
+.banner-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.banner-slide-enter-from,
+.banner-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+/* =========================================
+   Mobile device strip
+   ========================================= */
 .mobile-device-strip {
   display: flex;
   gap: var(--dt-spacing-sm);
@@ -245,6 +428,9 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   opacity: 1;
 }
 
+/* =========================================
+   Sidebar (desktop)
+   ========================================= */
 .transfer-sidebar {
   width: 280px;
   min-width: 280px;
@@ -271,7 +457,7 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 .peer-count {
   font-size: var(--dt-font-size-xs);
   color: var(--dt-primary);
-  background: var(--dt-primary-light);
+  background: color-mix(in srgb, var(--dt-primary) 12%, transparent);
   padding: 1px 6px;
   border-radius: 10px;
 }
@@ -289,6 +475,39 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   background: var(--dt-success);
 }
 
+/* Self info + rename */
+.self-item {
+  background: color-mix(in srgb, var(--dt-primary) 6%, transparent);
+  border-left: 3px solid var(--dt-primary);
+}
+
+.self-item:hover {
+  background: color-mix(in srgb, var(--dt-primary) 10%, transparent);
+}
+
+.self-tag {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dt-primary);
+  background: color-mix(in srgb, var(--dt-primary) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.rename-icon {
+  font-size: 14px;
+  color: var(--dt-text-placeholder);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.peer-item:hover .rename-icon {
+  opacity: 1;
+}
+
+/* Peer list */
 .peer-list {
   flex: 1;
   overflow-y: auto;
@@ -311,8 +530,23 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 }
 
 .peer-item.active {
-  background: var(--dt-primary-light);
+  background: color-mix(in srgb, var(--dt-primary) 10%, transparent);
   border-left-color: var(--dt-primary);
+}
+
+.empty-peers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--dt-text-secondary);
+  font-size: var(--dt-font-size-sm);
+  padding: var(--dt-spacing-xl);
+}
+
+.empty-peers-icon {
+  font-size: 28px;
+  opacity: 0.3;
 }
 
 .group-chat-entry {
@@ -331,8 +565,24 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 }
 
 .group-chat-entry.active {
-  background: var(--dt-primary-light);
+  background: color-mix(in srgb, var(--dt-primary) 10%, transparent);
   border-left-color: var(--dt-primary);
+}
+
+/* =========================================
+   Shared: avatar + peer-info
+   ========================================= */
+.avatar-identicon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.avatar-identicon.small {
+  width: 28px;
+  height: 28px;
 }
 
 .avatar-circle {
@@ -346,12 +596,6 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
-}
-
-.avatar-circle.small {
-  width: 28px;
-  height: 28px;
-  font-size: 12px;
 }
 
 .avatar-group {
@@ -385,13 +629,9 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   flex-shrink: 0;
 }
 
-.empty-peers {
-  text-align: center;
-  color: var(--dt-text-secondary);
-  font-size: var(--dt-font-size-sm);
-  padding: var(--dt-spacing-xl);
-}
-
+/* =========================================
+   Chat area
+   ========================================= */
 .transfer-chat {
   flex: 1;
   display: flex;
@@ -414,23 +654,74 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   color: var(--dt-text-primary);
 }
 
+/* Messages */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: var(--dt-spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--dt-spacing-sm);
+  gap: var(--dt-spacing-xs);
   background: var(--dt-bg-page);
 }
 
-.empty-messages {
-  text-align: center;
-  color: var(--dt-text-secondary);
-  font-size: var(--dt-font-size-sm);
-  padding-top: var(--dt-spacing-2xl);
+.chat-messages::-webkit-scrollbar {
+  width: 5px;
 }
 
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--dt-border-lighter);
+  border-radius: 3px;
+}
+
+/* Empty state */
+.empty-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--dt-spacing-2xl);
+  text-align: center;
+}
+
+.empty-chat-icon {
+  font-size: 56px;
+  color: var(--dt-primary);
+  opacity: 0.2;
+  margin-bottom: 12px;
+}
+
+.empty-chat-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dt-text-secondary);
+  margin: 0 0 4px;
+}
+
+.empty-chat-hint {
+  font-size: 13px;
+  color: var(--dt-text-placeholder);
+  margin: 0;
+}
+
+/* Time separator */
+.time-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.time-separator span {
+  font-size: 11px;
+  color: var(--dt-text-placeholder);
+  background: var(--dt-bg-page);
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+/* Message rows */
 .message-row {
   display: flex;
   align-items: flex-end;
@@ -473,11 +764,28 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   white-space: pre-wrap;
 }
 
+/* Links in messages */
+.message-text :deep(.chat-link) {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+  text-underline-offset: 2px;
+}
+
+.bubble-received .message-text :deep(.chat-link) {
+  color: var(--dt-primary);
+  text-decoration-color: color-mix(in srgb, var(--dt-primary) 40%, transparent);
+}
+
 .message-code {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.06);
   border-radius: var(--dt-radius-sm);
   padding: var(--dt-spacing-sm);
   overflow-x: auto;
+}
+
+.bubble-sent .message-code {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .message-code pre {
@@ -511,6 +819,11 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   border-radius: 4px;
 }
 
+.bubble-sent .secure-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .sent-check {
   font-size: 10px;
   opacity: 0.6;
@@ -526,6 +839,28 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   opacity: 1;
 }
 
+/* Message pop animation */
+.msg-pop-enter-active {
+  transition: all 0.25s ease-out;
+}
+
+.msg-pop-leave-active {
+  transition: all 0.15s ease-in;
+}
+
+.msg-pop-enter-from {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+
+.msg-pop-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+/* =========================================
+   Input area
+   ========================================= */
 .chat-input {
   padding: var(--dt-spacing-sm) var(--dt-spacing-md);
   border-top: 1px solid var(--dt-border-light);
@@ -538,5 +873,18 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   align-items: center;
   gap: var(--dt-spacing-sm);
   margin-top: var(--dt-spacing-sm);
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 85%;
+  }
+
+  .empty-chat-icon {
+    font-size: 40px;
+  }
 }
 </style>

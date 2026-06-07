@@ -1329,10 +1329,20 @@
       "noDevices": "暂无其他设备在线",
       "groupChat": "群聊广播",
       "memberCount": "{count} 位成员",
-      "noMessages": "暂无消息，开始发送吧",
+      "noMessages": "暂无消息",
+      "hintPeer": "向此设备发送文本、代码片段或链接",
+      "hintGroup": "向所有在线设备广播消息",
       "inputPlaceholder": "输入文本，Enter 发送...",
       "send": "发送",
-      "copied": "已复制"
+      "copied": "已复制",
+      "disconnected": "连接已断开",
+      "retrying": "正在尝试重连...",
+      "thisDevice": "当前设备",
+      "unnamed": "未命名",
+      "renameTitle": "修改设备名称",
+      "renamePlaceholder": "输入新名称",
+      "cancel": "取消",
+      "confirm": "确定"
     }
   }
 }

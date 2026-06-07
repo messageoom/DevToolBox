@@ -1329,10 +1329,20 @@
       "noDevices": "No other devices online",
       "groupChat": "Group Chat",
       "memberCount": "{count} members",
-      "noMessages": "No messages yet. Start sending!",
+      "noMessages": "No messages yet",
+      "hintPeer": "Send text, code snippets, or links to this device",
+      "hintGroup": "Broadcast a message to all online devices",
       "inputPlaceholder": "Type a message, Enter to send...",
       "send": "Send",
-      "copied": "Copied"
+      "copied": "Copied",
+      "disconnected": "Disconnected",
+      "retrying": "Reconnecting...",
+      "thisDevice": "This device",
+      "unnamed": "Unnamed",
+      "renameTitle": "Rename Device",
+      "renamePlaceholder": "Enter new name",
+      "cancel": "Cancel",
+      "confirm": "OK"
     }
   }
 }
