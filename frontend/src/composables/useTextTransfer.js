@@ -5,6 +5,16 @@ const HISTORY_KEY = 'text-transfer-history'
 const MAX_HISTORY = 200
 const IDENTITY_KEY = 'landrop_identity'
 
+function logToBackend(level, message) {
+  try {
+    fetch('/api/frontend-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level, message }),
+    }).catch(() => {})
+  } catch {}
+}
+
 function generateId() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }
@@ -32,6 +42,7 @@ function detectType(text) {
 export function useTextTransfer() {
   const myId = ref('')
   const myName = ref('')
+  const serverIp = ref('')
 
   function loadIdentity() {
     try {
@@ -66,11 +77,9 @@ export function useTextTransfer() {
     if (socket?.connected) return
     loadIdentity()
 
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
-    const url = `${protocol}//${window.location.hostname}:${window.location.port || (window.location.protocol === 'https:' ? '443' : '80')}`
-
-    socket = io(url, {
-      transports: ['websocket', 'polling'],
+    socket = io({
+      transports: ['polling', 'websocket'],
+      path: '/socket.io',
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
@@ -78,18 +87,27 @@ export function useTextTransfer() {
 
     socket.on('connect', () => {
       connected.value = true
+      logToBackend('info', `SocketIO connected (sid=${socket.id})`)
       socket.emit('join', { nodeId: myId.value, name: myName.value })
     })
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
       connected.value = false
+      logToBackend('warning', `SocketIO disconnected: ${reason}`)
+    })
+
+    socket.on('connect_error', (err) => {
+      connected.value = false
+      logToBackend('error', `SocketIO connection error: ${err.message}`)
     })
 
     socket.on('joined', (data) => {
       myId.value = data.nodeId
       myName.value = data.name
+      if (data.serverIp) serverIp.value = data.serverIp
       saveIdentity()
       peers.value = data.peers.filter(p => p.nodeId !== myId.value)
+      logToBackend('info', `Joined as "${data.name}" — ${peers.value.length} other devices online, server IP: ${data.serverIp || '?'}`)
     })
 
     socket.on('peers', (data) => {
@@ -97,10 +115,13 @@ export function useTextTransfer() {
     })
 
     socket.on('leave', (data) => {
+      const leftPeer = peers.value.find(p => p.nodeId === data.nodeId)
+      const leftName = leftPeer?.name || data.nodeId
       peers.value = peers.value.filter(p => p.nodeId !== data.nodeId)
       if (activePeer.value?.nodeId === data.nodeId) {
         activePeer.value = null
       }
+      logToBackend('info', `Device left: ${leftName}`)
     })
 
     socket.on('offer-text', (data) => {
@@ -169,6 +190,9 @@ export function useTextTransfer() {
     const isGroup = !targetPeer
     const peerName = targetPeer?.name || ''
     const peerId = targetPeer?.nodeId || 'group'
+
+    const target = isGroup ? 'group' : peerName
+    logToBackend('info', `Sending text to ${target} (${content.length} chars, ${secure ? 'encrypted' : 'plain'})`)
 
     const msg = {
       id: generateId(),
@@ -286,6 +310,7 @@ export function useTextTransfer() {
   return {
     myId,
     myName,
+    serverIp,
     connected,
     peers,
     activePeer,

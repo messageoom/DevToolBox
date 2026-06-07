@@ -103,7 +103,9 @@
     "home": {
       "welcome": "Welcome to DevToolBox",
       "desc1": "A powerful collection of developer tools, including file processing, data format conversion, encoding/decoding, encryption and hashing, and more.",
-      "desc2": "Please select a tool category below to get started."
+      "desc2": "Please select a tool category below to get started.",
+      "quickAccess": "Quick Access",
+      "allTools": "All Tools"
     },
     "json": {
       "title": "JSON Tools",

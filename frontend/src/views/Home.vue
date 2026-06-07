@@ -1,62 +1,90 @@
 <template>
   <div class="home">
-    <!-- Desktop: card grid -->
-    <template v-if="!deviceStore.isMobile">
-      <el-card class="welcome-card">
-        <template #header>
-          <div class="card-header">
-            <el-icon class="card-icon"><Star /></el-icon>
-            <span>{{ t('tools.home.welcome') }}</span>
-          </div>
-        </template>
-        <p>{{ t('tools.home.desc1') }}</p>
-        <p>{{ t('tools.home.desc2') }}</p>
-      </el-card>
-
-      <div class="categories-grid">
-        <el-card
-          v-for="category in toolCategories"
-          :key="category.id"
-          class="category-card"
-          @click="$router.push(category.route)"
-        >
-          <template #header>
-            <div class="card-header">
-              <el-icon class="card-icon"><component :is="category.icon" /></el-icon>
-              <span>{{ t('categories.' + category.id + '.name') }}</span>
-            </div>
-          </template>
-          <p>{{ t('categories.' + category.id + '.description') }}</p>
-          <div class="tools-list">
-            <el-tag
-              v-for="tool in category.tools"
-              :key="tool"
-              type="info"
-              size="small"
-              class="tool-tag"
-            >
-              {{ t('categories.' + category.id + '.tools.' + tool) }}
-            </el-tag>
-          </div>
-        </el-card>
+    <!-- Hero section -->
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">v2.0</div>
+        <h1 class="hero-title">DevToolBox</h1>
+        <p class="hero-desc">{{ t('tools.home.desc1') }}</p>
       </div>
-    </template>
+      <div class="hero-bg-icon">
+        <span class="material-symbols-rounded">developer_board</span>
+      </div>
+    </div>
 
-    <!-- Mobile: compact list -->
-    <template v-else>
-      <div class="mobile-categories">
+    <!-- Quick tools (single-item categories shown as prominent cards) -->
+    <div v-if="quickTools.length" class="quick-section">
+      <div class="section-header">
+        <span class="material-symbols-rounded section-icon">bolt</span>
+        <h2>{{ t('tools.home.quickAccess') || 'Quick Access' }}</h2>
+      </div>
+      <div class="quick-grid">
         <div
-          v-for="category in toolCategories"
-          :key="category.id"
-          class="mobile-category-item"
-          @click="$router.push(category.route)"
+          v-for="tool in quickTools"
+          :key="tool.id"
+          class="quick-card"
+          @click="$router.push(tool.route)"
         >
-          <el-icon class="item-icon"><component :is="category.icon" /></el-icon>
-          <div class="item-info">
-            <span class="item-name">{{ t('categories.' + category.id + '.name') }}</span>
-            <span class="item-desc">{{ t('categories.' + category.id + '.description') }}</span>
+          <div class="quick-icon" :style="{ background: tool.color + '15', color: tool.color }">
+            <span class="material-symbols-rounded">{{ tool.icon }}</span>
           </div>
-          <el-icon class="item-arrow"><ArrowRight /></el-icon>
+          <div class="quick-info">
+            <span class="quick-name">{{ t('categories.' + tool.id + '.name') }}</span>
+            <span class="quick-desc">{{ t('categories.' + tool.id + '.description') }}</span>
+          </div>
+          <span class="material-symbols-rounded quick-arrow">arrow_forward</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- All tool categories -->
+    <div class="section-header">
+      <span class="material-symbols-rounded section-icon">grid_view</span>
+      <h2>{{ t('tools.home.allTools') || 'All Tools' }}</h2>
+    </div>
+    <div class="categories-grid">
+      <div
+        v-for="category in multiToolCategories"
+        :key="category.id"
+        class="category-card"
+        @click="$router.push(category.route)"
+      >
+        <div class="card-icon" :style="{ color: category.color }">
+          <span class="material-symbols-rounded">{{ category.icon }}</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ t('categories.' + category.id + '.name') }}</h3>
+          <p class="card-desc">{{ t('categories.' + category.id + '.description') }}</p>
+          <div class="card-tags">
+            <span
+              v-for="tool in category.tools.slice(0, 4)"
+              :key="tool"
+              class="tag"
+            >{{ t('categories.' + category.id + '.tools.' + tool) }}</span>
+            <span v-if="category.tools.length > 4" class="tag tag-more">+{{ category.tools.length - 4 }}</span>
+          </div>
+        </div>
+        <span class="material-symbols-rounded card-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <!-- Mobile: single-item tools inline -->
+    <template v-if="deviceStore.isMobile">
+      <div class="mobile-quick-list">
+        <div
+          v-for="tool in quickTools"
+          :key="tool.id"
+          class="mobile-tool-item"
+          @click="$router.push(tool.route)"
+        >
+          <div class="mobile-tool-icon" :style="{ color: tool.color }">
+            <span class="material-symbols-rounded">{{ tool.icon }}</span>
+          </div>
+          <div class="mobile-tool-info">
+            <span class="mobile-tool-name">{{ t('categories.' + tool.id + '.name') }}</span>
+            <span class="mobile-tool-desc">{{ t('categories.' + tool.id + '.description') }}</span>
+          </div>
+          <span class="material-symbols-rounded mobile-tool-arrow">chevron_right</span>
         </div>
       </div>
     </template>
@@ -64,13 +92,21 @@
 </template>
 
 <script setup>
-import { Star, ArrowRight } from '@element-plus/icons-vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDeviceStore } from '@/stores/device.js'
 import { toolCategories } from '../data/toolCategories'
 
 const { t } = useI18n()
 const deviceStore = useDeviceStore()
+
+const quickTools = computed(() =>
+  toolCategories.filter(cat => cat.tools.length === 1)
+)
+
+const multiToolCategories = computed(() =>
+  toolCategories.filter(cat => cat.tools.length > 1)
+)
 </script>
 
 <style scoped>
@@ -80,99 +116,293 @@ const deviceStore = useDeviceStore()
   margin: 0 auto;
 }
 
-.welcome-card {
-  text-align: center;
-  margin-bottom: var(--dt-spacing-lg);
+/* =========================================
+   Hero
+   ========================================= */
+.hero {
+  position: relative;
+  padding: 40px 32px;
+  border-radius: var(--dt-radius-xl);
+  background: linear-gradient(135deg, var(--dt-primary) 0%, #6366f1 100%);
+  color: #fff;
+  margin-bottom: 32px;
+  overflow: hidden;
 }
 
-.welcome-card :deep(p) {
-  margin: var(--dt-spacing-sm) 0;
-  color: var(--dt-text-regular);
+.hero-content {
+  position: relative;
+  z-index: 1;
 }
 
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--dt-spacing-lg);
+.hero-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(4px);
 }
 
-.category-card {
-  cursor: pointer;
-  transition: transform var(--dt-transition-base), box-shadow var(--dt-transition-base), border-color var(--dt-transition-base);
-  border: 1px solid var(--dt-border-lighter);
+.hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
 }
 
-.category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--dt-shadow-md);
-  border-color: var(--dt-primary);
-}
-
-.category-card p {
-  color: var(--dt-text-regular);
-  font-size: var(--dt-font-size-base);
-  margin-bottom: var(--dt-spacing-md);
-}
-
-.tools-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--dt-spacing-xs);
-}
-
-.tool-tag {
+.hero-desc {
+  font-size: 15px;
+  opacity: 0.85;
   margin: 0;
+  max-width: 480px;
+  line-height: 1.5;
 }
 
-/* --- Mobile list layout --- */
-.mobile-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.hero-bg-icon {
+  position: absolute;
+  right: -10px;
+  bottom: -20px;
+  opacity: 0.08;
+  pointer-events: none;
 }
 
-.mobile-category-item {
+.hero-bg-icon .material-symbols-rounded {
+  font-size: 180px;
+}
+
+/* =========================================
+   Section headers
+   ========================================= */
+.section-header {
   display: flex;
   align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--dt-text-primary);
+}
+
+.section-icon {
+  font-size: 20px;
+  color: var(--dt-text-secondary);
+}
+
+/* =========================================
+   Quick Access (single-item categories)
+   ========================================= */
+.quick-section {
+  margin-bottom: 32px;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  padding: 14px 16px;
+}
+
+.quick-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
   background: var(--dt-bg-card);
+  border: 1px solid var(--dt-border-lighter);
+  border-radius: var(--dt-radius-lg);
   cursor: pointer;
-  transition: background var(--dt-transition-fast);
-  border-radius: var(--dt-radius-sm);
+  transition: all 0.2s ease;
 }
 
-.mobile-category-item:active {
-  background: var(--dt-bg-hover);
+.quick-card:hover {
+  border-color: var(--dt-primary);
+  box-shadow: var(--dt-shadow-sm);
+  transform: translateY(-1px);
 }
 
-.item-icon {
-  font-size: 22px;
-  color: var(--dt-primary);
+.quick-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--dt-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.item-info {
+.quick-icon .material-symbols-rounded {
+  font-size: 22px;
+}
+
+.quick-info {
   flex: 1;
   min-width: 0;
 }
 
-.item-name {
+.quick-name {
   display: block;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--dt-text-primary);
 }
 
-.item-desc {
+.quick-desc {
   display: block;
   font-size: 12px;
   color: var(--dt-text-secondary);
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.item-arrow {
+.quick-arrow {
+  font-size: 18px;
   color: var(--dt-text-placeholder);
   flex-shrink: 0;
+}
+
+/* =========================================
+   Categories Grid (multi-item)
+   ========================================= */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.category-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  background: var(--dt-bg-card);
+  border: 1px solid var(--dt-border-lighter);
+  border-radius: var(--dt-radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-card:hover {
+  border-color: var(--dt-primary);
+  box-shadow: var(--dt-shadow-md);
+  transform: translateY(-2px);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-bg-section);
+}
+
+.card-icon .material-symbols-rounded {
+  font-size: 22px;
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--dt-text-primary);
+}
+
+.card-desc {
+  font-size: 13px;
+  color: var(--dt-text-secondary);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--dt-bg-section);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--dt-text-secondary);
+  white-space: nowrap;
+}
+
+.tag-more {
+  color: var(--dt-primary);
+  font-weight: 600;
+}
+
+.card-arrow {
+  font-size: 20px;
+  color: var(--dt-text-placeholder);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 768px) {
+  .home {
+    padding: var(--dt-spacing-xs);
+  }
+
+  .hero {
+    padding: 24px 20px;
+    border-radius: var(--dt-radius-lg);
+    margin-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: 24px;
+  }
+
+  .hero-desc {
+    font-size: 13px;
+  }
+
+  .hero-bg-icon .material-symbols-rounded {
+    font-size: 120px;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 20px 16px;
+  }
+
+  .hero-title {
+    font-size: 20px;
+  }
 }
 </style>

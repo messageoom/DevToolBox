@@ -60,9 +60,13 @@ def wait_for_server(host, port, timeout=15):
 
 
 def start_flask_thread(app, host, port):
-    """Start Flask in a daemon thread."""
+    """Start Flask (or SocketIO) in a daemon thread."""
     def run():
-        app.run(host=host, port=port, debug=False, use_reloader=False)
+        socketio = app.config.get('SOCKETIO')
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=False, use_reloader=False)
 
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
@@ -193,4 +197,8 @@ def run_console_app(app, host, port, access_token, version='2.0.0'):
     except Exception:
         pass
 
-    app.run(host=host, port=port, debug=False, use_reloader=False)
+    socketio = app.config.get('SOCKETIO')
+    if socketio:
+        socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
+    else:
+        app.run(host=host, port=port, debug=False, use_reloader=False)

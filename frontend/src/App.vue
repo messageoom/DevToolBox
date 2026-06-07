@@ -52,15 +52,24 @@
       >
         <!-- Home -->
         <el-menu-item index="/">
-          <el-icon><HomeFilled /></el-icon>
+          <span class="material-symbols-rounded sidebar-icon">home</span>
           <template #title>{{ t('app.home') }}</template>
         </el-menu-item>
 
         <!-- Dynamic categories from toolCategories data -->
         <template v-for="category in sidebarCategories" :key="category.id">
-          <el-sub-menu :index="'cat-' + category.id">
+          <!-- Single-item category: render as direct menu item (no sub-menu) -->
+          <el-menu-item
+            v-if="category.items.length === 1"
+            :index="category.items[0].route"
+          >
+            <span class="material-symbols-rounded sidebar-icon">{{ category.icon }}</span>
+            <template #title>{{ category.items[0].label }}</template>
+          </el-menu-item>
+          <!-- Multi-item category: render as sub-menu -->
+          <el-sub-menu v-else :index="'cat-' + category.id">
             <template #title>
-              <el-icon><component :is="getIcon(category.icon)" /></el-icon>
+              <span class="material-symbols-rounded sidebar-icon">{{ category.icon }}</span>
               <span>{{ t('categories.' + category.id + '.name') }}</span>
             </template>
             <el-menu-item
@@ -116,19 +125,17 @@ import { useDeviceStore } from '@/stores/device.js'
 import { useThemeStore } from '@/stores/theme.js'
 import { toolCategories } from '@/data/toolCategories.js'
 import {
-  HomeFilled,
-  FolderOpened,
-  DocumentCopy,
-  Key,
-  Lock,
-  Clock,
   Expand,
   Fold,
-  Crop,
-  MagicStick,
   Upload,
+  DocumentCopy,
+  Lock,
+  Key,
+  Clock,
+  MagicStick,
   Grid,
   ChatDotRound,
+  HomeFilled,
 } from '@element-plus/icons-vue'
 
 // --- Stores ---
@@ -221,18 +228,6 @@ const mobileNavTabs = computed(() => [
 function switchLang(lang) {
   locale.value = lang
   localStorage.setItem('dt-lang', lang)
-}
-
-function getIcon(iconName) {
-  const iconMap = {
-    FolderOpened,
-    DocumentCopy,
-    Key,
-    Lock,
-    Clock,
-    Crop,
-    ChatDotRound,
-  }
 }
 
 function isTabActive(tab) {
@@ -379,6 +374,13 @@ onBeforeUnmount(() => {
 /* =========================================
    Sidebar
    ========================================= */
+.sidebar-icon {
+  font-size: 20px;
+  width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .app-sidebar {
   grid-area: sidebar;
   background-color: var(--dt-bg-card);

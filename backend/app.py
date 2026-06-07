@@ -5,6 +5,8 @@ import logging
 
 __version__ = '2.0.2'
 
+frontend_logger = logging.getLogger('frontend')
+
 # 兼容处理导入，支持从不同目录运行
 try:
     from .modules.file_upload import file_upload_bp
@@ -95,7 +97,7 @@ def create_app(access_token=None):
     if SocketIO is not None:
         socketio = SocketIO(
             app,
-            cors_allowed_origins=allowed_origins,
+            cors_allowed_origins='*',
             async_mode='threading',
             manage_session=False,
         )
@@ -112,6 +114,9 @@ def create_app(access_token=None):
     # Token 认证中间件
     @app.before_request
     def check_access_token():
+        if request.path.startswith('/api/') and not request.path.startswith('/api/frontend-log'):
+            logging.info('%s %s %s', request.method, request.path, request.remote_addr)
+
         token = app.config.get('ACCESS_TOKEN')
         if not token:
             return None
@@ -129,7 +134,7 @@ def create_app(access_token=None):
             return None
 
         # Exempt paths
-        if request.path in ('/favicon.ico', '/robots.txt'):
+        if request.path in ('/favicon.ico', '/robots.txt', '/api/frontend-log') or request.path.startswith('/socket.io/'):
             return None
 
         provided = (
@@ -197,6 +202,18 @@ def create_app(access_token=None):
             if path and os.path.exists(os.path.join(frontend_dist, path)):
                 return send_from_directory(frontend_dist, path)
             return send_from_directory(frontend_dist, 'index.html')
+
+    # Frontend log bridge — allows JS to send logs to Python logger
+    @app.route('/api/frontend-log', methods=['POST'])
+    def frontend_log():
+        data = request.get_json(silent=True) or {}
+        level = data.get('level', 'info').lower()
+        msg = data.get('message', '')
+        if not msg:
+            return jsonify({'success': False}), 400
+        log_fn = getattr(frontend_logger, level, frontend_logger.info)
+        log_fn('[Frontend] %s', msg)
+        return jsonify({'success': True})
 
     # 静态资源缓存头
     @app.after_request

@@ -5,10 +5,12 @@ macOS-inspired dark UI with glassmorphism design.
 
 import os
 import sys
+import json
 import time
 import socket
 import threading
 import webview
+from collections import deque
 
 
 def _import_config_manager():
@@ -31,6 +33,22 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 #  Reuse helpers from tray_app
 # ---------------------------------------------------------------------------
+
+_log_handler = None
+
+
+class _GUILogHandler(logging.Handler):
+    def __init__(self, max_records=500):
+        super().__init__()
+        self.records = deque(maxlen=max_records)
+        self.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)-8s %(name)s: %(message)s',
+            datefmt='%H:%M:%S',
+        ))
+
+    def emit(self, record):
+        self.records.append(self.format(record))
+
 
 def _copy_to_clipboard(text):
     try:
@@ -65,7 +83,11 @@ def wait_for_server(host, port, timeout=15):
 
 def start_flask_thread(app, host, port):
     def run():
-        app.run(host=host, port=port, debug=False, use_reloader=False)
+        socketio = app.config.get('SOCKETIO')
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=False, use_reloader=False)
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
     return thread
@@ -86,8 +108,12 @@ def _is_rfc1918(ip):
     return False
 
 
+_cached_local_ip = None
+
+
 def _get_local_ip():
     """Get the primary LAN IP address, universal across all OSes.
+    Result is cached after first call.
 
     Strategy:
       1. UDP socket to 8.8.8.8 — OS picks the default-route interface.
@@ -96,6 +122,10 @@ def _get_local_ip():
          parse the OS routing table to find the physical gateway's interface IP.
       3. Fallback: hostname resolution.
     """
+    global _cached_local_ip
+    if _cached_local_ip is not None:
+        return _cached_local_ip
+
     # Method 1: UDP socket — fastest, works when no VPN
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -104,7 +134,11 @@ def _get_local_ip():
         ip = s.getsockname()[0]
         s.close()
         if _is_rfc1918(ip):
+            _cached_local_ip = ip
+            logger.info(f'LAN IP detected (UDP socket): {ip}')
             return ip
+        else:
+            logger.info(f'UDP socket returned non-LAN IP {ip}, falling back to routing table')
     except Exception:
         pass
 
@@ -117,6 +151,8 @@ def _get_local_ip():
                 parts = line.split()
                 if (len(parts) >= 5 and parts[0] == '0.0.0.0' and parts[1] == '0.0.0.0'
                         and parts[2] != parts[3] and _is_rfc1918(parts[2])):
+                    _cached_local_ip = parts[3]
+                    logger.info(f'LAN IP detected (routing table): {parts[3]} via gateway {parts[2]}')
                     return parts[3]
         elif sys.platform == 'darwin':
             out = subprocess.check_output(['route', '-n', 'get', 'default'], text=True, timeout=3)
@@ -128,7 +164,10 @@ def _get_local_ip():
                 out2 = subprocess.check_output(['ifconfig', iface], text=True, timeout=3)
                 for line in out2.splitlines():
                     if 'inet ' in line:
-                        return line.strip().split()[1]
+                        ip = line.strip().split()[1]
+                        _cached_local_ip = ip
+                        logger.info(f'LAN IP detected (routing table): {ip}')
+                        return ip
         else:  # Linux
             out = subprocess.check_output(['ip', 'route', 'show', 'default'], text=True, timeout=3)
             parts = out.split()
@@ -137,14 +176,21 @@ def _get_local_ip():
                 out2 = subprocess.check_output(['ip', 'addr', 'show', iface], text=True, timeout=3)
                 for line in out2.splitlines():
                     if 'inet ' in line:
-                        return line.strip().split()[1].split('/')[0]
+                        ip = line.strip().split()[1].split('/')[0]
+                        _cached_local_ip = ip
+                        logger.info(f'LAN IP detected (routing table): {ip}')
+                        return ip
     except Exception:
         pass
 
     # Method 3: hostname resolution fallback
     try:
-        return socket.gethostbyname(socket.gethostname())
+        ip = socket.gethostbyname(socket.gethostname())
+        _cached_local_ip = ip
+        logger.warning(f'LAN IP detection fallback (hostname): {ip}')
+        return ip
     except Exception:
+        _cached_local_ip = '127.0.0.1'
         return '127.0.0.1'
 
 
@@ -379,6 +425,25 @@ class Api:
             return {'success': True}
         except Exception as e:
             return {'success': False, 'error': str(e)}
+
+    # --- Logs ---
+
+    def get_logs(self):
+        if _log_handler is None:
+            return json.dumps([f'{datetime.now().strftime("%H:%M:%S")} ERROR    gui_window: _log_handler is None!'])
+        return json.dumps(list(_log_handler.records))
+
+    def clear_logs(self):
+        if _log_handler is not None:
+            _log_handler.records.clear()
+        return {'success': True}
+
+    def copy_logs(self):
+        if _log_handler is None:
+            return {'success': False}
+        text = '\n'.join(_log_handler.records)
+        ok = _copy_to_clipboard(text)
+        return {'success': ok}
 
     def exit_app(self):
         if self._window:
@@ -829,6 +894,45 @@ select.form-input {
   color: var(--text-dim);
   font-size: 13px;
 }
+
+/* Log viewer */
+.log-container {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.log-container::-webkit-scrollbar { width: 5px; }
+.log-container::-webkit-scrollbar-track { background: transparent; }
+.log-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+.log-line { white-space: pre-wrap; word-break: break-all; }
+.log-line.log-DEBUG { color: rgba(255,255,255,0.35); }
+.log-line.log-INFO { color: rgba(100,180,255,0.9); }
+.log-line.log-WARNING { color: rgba(255,214,10,0.9); }
+.log-line.log-ERROR { color: rgba(255,69,58,0.95); }
+.log-line.log-CRITICAL { color: #ff453a; font-weight: 600; }
+
+.log-filter-bar { display: flex; gap: 6px; align-items: center; }
+.log-filter-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.log-filter-btn:hover { background: var(--card); }
+.log-filter-btn.active { background: rgba(0,113,227,0.15); border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -857,6 +961,10 @@ select.form-input {
       <li class="nav-item" data-page="network" onclick="switchPage('network')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
         <span>网络</span>
+      </li>
+      <li class="nav-item" data-page="logs" onclick="switchPage('logs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        <span>运行日志</span>
       </li>
       <li class="nav-item" data-page="about" onclick="switchPage('about')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -1038,6 +1146,36 @@ select.form-input {
         </div>
       </div>
     </div>
+
+    <!-- Logs -->
+    <div class="page" id="page-logs">
+      <h2 id="logs-title" style="font-size:20px;font-weight:600;margin-bottom:20px;">Runtime Logs</h2>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" id="logs-card-title">Application Logs</span>
+          <div class="log-filter-bar">
+            <button class="log-filter-btn active" data-level="ALL" onclick="setLogFilter('ALL', this)">ALL</button>
+            <button class="log-filter-btn" data-level="INFO" onclick="setLogFilter('INFO', this)">INFO</button>
+            <button class="log-filter-btn" data-level="WARNING" onclick="setLogFilter('WARNING', this)">WARN</button>
+            <button class="log-filter-btn" data-level="ERROR" onclick="setLogFilter('ERROR', this)">ERROR</button>
+          </div>
+        </div>
+        <div class="log-container" id="log-container">
+          <div class="empty-state" id="log-empty">No logs yet</div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="copyLogs()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="confirmClearLogs()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1063,7 +1201,7 @@ select.form-input {
 const LANG = {
   zh: {
     // Sidebar
-    dashboard: '概览', security: '安全', storage: '存储', network: '网络', about: '关于',
+    dashboard: '概览', security: '安全', storage: '存储', network: '网络', logs: '运行日志', about: '关于',
     // Dashboard
     serverStatus: '服务器状态', starting: '启动中...', running: '运行中', stopped: '已停止',
     localAccess: '本地访问', networkAccess: '网络访问',
@@ -1094,6 +1232,10 @@ const LANG = {
     aboutDesc: '本地优先的开发者工具箱。所有数据在本地处理，不上传或发送到外部。',
     version: '版本', python: 'Python', platform: '平台',
     project: '项目', license: '许可证', mitLicense: 'MIT许可证',
+    // Logs
+    logsTitle: '运行日志', logsCardTitle: '应用日志', noLogs: '暂无日志',
+    copyLogs: '复制日志', clearLogs: '清空日志', clearLogsConfirm: '确定清空所有日志？',
+    logsCopied: '日志已复制', logsCleared: '日志已清空',
     // Footer
     footer: 'DevToolBox — 本地优先的开发工具箱',
     // Modal
@@ -1103,7 +1245,7 @@ const LANG = {
   },
   en: {
     // Sidebar
-    dashboard: 'Dashboard', security: 'Security', storage: 'Storage', network: 'Network', about: 'About',
+    dashboard: 'Dashboard', security: 'Security', storage: 'Storage', network: 'Network', logs: 'Runtime Logs', about: 'About',
     // Dashboard
     serverStatus: 'Server Status', starting: 'Starting...', running: 'Running', stopped: 'Stopped',
     localAccess: 'Local Access', networkAccess: 'Network Access',
@@ -1134,6 +1276,10 @@ const LANG = {
     aboutDesc: 'Local-first developer toolkit. All data processed locally, nothing uploaded or sent externally.',
     version: 'Version', python: 'Python', platform: 'Platform',
     project: 'Project', license: 'License', mitLicense: 'MIT License',
+    // Logs
+    logsTitle: 'Runtime Logs', logsCardTitle: 'Application Logs', noLogs: 'No logs yet',
+    copyLogs: 'Copy Logs', clearLogs: 'Clear Logs', clearLogsConfirm: 'Clear all logs?',
+    logsCopied: 'Logs copied', logsCleared: 'Logs cleared',
     // Footer
     footer: 'DevToolBox — Local-First Developer Toolkit',
     // Modal
@@ -1231,6 +1377,9 @@ function applyTranslations() {
   el = document.getElementById('modal-message'); if (el) el.textContent = t('areYouSure');
   el = document.getElementById('modal-cancel-btn'); if (el) el.textContent = t('cancel');
   el = document.getElementById('modal-confirm-btn'); if (el) el.textContent = t('confirm');
+  // Logs page
+  el = document.getElementById('logs-title'); if (el) el.textContent = t('logsTitle');
+  el = document.getElementById('logs-card-title'); if (el) el.textContent = t('logsCardTitle');
   // Language toggle button
   el = document.getElementById('lang-toggle'); if (el) el.textContent = t('lang');
   // Re-render temp tokens
@@ -1275,7 +1424,9 @@ async function init() {
 }
 
 // --- Navigation ---
+let _activePage = 'dashboard';
 function switchPage(page) {
+  _activePage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
@@ -1426,6 +1577,79 @@ function copyMainUrl() {
   api.copy_url().then(r => showToast(r.success ? t('copied') : t('copyFailed')));
 }
 
+// --- Logs ---
+let _currentLogFilter = 'ALL';
+let _cachedLogs = [];
+let _logPollTimer = null;
+
+async function refreshLogs() {
+  try {
+    const raw = await api.get_logs();
+    const logs = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    _cachedLogs = logs;
+    if (_activePage === 'logs') renderLogs(logs);
+  } catch(e) { console.error('refreshLogs error:', e); }
+}
+
+// Called by Python via window.evaluate_js — primary log update mechanism
+window._receiveLogs = function(logs) {
+  if (!logs || !Array.isArray(logs)) return;
+  _cachedLogs = logs;
+  if (_activePage === 'logs') renderLogs(logs);
+};
+
+function renderLogs(logs) {
+  const container = document.getElementById('log-container');
+  const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 20;
+
+  const filtered = _currentLogFilter === 'ALL'
+    ? logs
+    : logs.filter(line => {
+        const level = line.split(' ')[1];
+        return level && level.indexOf(_currentLogFilter) === 0;
+      });
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state">' + esc(t('noLogs')) + '</div>';
+    return;
+  }
+
+  let html = '';
+  for (const line of filtered) {
+    const level = (line.split(' ')[1] || '').split(':')[0].trim();
+    const cls = ['DEBUG','INFO','WARNING','ERROR','CRITICAL'].indexOf(level) >= 0 ? ' log-' + level : '';
+    html += '<div class="log-line' + cls + '">' + esc(line) + '</div>';
+  }
+  container.innerHTML = html;
+
+  if (wasAtBottom) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function setLogFilter(level, btn) {
+  _currentLogFilter = level;
+  document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderLogs(_cachedLogs);
+}
+
+function copyLogs() {
+  const text = _cachedLogs.join('\n');
+  api.copy_text(text).then(r => showToast(r.success ? t('logsCopied') : t('copyFailed')));
+}
+
+function confirmClearLogs() {
+  showModal(t('clearLogs'), t('clearLogsConfirm'), () => {
+    api.clear_logs().then(r => {
+      if (r.success) { _cachedLogs = []; renderLogs([]); showToast(t('logsCleared')); }
+    });
+  });
+}
+
+// Initial log load — Python pushes updates via _receiveLogs
+setTimeout(() => { if (api) refreshLogs(); }, 1500);
+
 // --- Modal ---
 function showModal(title, message, onConfirm) {
   document.getElementById('modal-title').textContent = title;
@@ -1481,6 +1705,12 @@ def run_gui_app(app, host, port, access_token, version='2.0.0'):
     start_time = time.time()
     api = Api(app, host, port, access_token, version, start_time)
 
+    # Attach log handler for GUI log viewer
+    global _log_handler
+    _log_handler = _GUILogHandler()
+    logging.root.addHandler(_log_handler)
+    _log_handler.setLevel(logging.DEBUG)
+
     # Start Flask
     flask_thread = start_flask_thread(app, host, port)
 
@@ -1499,6 +1729,9 @@ def run_gui_app(app, host, port, access_token, version='2.0.0'):
     print(f"  Network: {network_url}")
     print("=" * 56)
     print()
+
+    logger.info(f'DevToolBox v{version} started — Local: {base_url} | LAN: http://{local_ip}:{port}')
+    logger.info(f'Detected LAN IP: {local_ip} (port {port})')
 
     # Wait for server
     if not wait_for_server(host, port):
@@ -1533,6 +1766,27 @@ def run_gui_app(app, host, port, access_token, version='2.0.0'):
             window.set_icon(icon_path)
     except Exception:
         pass
+
+    # Background thread: push logs to JS via evaluate_js every 3 seconds
+    def _log_push_thread():
+        import re
+        ansi_re = re.compile(r'\x1b\[[0-9;]*m')
+        time.sleep(3)
+        tick = 0
+        while True:
+            try:
+                time.sleep(3)
+                tick += 1
+                if _log_handler is None:
+                    continue
+
+                records = list(_log_handler.records)
+                clean = [ansi_re.sub('', line) for line in records]
+                window.evaluate_js('_receiveLogs(' + json.dumps(clean) + ')')
+            except Exception:
+                pass
+
+    threading.Thread(target=_log_push_thread, daemon=True).start()
 
     webview.start(debug=False)
 
