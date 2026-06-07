@@ -23,7 +23,8 @@
     "passwordTools": "Password Generator",
     "apikeyTools": "API Key Generator",
     "jwtDebugger": "JWT Debugger",
-    "diffTool": "Text Diff"
+    "diffTool": "Text Diff",
+    "textTransfer": "Text Transfer"
   },
   "mobileNav": {
     "home": "Home",
@@ -33,7 +34,8 @@
     "crypto": "Crypto",
     "time": "Time",
     "generator": "Generate",
-    "qr": "QR Code"
+    "qr": "QR Code",
+    "transfer": "Transfer"
   },
   "categories": {
     "file": { "name": "File Tools", "description": "File upload, management and processing", "tools": { "fileUpload": "File Upload", "fileManage": "File Manage", "batchProcess": "Batch Process" } },
@@ -42,7 +44,8 @@
     "encoding": { "name": "Encoding Tools", "description": "Various encoding and decoding tools", "tools": { "base64": "Base64", "urlEncode": "URL Encode", "timestamp": "Timestamp" } },
     "time": { "name": "Time Tools", "description": "Timestamp and date/time processing", "tools": { "timestampConvert": "Timestamp Convert", "dateCalc": "Date Calculator" } },
     "other": { "name": "Other Tools", "description": "QR code generation and other utilities", "tools": { "qrGenerate": "QR Generate", "qrBeautify": "QR Beautify" } },
-    "generator": { "name": "Generators & Debug", "description": "UUID, password, API key generation and dev debug tools", "tools": { "uuidGen": "UUID Generator", "passwordGen": "Password Gen", "apikeyGen": "API Key Gen", "jwtDebug": "JWT Debug", "textDiff": "Text Diff" } }
+    "generator": { "name": "Generators & Debug", "description": "UUID, password, API key generation and dev debug tools", "tools": { "uuidGen": "UUID Generator", "passwordGen": "Password Gen", "apikeyGen": "API Key Gen", "jwtDebug": "JWT Debug", "textDiff": "Text Diff" } },
+    "transfer": { "name": "Text Transfer", "description": "LAN text transfer and group chat", "tools": { "textTransfer": "Text Transfer" } }
   },
   "fileCategories": {
     "images": "Images",
@@ -1314,6 +1317,17 @@
         "viewSolution": "View Solution",
         "unknownError": "Unknown error"
       }
+    },
+    "transfer": {
+      "title": "Text Transfer",
+      "onlineDevices": "Online Devices",
+      "noDevices": "No other devices online",
+      "groupChat": "Group Chat",
+      "memberCount": "{count} members",
+      "noMessages": "No messages yet. Start sending!",
+      "inputPlaceholder": "Type a message, Enter to send...",
+      "send": "Send",
+      "copied": "Copied"
     }
   }
 }

@@ -23,7 +23,8 @@
     "passwordTools": "密码生成器",
     "apikeyTools": "API Key生成器",
     "jwtDebugger": "JWT调试器",
-    "diffTool": "文本对比"
+    "diffTool": "文本对比",
+    "textTransfer": "文本传输"
   },
   "mobileNav": {
     "home": "首页",
@@ -33,7 +34,8 @@
     "crypto": "加密",
     "time": "时间",
     "generator": "生成",
-    "qr": "二维码"
+    "qr": "二维码",
+    "transfer": "传输"
   },
   "categories": {
     "file": { "name": "文件工具", "description": "文件上传、管理与处理", "tools": { "fileUpload": "文件上传", "fileManage": "文件管理", "batchProcess": "批量处理" } },
@@ -42,7 +44,8 @@
     "encoding": { "name": "编码工具", "description": "各种编码解码工具", "tools": { "base64": "Base64", "urlEncode": "URL编码", "timestamp": "时间戳" } },
     "time": { "name": "时间工具", "description": "时间戳与日期时间处理", "tools": { "timestampConvert": "时间戳转换", "dateCalc": "日期计算" } },
     "other": { "name": "其他工具", "description": "二维码生成等其他实用工具", "tools": { "qrGenerate": "二维码生成", "qrBeautify": "二维码美化" } },
-    "generator": { "name": "生成与调试", "description": "UUID、密码、API Key生成及开发调试工具", "tools": { "uuidGen": "UUID生成", "passwordGen": "密码生成", "apikeyGen": "API Key生成", "jwtDebug": "JWT调试", "textDiff": "文本对比" } }
+    "generator": { "name": "生成与调试", "description": "UUID、密码、API Key生成及开发调试工具", "tools": { "uuidGen": "UUID生成", "passwordGen": "密码生成", "apikeyGen": "API Key生成", "jwtDebug": "JWT调试", "textDiff": "文本对比" } },
+    "transfer": { "name": "文本传输", "description": "局域网设备间文本传输与群聊", "tools": { "textTransfer": "文本传输" } }
   },
   "fileCategories": {
     "images": "图片",
@@ -1314,6 +1317,17 @@
         "viewSolution": "查看解决方案",
         "unknownError": "未知错误"
       }
+    },
+    "transfer": {
+      "title": "文本传输",
+      "onlineDevices": "在线设备",
+      "noDevices": "暂无其他设备在线",
+      "groupChat": "群聊广播",
+      "memberCount": "{count} 位成员",
+      "noMessages": "暂无消息，开始发送吧",
+      "inputPlaceholder": "输入文本，Enter 发送...",
+      "send": "发送",
+      "copied": "已复制"
     }
   }
 }

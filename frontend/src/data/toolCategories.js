@@ -44,5 +44,11 @@ export const toolCategories = [
     icon: 'MagicStick',
     route: '/uuid-tools',
     tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff']
+  },
+  {
+    id: 'transfer',
+    icon: 'ChatDotRound',
+    route: '/text-transfer',
+    tools: ['textTransfer']
   }
 ]

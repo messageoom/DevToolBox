@@ -128,6 +128,7 @@ import {
   MagicStick,
   Upload,
   Grid,
+  ChatDotRound,
 } from '@element-plus/icons-vue'
 
 // --- Stores ---
@@ -189,6 +190,9 @@ const sidebarCategories = computed(() => {
       { label: t('sidebar.jwtDebugger'), route: '/jwt-debugger' },
       { label: t('sidebar.diffTool'), route: '/diff-tool' },
     ],
+    transfer: [
+      { label: t('sidebar.textTransfer'), route: '/text-transfer' },
+    ],
   }
 
   return toolCategories.map((cat) => ({
@@ -210,6 +214,7 @@ const mobileNavTabs = computed(() => [
   { label: t('mobileNav.time'), route: '/timestamp-tools', icon: Clock, matchPrefix: '/timestamp-tools,/time-calculator' },
   { label: t('mobileNav.generator'), route: '/uuid-tools', icon: MagicStick, matchPrefix: '/uuid-tools,/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
   { label: t('mobileNav.qr'), route: '/qr-tools', icon: Grid, matchPrefix: '/qr-tools' },
+  { label: t('mobileNav.transfer'), route: '/text-transfer', icon: ChatDotRound, matchPrefix: '/text-transfer' },
 ])
 
 // --- Methods ---
@@ -226,8 +231,8 @@ function getIcon(iconName) {
     Lock,
     Clock,
     Crop,
+    ChatDotRound,
   }
-  return iconMap[iconName] || DocumentCopy
 }
 
 function isTabActive(tab) {
