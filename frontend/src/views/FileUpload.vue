@@ -1,757 +1,773 @@
 <template>
-  <div class="file-upload">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-icon class="card-icon"><Upload /></el-icon>
-          <span>{{ $t('tools.fileUpload.title') }}</span>
+  <div class="tool-page">
+    <!-- Upload area -->
+    <div class="upload-section">
+      <el-upload
+        ref="uploadRef"
+        class="upload-dropzone"
+        drag
+        v-model:file-list="fileList"
+        multiple
+        :limit="9"
+        :auto-upload="false"
+      >
+        <div class="dropzone-content">
+          <span class="material-symbols-rounded dropzone-icon">cloud_upload</span>
+          <p class="dropzone-text">{{ t('tools.fileUpload.dropzone') }}</p>
+          <p class="dropzone-hint">{{ t('tools.fileUpload.hint') }}</p>
         </div>
-      </template>
+      </el-upload>
 
-      <!-- 上传区域 -->
-      <div class="upload-area">
-        <el-upload
-          ref="uploadRef"
-          class="upload-demo"
-          drag
-          :http-request="customUpload"
-          :on-change="handleFileChange"
-          :file-list="fileList"
-          multiple
-          :limit="9"
-          :auto-upload="false"
-          name="files"
-        >
-          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-          <div class="el-upload__text">
-            {{ $t('tools.fileUpload.dropzone') }}
+      <div v-if="fileList.length" class="upload-actions">
+        <div class="upload-progress-wrap" v-if="uploading">
+          <div class="upload-progress-bar">
+            <div class="upload-progress-fill" :style="{ width: uploadProgress + '%' }"></div>
           </div>
-          <template #tip>
-            <div class="el-upload__tip">
-              {{ $t('tools.fileUpload.hint') }}
-            </div>
-          </template>
-        </el-upload>
+          <span class="upload-progress-text">{{ uploadProgress }}%</span>
+        </div>
+        <template v-else>
+          <span class="file-count-label">{{ t('tools.fileUpload.fileCount', { count: fileList.length }) }}</span>
+        </template>
+        <div class="action-buttons">
+          <el-button @click="clearFiles" :disabled="uploading">{{ t('tools.fileUpload.clearList') }}</el-button>
+          <el-button type="primary" @click="submitUpload" :loading="uploading">
+            <span class="material-symbols-rounded btn-icon" v-if="!uploading">upload</span>
+            {{ t('tools.fileUpload.startUpload') }}
+          </el-button>
+        </div>
+      </div>
+    </div>
 
-        <div class="upload-actions">
-          <el-button @click="clearFiles">{{ $t('tools.fileUpload.clearList') }}</el-button>
-          <el-button type="primary" @click="submitUpload" :loading="uploading">{{ $t('tools.fileUpload.startUpload') }}</el-button>
+    <!-- Uploaded files -->
+    <div class="files-section" v-if="uploadedFiles.length > 0">
+      <div class="section-header">
+        <h3>{{ t('tools.fileUpload.uploadedFiles') }}</h3>
+        <div class="section-header-right">
+          <el-input
+            v-model="searchQuery"
+            :placeholder="t('tools.fileUpload.searchPlaceholder')"
+            clearable
+            size="small"
+            class="search-input"
+          >
+            <template #prefix>
+              <span class="material-symbols-rounded search-icon">search</span>
+            </template>
+          </el-input>
+          <span class="total-count">{{ formatFileSize(totalSize) }}</span>
         </div>
       </div>
 
-      <!-- 已上传文件列表 -->
-      <div class="uploaded-files" v-if="Object.keys(categorizedFiles).length > 0">
-        <h3>{{ $t('tools.fileUpload.uploadedFiles') }}</h3>
-
-        <!-- 图片文件 -->
-        <div v-if="displayFiles.images && displayFiles.images.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>🖼️ {{ $t('tools.fileUpload.imageFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.images.total }})</span>
+      <div v-for="cat in categorizedFiles" :key="cat.id" class="file-category">
+        <div class="category-header" @click="toggleCategory(cat.id)">
+          <div class="category-label">
+            <span class="material-symbols-rounded category-icon">{{ cat.icon }}</span>
+            <span>{{ cat.label }}</span>
+            <span class="category-count">{{ cat.files.length }}</span>
           </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.images.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <img :src="file.url" :alt="file.name" @error="handleImageError">
+          <span class="material-symbols-rounded expand-icon" :class="{ rotated: expandedCategories[cat.id] }">expand_more</span>
+        </div>
+
+        <transition name="grid-collapse">
+          <div v-show="expandedCategories[cat.id]" class="file-grid">
+            <div
+              v-for="file in cat.files"
+              :key="file.name"
+              class="file-card"
+              :class="{ highlighted: highlightedFiles.has(file.name) }"
+            >
+              <div class="file-preview" :class="previewClass(cat.id, file)">
+                <img v-if="cat.id === 'images'" :src="file.url" :alt="file.name" @error="handleImageError($event)" />
+                <img v-else-if="file.coverUrl" :src="file.coverUrl" :alt="file.title || file.name" class="ebook-cover" @error="handleImageError($event)" />
+                <span v-else class="material-symbols-rounded file-type-icon">{{ cat.icon }}</span>
               </div>
               <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
+                <div class="file-name" :title="file.title || file.name">{{ file.title || file.name }}</div>
                 <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
+              </div>
+              <div class="file-actions">
+                <button class="action-btn" @click="downloadFile(file.url, file.name)" :title="t('tools.fileUpload.download')">
+                  <span class="material-symbols-rounded">download</span>
+                </button>
+                <button class="action-btn action-btn--danger" @click="deleteFile(file.name)" :title="t('tools.fileUpload.delete')">
+                  <span class="material-symbols-rounded">delete</span>
+                </button>
               </div>
             </div>
           </div>
-          <div v-if="displayFiles.images.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('images')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 文档文件 -->
-        <div v-if="displayFiles.documents && displayFiles.documents.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>📄 {{ $t('tools.fileUpload.documentFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.documents.total }})</span>
-          </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.documents.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <div class="file-icon">📄</div>
-              </div>
-              <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
-                <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="displayFiles.documents.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('documents')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 数据文件 -->
-        <div v-if="displayFiles.data && displayFiles.data.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>📊 {{ $t('tools.fileUpload.dataFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.data.total }})</span>
-          </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.data.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <div class="file-icon">📊</div>
-              </div>
-              <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
-                <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="displayFiles.data.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('data')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 压缩文件 -->
-        <div v-if="displayFiles.archives && displayFiles.archives.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>📦 {{ $t('tools.fileUpload.archiveFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.archives.total }})</span>
-          </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.archives.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <div class="file-icon">📦</div>
-              </div>
-              <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
-                <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="displayFiles.archives.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('archives')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 媒体文件 -->
-        <div v-if="displayFiles.media && displayFiles.media.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>🎵 {{ $t('tools.fileUpload.mediaFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.media.total }})</span>
-          </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.media.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <div class="file-icon">🎵</div>
-              </div>
-              <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
-                <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="displayFiles.media.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('media')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 其他文件 -->
-        <div v-if="displayFiles.others && displayFiles.others.total > 0" class="file-category">
-          <div class="category-header">
-            <h4>📁 {{ $t('tools.fileUpload.otherFiles') }}</h4>
-            <span class="file-count">({{ displayFiles.others.total }})</span>
-          </div>
-          <div class="file-grid" :style="{ gridTemplateColumns: `repeat(${filesPerRow}, 1fr)` }">
-            <div v-for="file in displayFiles.others.displayed" :key="file.name" class="file-item">
-              <div class="file-preview">
-                <div class="file-icon">📁</div>
-              </div>
-              <div class="file-info">
-                <div class="file-name" :title="file.name">{{ file.name }}</div>
-                <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                <div class="file-actions">
-                  <el-button size="small" type="primary" @click="downloadFile(file.url, file.name)">
-                    {{ $t('tools.fileUpload.download') }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(file.name)">
-                    {{ $t('tools.fileUpload.delete') }}
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="displayFiles.others.hasMore" class="view-more">
-            <el-button type="text" @click="viewMoreFiles('others')">
-              {{ $t('tools.fileUpload.viewMore') }}
-              <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </div>
+        </transition>
       </div>
+    </div>
 
-      <!-- 如果没有文件 -->
-      <div v-else class="no-files">
-        <el-empty :description="$t('tools.fileUpload.noFiles')" />
+    <!-- Empty state -->
+    <div v-else class="empty-state">
+      <div class="empty-card">
+        <span class="material-symbols-rounded empty-icon">cloud_upload</span>
+        <p class="empty-title">{{ t('tools.fileUpload.noFiles') }}</p>
+        <p class="empty-hint">{{ t('tools.fileUpload.emptyHint') }}</p>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Upload, UploadFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
-import { useDeviceStore } from '@/stores/device.js'
 
-export default {
-  name: 'FileUpload',
-  components: {
-    Upload,
-    UploadFilled
-  },
-  data() {
-    const deviceStore = useDeviceStore()
-    return {
-      deviceStore,
-      uploadUrl: '/api/file-upload/upload',
-      fileList: [],
-      uploadedFiles: [],
-      uploading: false,
+const { t } = useI18n()
+
+const uploadRef = ref(null)
+const fileList = ref([])
+const uploadedFiles = ref([])
+const uploading = ref(false)
+const uploadProgress = ref(0)
+const searchQuery = ref('')
+const expandedCategories = reactive({})
+const highlightedFiles = reactive(new Set())
+
+const CATEGORY_META = {
+  images:    { icon: 'image',            exts: ['png','jpg','jpeg','gif','bmp','webp','svg','ico'] },
+  documents: { icon: 'description',      exts: ['txt','pdf','doc','docx','xls','xlsx','ppt','pptx'] },
+  ebooks:    { icon: 'menu_book',        exts: ['epub'] },
+  data:      { icon: 'table_chart',      exts: ['csv','json','xml'] },
+  archives:  { icon: 'folder_zip',       exts: ['zip','rar','7z'] },
+  media:     { icon: 'music_note',       exts: ['mp3','mp4','avi','mov','wmv','flac','mflac','wav','aac','ogg'] },
+  others:    { icon: 'insert_drive_file', exts: [] },
+}
+
+const CATEGORY_LABELS = {
+  images:    'imageFiles',
+  documents: 'documentFiles',
+  ebooks:    'ebookFiles',
+  data:      'dataFiles',
+  archives:  'archiveFiles',
+  media:     'mediaFiles',
+  others:    'otherFiles',
+}
+
+function toggleCategory(id) {
+  expandedCategories[id] = !expandedCategories[id]
+}
+
+function previewClass(catId, file) {
+  if (catId === 'images') return 'preview-image'
+  if (file.coverUrl) return 'preview-ebook'
+  return 'preview-default'
+}
+
+const filteredUploadedFiles = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return uploadedFiles.value
+  return uploadedFiles.value.filter(f =>
+    (f.title || f.name || '').toLowerCase().includes(q) ||
+    (f.name || '').toLowerCase().includes(q)
+  )
+})
+
+const categorizedFiles = computed(() => {
+  const groups = {}
+  for (const id of Object.keys(CATEGORY_META)) groups[id] = []
+
+  filteredUploadedFiles.value.forEach(file => {
+    const ext = (file.name || '').split('.').pop()?.toLowerCase() || ''
+    let matched = false
+    for (const [id, meta] of Object.entries(CATEGORY_META)) {
+      if (id === 'others') continue
+      if (meta.exts.includes(ext)) {
+        groups[id].push(file)
+        matched = true
+        break
+      }
     }
-  },
-  computed: {
-    categorizedFiles() {
-      const categories = {
-        images: [],
-        documents: [],
-        data: [],
-        archives: [],
-        media: [],
-        others: []
+    if (!matched) groups.others.push(file)
+  })
+
+  const result = []
+  for (const [id, files] of Object.entries(groups)) {
+    if (files.length === 0) continue
+    if (expandedCategories[id] === undefined) expandedCategories[id] = true
+    result.push({
+      id,
+      icon: CATEGORY_META[id].icon,
+      label: t(`tools.fileUpload.${CATEGORY_LABELS[id]}`),
+      files,
+    })
+  }
+  return result
+})
+
+const totalSize = computed(() =>
+  uploadedFiles.value.reduce((sum, f) => sum + (f.size || 0), 0)
+)
+
+function clearFiles() {
+  fileList.value = []
+  uploadRef.value?.clearFiles()
+}
+
+async function submitUpload() {
+  if (!fileList.value.length) {
+    ElMessage.warning(t('tools.fileUpload.selectFileFirst'))
+    return
+  }
+  uploading.value = true
+  uploadProgress.value = 0
+  try {
+    const formData = new FormData()
+    fileList.value.forEach(item => {
+      const raw = item.raw
+      if (raw && raw instanceof File) {
+        formData.append('files', raw)
       }
+    })
 
-      // 文件扩展名分类
-      const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico']
-      const documentExts = ['txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
-      const dataExts = ['csv', 'json', 'xml']
-      const archiveExts = ['zip', 'rar', '7z']
-      const mediaExts = ['mp3', 'mp4', 'avi', 'mov', 'wmv', 'flac', 'mflac', 'wav', 'aac', 'ogg']
-
-      this.uploadedFiles.forEach(file => {
-        const extension = file.name.split('.').pop()?.toLowerCase()
-
-        if (imageExts.includes(extension)) {
-          categories.images.push(file)
-        } else if (documentExts.includes(extension)) {
-          categories.documents.push(file)
-        } else if (dataExts.includes(extension)) {
-          categories.data.push(file)
-        } else if (archiveExts.includes(extension)) {
-          categories.archives.push(file)
-        } else if (mediaExts.includes(extension)) {
-          categories.media.push(file)
-        } else {
-          categories.others.push(file)
-        }
-      })
-
-      return categories
-    },
-
-    // 动态计算每行显示的文件数量
-    filesPerRow() {
-      if (this.deviceStore.isMobile) {
-        return 2
-      } else {
-        return 6
-      }
-    },
-
-    // 计算每个分类显示的文件
-    displayFiles() {
-      const result = {}
-      Object.keys(this.categorizedFiles).forEach(category => {
-        const files = this.categorizedFiles[category]
-        const maxDisplay = this.filesPerRow
-        result[category] = {
-          displayed: files.slice(0, maxDisplay),
-          total: files.length,
-          hasMore: files.length > maxDisplay,
-          remaining: Math.max(0, files.length - maxDisplay)
-        }
-      })
-      return result
+    if (!Array.from(formData.entries()).length) {
+      ElMessage.error(t('tools.fileUpload.uploadFail'))
+      uploading.value = false
+      return
     }
-  },
-  mounted() {
-    this.loadUploadedFiles()
-  },
-  methods: {
-    customUpload(options) {
-      // 自定义上传方法，确保所有文件都能被上传
-      const { file, onSuccess, onError } = options
 
-      // 这里我们不直接上传，而是让用户点击"开始上传"按钮
-      // 所以我们只需要返回成功状态，让文件显示在列表中
-      onSuccess(file)
-    },
-
-    beforeUpload(file) {
-      // 检查文件大小（限制为50MB）
-      const isLt50M = file.size / 1024 / 1024 < 50
-      if (!isLt50M) {
-        ElMessage.error(this.$t('tools.fileUpload.fileSizeExceeded'))
-        return false
+    const { data } = await axios.post('/api/file-upload/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: e => {
+        if (e.total) uploadProgress.value = Math.round(e.loaded / e.total * 100)
+      },
+    })
+    if (data.message) {
+      ElMessage.success(data.message)
+      // Highlight newly uploaded files
+      if (data.files) {
+        data.files.forEach(f => highlightedFiles.add(f.unique_name))
+        setTimeout(() => {
+          data.files.forEach(f => highlightedFiles.delete(f.unique_name))
+        }, 3000)
       }
-      // 不返回false，让文件正常添加到列表中
-      return true
-    },
-
-    async submitUpload() {
-      if (this.fileList.length === 0) {
-        ElMessage.warning(this.$t('tools.fileUpload.selectFileFirst'))
-        return
-      }
-
-      this.uploading = true
-
-      try {
-        const formData = new FormData()
-
-        // 添加所有选择的文件
-        console.log('Building FormData with files:', this.fileList.length)
-        this.fileList.forEach((fileItem, index) => {
-          // el-upload的文件对象结构
-          const file = fileItem.raw || fileItem.originFileObj || fileItem
-          if (file && file instanceof File) {
-            console.log(`Adding file ${index + 1}:`, file.name, file.size, 'bytes')
-            formData.append('files', file)
-          } else {
-            console.log(`Skipping invalid file ${index + 1}:`, fileItem)
-          }
-        })
-
-        // 调试信息
-        console.log('FileList:', this.fileList)
-        console.log('FormData entries count:', Array.from(formData.entries()).length)
-        Array.from(formData.entries()).forEach(([key, value], index) => {
-          if (value instanceof File) {
-            console.log(`FormData entry ${index + 1}: ${key} = File(${value.name}, ${value.size} bytes)`)
-          } else {
-            console.log(`FormData entry ${index + 1}: ${key} = ${value}`)
-          }
-        })
-
-        const response = await axios.post(this.uploadUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-
-        if (response.data.message) {
-          ElMessage.success(response.data.message)
-          this.fileList = []
-          // 清除上传组件的文件列表
-          if (this.$refs.uploadRef) {
-            this.$refs.uploadRef.clearFiles()
-          }
-          this.loadUploadedFiles()
-        } else {
-          ElMessage.error(this.$t('tools.fileUpload.uploadFail'))
-        }
-      } catch (error) {
-        console.error('Upload error:', error)
-        ElMessage.error(this.$t('tools.fileUpload.uploadFail') + ': ' + (error.response?.data?.error || error.message))
-      } finally {
-        this.uploading = false
-      }
-    },
-
-    handleUploadSuccess(response, file, fileList) {
-      this.uploading = false
-      if (response.message) {
-        ElMessage.success(response.message)
-        this.fileList = []
-        this.loadUploadedFiles()
-      } else {
-        ElMessage.error(this.$t('tools.fileUpload.uploadFail'))
-      }
-    },
-
-    handleUploadError(err, file, fileList) {
-      this.uploading = false
-      ElMessage.error(this.$t('tools.fileUpload.uploadFail') + ': ' + err.message)
-    },
-
-    handleFileChange(file, fileList) {
-      this.fileList = fileList
-    },
-
-    clearFiles() {
-      this.fileList = []
-      // 清除上传组件的文件列表
-      if (this.$refs.uploadRef) {
-        this.$refs.uploadRef.clearFiles()
-      }
-    },
-
-    async loadUploadedFiles() {
-      try {
-        const response = await axios.get('/api/file-upload/files')
-        if (response.data.files) {
-          this.uploadedFiles = response.data.files
-        }
-      } catch (error) {
-        console.error('加载文件列表失败:', error)
-      }
-    },
-
-    async deleteFile(filename) {
-      try {
-        await ElMessageBox.confirm(
-          this.$t('tools.fileUpload.confirmDelete', { name: filename }),
-          this.$t('tools.fileUpload.confirmDeleteTitle'),
-          {
-            confirmButtonText: this.$t('tools.fileUpload.confirmBtn'),
-            cancelButtonText: this.$t('tools.fileUpload.cancelBtn'),
-            type: 'warning',
-          }
-        )
-
-        const response = await axios.delete(`/api/file-upload/files/${filename}`)
-        if (response.data.message) {
-          ElMessage.success(response.data.message)
-          this.loadUploadedFiles()
-        }
-      } catch (error) {
-        if (error !== 'cancel') {
-          ElMessage.error(this.$t('tools.fileUpload.deleteFail'))
-        }
-      }
-    },
-
-    formatFileSize(bytes) {
-      if (bytes === 0) return '0 B'
-      const k = 1024
-      const sizes = ['B', 'KB', 'MB', 'GB']
-      const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-    },
-
-    formatDate(timestamp) {
-      const date = new Date(timestamp * 1000)
-      return date.toLocaleString()
-    },
-
-    downloadFile(url, filename) {
-      // 创建一个临时的a标签来触发下载
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      link.style.display = 'none'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    },
-
-    handleImageError(event) {
-      // 图片加载失败时显示默认图标
-      const img = event.target
-      const parent = img.parentElement
-      parent.innerHTML = '<div class="file-icon">🖼️</div>'
-    },
-
-    viewMoreFiles(category) {
-      // 跳转到文件列表页面
-      this.$router.push({
-        path: `/file-category/${category}`,
-        query: {
-          from: 'upload'
-        }
-      })
+      fileList.value = []
+      uploadRef.value?.clearFiles()
+      await loadUploadedFiles()
+    } else {
+      ElMessage.error(t('tools.fileUpload.uploadFail'))
     }
+  } catch (err) {
+    ElMessage.error(t('tools.fileUpload.uploadFail') + ': ' + (err.response?.data?.error || err.message))
+  } finally {
+    uploading.value = false
+    uploadProgress.value = 0
   }
 }
+
+async function loadUploadedFiles() {
+  try {
+    const { data } = await axios.get('/api/file-upload/files')
+    if (data.files) uploadedFiles.value = data.files
+  } catch {}
+}
+
+async function deleteFile(filename) {
+  try {
+    await ElMessageBox.confirm(
+      t('tools.fileUpload.confirmDelete', { name: filename }),
+      t('tools.fileUpload.confirmDeleteTitle'),
+      { confirmButtonText: t('tools.fileUpload.confirmBtn'), cancelButtonText: t('tools.fileUpload.cancelBtn'), type: 'warning' }
+    )
+    const { data } = await axios.delete(`/api/file-upload/files/${filename}`)
+    if (data.message) {
+      ElMessage.success(data.message)
+      loadUploadedFiles()
+    }
+  } catch {}
+}
+
+function downloadFile(url, filename) {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function handleImageError(event) {
+  event.target.style.display = 'none'
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+onMounted(loadUploadedFiles)
 </script>
 
 <style scoped>
-.file-upload {
-  padding: 20px;
+/* =========================================
+   Upload dropzone
+   ========================================= */
+.upload-section {
+  margin-bottom: 24px;
 }
 
-.upload-area {
-  margin-bottom: 30px;
+.upload-dropzone :deep(.el-upload-dragger) {
+  border: 2px dashed var(--dt-border-base);
+  border-radius: var(--dt-radius-lg);
+  background: var(--dt-bg-card);
+  padding: 40px 20px;
+  transition: all 0.25s ease;
 }
 
-.upload-demo {
-  width: 100%;
+.upload-dropzone :deep(.el-upload-dragger:hover) {
+  border-color: var(--dt-primary);
 }
 
+.upload-dropzone :deep(.el-upload-dragger.is-dragover) {
+  border-color: var(--dt-primary);
+  background: color-mix(in srgb, var(--dt-primary) 8%, transparent);
+}
+
+.upload-dropzone :deep(.el-upload-dragger.is-dragover) .dropzone-icon {
+  transform: scale(1.15);
+  animation: dropPulse 1s ease-in-out infinite;
+}
+
+@keyframes dropPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  color: var(--dt-primary);
+  opacity: 0.6;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.dropzone-text {
+  font-size: 15px;
+  color: var(--dt-text-regular);
+  margin: 0;
+}
+
+.dropzone-hint {
+  font-size: 12px;
+  color: var(--dt-text-secondary);
+  margin: 0;
+}
+
+/* Pending file actions */
 .upload-actions {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.upload-actions .el-button {
-  margin: 0 10px;
-}
-
-.uploaded-files {
-  margin-top: 30px;
-}
-
-.uploaded-files h3 {
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.card-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--dt-bg-section);
+  border-radius: var(--dt-radius-md);
 }
 
-.card-icon {
-  margin-right: 8px;
-  font-size: 18px;
+.file-count-label {
+  font-size: 13px;
+  color: var(--dt-text-secondary);
 }
 
-.card-header span {
-  font-weight: bold;
+.action-buttons {
+  display: flex;
+  gap: 8px;
 }
 
-/* 文件分类样式 */
+.btn-icon {
+  font-size: 16px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Upload progress bar */
+.upload-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--dt-border-lighter);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  background: var(--dt-primary);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.upload-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dt-primary);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* =========================================
+   Uploaded files section
+   ========================================= */
+.files-section {
+  margin-top: 8px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--dt-text-primary);
+  white-space: nowrap;
+}
+
+.section-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-input {
+  width: 200px;
+}
+
+.search-icon {
+  font-size: 16px;
+  color: var(--dt-text-placeholder);
+}
+
+.total-count {
+  font-size: 13px;
+  color: var(--dt-text-secondary);
+  white-space: nowrap;
+}
+
+/* Category blocks */
 .file-category {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .category-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 15px;
+  padding: 10px 12px;
+  background: var(--dt-bg-section);
+  border-radius: var(--dt-radius-md);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
 }
 
-.category-header h4 {
-  color: #333;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 2px solid #e6e6e6;
-  padding-bottom: 8px;
-  margin: 0;
+.category-header:hover {
+  background: var(--dt-bg-hover);
 }
 
-.file-count {
-  color: #909399;
+.category-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
-  font-weight: normal;
-}
-
-/* 查看更多按钮样式 */
-.view-more {
-  text-align: center;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.view-more .el-button {
-  color: #409eff;
   font-weight: 500;
+  color: var(--dt-text-primary);
 }
 
-.view-more .el-button:hover {
-  color: #66b1ff;
-  background-color: #ecf5ff;
+.category-icon {
+  font-size: 18px;
+  color: var(--dt-primary);
 }
 
-/* 文件网格布局 */
+.category-count {
+  font-size: 12px;
+  color: var(--dt-text-secondary);
+  background: var(--dt-bg-card);
+  padding: 1px 8px;
+  border-radius: 99px;
+}
+
+.expand-icon {
+  font-size: 20px;
+  color: var(--dt-text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Grid collapse transition */
+.grid-collapse-enter-active,
+.grid-collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.grid-collapse-enter-from,
+.grid-collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.grid-collapse-enter-to,
+.grid-collapse-leave-from {
+  opacity: 1;
+  max-height: 2000px;
+}
+
+/* File grid */
 .file-grid {
   display: grid;
-  gap: 20px;
-  margin-top: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 12px 0;
 }
 
-/* 文件项样式 */
-.file-item {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 8px;
+.file-card {
+  background: var(--dt-bg-card);
+  border: 1px solid var(--dt-border-lighter);
+  border-radius: var(--dt-radius-md);
   overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.file-item:hover {
+.file-card:hover {
+  border-color: var(--dt-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  border-color: #409eff;
 }
 
-/* 文件预览区域 */
+/* New file highlight */
+.file-card.highlighted {
+  animation: highlightPulse 2s ease-out;
+}
+
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--dt-primary) 40%, transparent);
+    transform: scale(1);
+  }
+  30% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--dt-primary) 20%, transparent);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    transform: scale(1);
+  }
+}
+
+/* File preview - adaptive height */
 .file-preview {
-  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e6e6e6;
+  background: var(--dt-bg-section);
   overflow: hidden;
+}
+
+.file-preview.preview-default {
+  height: 100px;
+}
+
+.file-preview.preview-image {
+  min-height: 100px;
+  aspect-ratio: 4 / 3;
+}
+
+.file-preview.preview-ebook {
+  min-height: 120px;
+  aspect-ratio: 2 / 3;
 }
 
 .file-preview img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.file-icon {
-  font-size: 48px;
-  color: #909399;
+.file-preview img.ebook-cover {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
 }
 
-/* 文件信息区域 */
+.file-type-icon {
+  font-size: 36px;
+  color: var(--dt-text-placeholder);
+}
+
 .file-info {
-  padding: 12px;
+  padding: 10px 12px 6px;
 }
 
 .file-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #303133;
-  margin-bottom: 8px;
+  color: var(--dt-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
 }
 
 .file-size {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--dt-text-secondary);
+  margin-top: 2px;
 }
 
-/* 文件操作按钮 */
 .file-actions {
   display: flex;
-  gap: 8px;
+  border-top: 1px solid var(--dt-border-lighter);
 }
 
-.file-actions .el-button {
+.action-btn {
   flex: 1;
-  height: 28px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dt-text-secondary);
+  transition: all 0.15s;
 }
 
-/* 响应式设计 */
+.action-btn:hover {
+  background: var(--dt-bg-hover);
+  color: var(--dt-primary);
+}
+
+.action-btn--danger:hover {
+  color: var(--dt-danger);
+  background: color-mix(in srgb, var(--dt-danger) 8%, transparent);
+}
+
+.action-btn .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* =========================================
+   Empty state
+   ========================================= */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 32px;
+  background: var(--dt-bg-card);
+  border: 1px dashed var(--dt-border-lighter);
+  border-radius: var(--dt-radius-lg);
+  max-width: 360px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: var(--dt-primary);
+  opacity: 0.35;
+  margin-bottom: 16px;
+  animation: emptyFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dt-text-regular);
+  margin: 0 0 6px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: var(--dt-text-placeholder);
+  margin: 0;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
 @media (max-width: 768px) {
   .file-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
   }
 
-  .file-preview {
-    height: 100px;
-  }
-
-  .file-icon {
-    font-size: 36px;
-  }
-
-  .file-info {
-    padding: 10px;
-  }
-
-  .file-name {
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 480px) {
-  .file-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-  }
-
-  .file-preview {
+  .file-preview.preview-default {
     height: 80px;
   }
 
-  .file-icon {
-    font-size: 28px;
+  .file-preview.preview-image {
+    min-height: 80px;
   }
 
-  .file-info {
-    padding: 8px;
+  .file-preview.preview-ebook {
+    min-height: 100px;
   }
 
-  .file-name {
-    font-size: 12px;
+  .upload-dropzone :deep(.el-upload-dragger) {
+    padding: 24px 16px;
   }
 
-  .file-actions .el-button {
-    height: 24px;
-    font-size: 11px;
+  .dropzone-icon {
+    font-size: 36px;
   }
-}
 
-/* 空状态样式 */
-.no-files {
-  text-align: center;
-  margin-top: 40px;
-  color: #909399;
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .section-header-right {
+    width: 100%;
+  }
+
+  .search-input {
+    flex: 1;
+  }
+
+  .empty-card {
+    padding: 32px 20px;
+  }
 }
 </style>

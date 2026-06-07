@@ -78,7 +78,7 @@ def create_app(access_token=None):
 
     # 安全配置
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
-    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
+    app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 * 1024  # 20GB
     app.config['ACCESS_TOKEN'] = access_token
 
     # CORS 配置

@@ -27,7 +27,7 @@ export const toolCategories = [
   },
   {
     id: 'encoding',
-    icon: 'encode',
+    icon: 'swap_horiz',
     route: '/base64-tools',
     color: '#f59e0b',
     tools: ['base64', 'urlEncode', 'timestamp']

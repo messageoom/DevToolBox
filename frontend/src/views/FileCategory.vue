@@ -113,6 +113,7 @@ export default {
       const titles = {
         images: '🖼️ ' + this.$t('tools.fileUpload.imageFiles'),
         documents: '📄 ' + this.$t('tools.fileUpload.documentFiles'),
+        ebooks: '📖 ' + this.$t('tools.fileUpload.ebookFiles'),
         data: '📊 ' + this.$t('tools.fileUpload.dataFiles'),
         archives: '📦 ' + this.$t('tools.fileUpload.archiveFiles'),
         media: '🎵 ' + this.$t('tools.fileUpload.mediaFiles'),
@@ -200,6 +201,7 @@ export default {
       const extensions = {
         images: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico'],
         documents: ['txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+        ebooks: ['epub'],
         data: ['csv', 'json', 'xml'],
         archives: ['zip', 'rar', '7z'],
         media: ['mp3', 'mp4', 'avi', 'mov', 'wmv', 'flac', 'mflac', 'wav', 'aac', 'ogg'],
@@ -230,6 +232,8 @@ export default {
         return '🖼️'
       } else if (['txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
         return '📄'
+      } else if (['epub'].includes(ext)) {
+        return '📖'
       } else if (['csv', 'json', 'xml'].includes(ext)) {
         return '📊'
       } else if (['zip', 'rar', '7z'].includes(ext)) {
