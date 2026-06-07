@@ -65,6 +65,11 @@ except ImportError:
     except ImportError:
         from backend.utils.lock_page import get_lock_page_html
 
+try:
+    from flask_socketio import SocketIO
+except ImportError:
+    SocketIO = None
+
 
 def create_app(access_token=None):
     app = Flask(__name__)
@@ -84,6 +89,25 @@ def create_app(access_token=None):
             "max_age": 3600
         }
     })
+
+    # SocketIO initialization
+    socketio = None
+    if SocketIO is not None:
+        socketio = SocketIO(
+            app,
+            cors_allowed_origins=allowed_origins,
+            async_mode='threading',
+            manage_session=False,
+        )
+        try:
+            from .modules.text_transfer import register_socketio_events
+        except ImportError:
+            try:
+                from modules.text_transfer import register_socketio_events
+            except ImportError:
+                from backend.modules.text_transfer import register_socketio_events
+        register_socketio_events(socketio)
+    app.config['SOCKETIO'] = socketio
 
     # Token 认证中间件
     @app.before_request
@@ -228,4 +252,8 @@ if __name__ == '__main__':
     if not access_token:
         # Dev mode: no token, no gui, no tray
         debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-        app.run(host=host, port=port, debug=debug)
+        socketio = app.config.get('SOCKETIO')
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=debug)
