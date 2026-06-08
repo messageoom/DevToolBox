@@ -180,19 +180,22 @@ jobs:
       - name: Extract latest changelog
         id: changelog
         shell: bash
+        env:
+          GITHUB_STEP_SUMMARY: ''
         run: |
-          BODY_FILE="$RUNNER_TEMP/release_body.md"
-          python3 -c "
-          import re, os
+          python3 << 'PYEOF'
+          import re, os, tempfile
           with open('CHANGELOG.md', encoding='utf-8') as f:
               content = f.read()
           pattern = r'(## \[[^\]]+\][^\n]*\n(?:(?!\n## \[).)*)'
           match = re.search(pattern, content, re.DOTALL)
           body = match.group(1).strip() if match else 'See CHANGELOG.md for details.'
-          with open(os.environ['BODY_FILE'], 'w', encoding='utf-8') as f:
+          out = os.path.join(tempfile.gettempdir(), 'release_body.md')
+          with open(out, 'w', encoding='utf-8') as f:
               f.write(body)
-          "
-          echo "body_file=$BODY_FILE" >> "$GITHUB_OUTPUT"
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
+              f.write(f"body_file={out}\n")
+          PYEOF
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
