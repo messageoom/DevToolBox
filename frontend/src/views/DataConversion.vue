@@ -1041,12 +1041,4 @@ export default {
   font-size: var(--dt-font-size-base);
   color: var(--dt-text-secondary);
 }
-
-@media (max-width: 768px) {
-  .el-textarea :deep(.el-textarea__inner) { min-height: 120px !important; }
-  .action-buttons { flex-direction: column; }
-  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
-  .el-row { flex-direction: column; }
-  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
-}
 </style>

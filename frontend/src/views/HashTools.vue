@@ -561,13 +561,4 @@ export default {
 .algorithm-selector {
   margin-bottom: 20px;
 }
-
-@media (max-width: 768px) {
-  .el-descriptions :deep(.el-descriptions__body) { width: 100%; }
-  .el-descriptions :deep(.el-descriptions__label) { min-width: 80px; }
-  .action-buttons { flex-direction: column; }
-  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
-  .el-row { flex-direction: column; }
-  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
-}
 </style>

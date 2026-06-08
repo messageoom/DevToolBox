@@ -223,6 +223,8 @@ def get_ebook_metadata(upload_folder, filename):
         title = meta['title']
 
     return {'title': title, 'coverUrl': cover_url}
+
+@file_upload_bp.route('/upload', methods=['POST'])
 def upload_files():
     try:
         UPLOAD_FOLDER = get_upload_folder()

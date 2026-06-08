@@ -728,28 +728,28 @@ onMounted(loadUploadedFiles)
    ========================================= */
 @media (max-width: 768px) {
   .file-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
 
   .file-preview.preview-default {
-    height: 80px;
+    height: 70px;
   }
 
   .file-preview.preview-image {
-    min-height: 80px;
+    min-height: 70px;
   }
 
   .file-preview.preview-ebook {
-    min-height: 100px;
+    min-height: 90px;
   }
 
   .upload-dropzone :deep(.el-upload-dragger) {
-    padding: 24px 16px;
+    padding: 20px 12px;
   }
 
   .dropzone-icon {
-    font-size: 36px;
+    font-size: 28px;
   }
 
   .section-header {
@@ -767,7 +767,11 @@ onMounted(loadUploadedFiles)
   }
 
   .empty-card {
-    padding: 32px 20px;
+    padding: 24px 16px;
+  }
+
+  .file-card .el-button {
+    min-height: 32px;
   }
 }
 </style>

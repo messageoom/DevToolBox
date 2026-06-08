@@ -410,11 +410,17 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
    ========================================= */
 .mobile-device-strip {
   display: flex;
-  gap: var(--dt-spacing-sm);
-  padding: var(--dt-spacing-sm);
+  gap: var(--dt-spacing-md);
+  padding: var(--dt-spacing-sm) var(--dt-spacing-md);
   border-bottom: 1px solid var(--dt-border-light);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   background: var(--dt-bg-section);
+}
+
+.mobile-device-strip::-webkit-scrollbar {
+  display: none;
 }
 
 .mobile-device-avatar {
@@ -422,6 +428,11 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   flex-shrink: 0;
   opacity: 0.6;
   transition: opacity 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-device-avatar.active {
@@ -880,11 +891,19 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
    ========================================= */
 @media (max-width: 768px) {
   .message-bubble {
-    max-width: 85%;
+    max-width: 88%;
   }
 
   .empty-chat-icon {
     font-size: 40px;
+  }
+
+  .chat-input :deep(.el-textarea__inner) {
+    font-size: 16px;
+  }
+
+  .input-actions .el-button {
+    min-height: 40px;
   }
 }
 </style>

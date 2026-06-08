@@ -336,7 +336,9 @@ export default {
 
         if (response.data.success) {
           this.generatedPasswords = response.data.passwords
-          this.visiblePasswords = {}
+          const visible = {}
+          response.data.passwords.forEach((_, i) => { visible[i] = true })
+          this.visiblePasswords = visible
           ElMessage.success(this.$t('tools.password.messages.generatedCount', { count: response.data.passwords.length }))
         } else {
           ElMessage.error(response.data.error || this.$t('tools.password.messages.generateFail'))

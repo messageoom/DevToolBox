@@ -128,7 +128,7 @@ def create_app(access_token=None):
             try:
                 from backend.utils.config_manager import load_config
             except ImportError:
-                from backend.utils.config_manager import load_config
+                from .utils.config_manager import load_config
         config = load_config()
         if not config.get('security', {}).get('token_enabled', True):
             return None
@@ -147,14 +147,23 @@ def create_app(access_token=None):
             g.token_valid = True
             return None
 
-        # Check temp tokens
+        # Check temp tokens (expires_at is a Unix timestamp float)
         temp_tokens = config.get('security', {}).get('temp_tokens', [])
         from datetime import datetime
-        now = datetime.utcnow().isoformat()
+        now_ts = datetime.utcnow().timestamp()
         for t in temp_tokens:
-            if t.get('token') == provided and t.get('expires_at', '') > now:
+            exp = t.get('expires_at', 0)
+            if t.get('token') == provided and isinstance(exp, (int, float)) and exp > now_ts:
                 g.token_valid = True
                 return None
+
+        # Debug: log mismatch for troubleshooting
+        logging.warning(
+            'Auth rejected: path=%s provided=%s token=%s',
+            request.path,
+            repr(provided[:8] + '...') if provided else None,
+            repr(token[:8] + '...') if token else None,
+        )
 
         # Unauthorized
         if request.path.startswith('/api/'):

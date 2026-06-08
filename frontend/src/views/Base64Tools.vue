@@ -651,11 +651,4 @@ export default {
   display: flex;
   gap: 4px;
 }
-
-@media (max-width: 768px) {
-  .el-form-item :deep(.el-form-item__label) { width: auto !important; min-width: 60px; }
-  .el-form-item :deep(.el-form-item__content) { flex: 1; }
-  .action-buttons { flex-direction: column; }
-  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
-}
 </style>

@@ -216,6 +216,62 @@
     flex-direction: column;
     gap: var(--dt-spacing-xs);
   }
+
+  /* --- Global: Tabs horizontal scroll --- */
+  .el-tabs :deep(.el-tabs__nav-wrap) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .el-tabs :deep(.el-tabs__nav-wrap::-webkit-scrollbar) {
+    display: none;
+  }
+
+  /* --- Global: el-descriptions mobile --- */
+  .el-descriptions--border :deep(.el-descriptions__body) {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .el-descriptions :deep(.el-descriptions__label) {
+    min-width: 80px;
+    max-width: 110px;
+    white-space: normal;
+    word-break: break-word;
+    font-size: 12px;
+  }
+  .el-descriptions :deep(.el-descriptions__content) {
+    font-size: 12px;
+  }
+
+  /* --- Global: Textarea mobile --- */
+  .el-textarea :deep(.el-textarea__inner) {
+    min-height: 100px !important;
+    font-size: 16px;
+  }
+
+  /* --- Global: Action buttons touch-friendly --- */
+  .action-section .el-button,
+  .action-buttons .el-button {
+    min-height: 40px;
+  }
+
+  /* --- Global: el-row/el-col single column --- */
+  .el-row {
+    flex-direction: column;
+  }
+  .el-col {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* --- Global: Form labels --- */
+  .el-form-item :deep(.el-form-item__label) {
+    width: auto !important;
+    min-width: 70px;
+  }
+  .el-form-item :deep(.el-form-item__content) {
+    flex: 1;
+  }
 }
 
 @media (max-width: 480px) {

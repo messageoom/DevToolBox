@@ -102,7 +102,7 @@
     </main>
 
     <!-- Mobile bottom navigation -->
-    <nav v-if="deviceStore.isMobile" class="app-bottom-nav">
+    <nav v-if="deviceStore.isMobile" ref="bottomNavRef" class="app-bottom-nav">
       <router-link
         v-for="tab in mobileNavTabs"
         :key="tab.route"
@@ -110,7 +110,7 @@
         class="bottom-nav-item"
         :class="{ active: isTabActive(tab) }"
       >
-        <el-icon :size="22"><component :is="tab.icon" /></el-icon>
+        <span class="material-symbols-rounded bottom-nav-icon">{{ tab.icon }}</span>
         <span class="bottom-nav-label">{{ tab.label }}</span>
       </router-link>
     </nav>
@@ -124,18 +124,10 @@ import { useI18n } from 'vue-i18n'
 import { useDeviceStore } from '@/stores/device.js'
 import { useThemeStore } from '@/stores/theme.js'
 import { toolCategories } from '@/data/toolCategories.js'
+import { addRecentTool } from '@/composables/useRecentTools.js'
 import {
   Expand,
   Fold,
-  Upload,
-  DocumentCopy,
-  Lock,
-  Key,
-  Clock,
-  MagicStick,
-  Grid,
-  ChatDotRound,
-  HomeFilled,
 } from '@element-plus/icons-vue'
 
 // --- Stores ---
@@ -147,6 +139,7 @@ const router = useRouter()
 
 // --- Reactive state ---
 const isSidebarCollapsed = ref(false)
+const bottomNavRef = ref(null)
 
 // --- Computed ---
 const currentPath = computed(() => route.path)
@@ -213,15 +206,11 @@ const sidebarCategories = computed(() => {
  * Picked 5 key categories to fit the bottom bar.
  */
 const mobileNavTabs = computed(() => [
-  { label: t('mobileNav.home'), route: '/', icon: HomeFilled, matchPrefix: '' },
-  { label: t('mobileNav.file'), route: '/file-upload', icon: Upload, matchPrefix: '/file-upload' },
-  { label: t('mobileNav.data'), route: '/json-tools', icon: DocumentCopy, matchPrefix: '/json-tools,/yaml-tools,/markdown-tools,/data-conversion,/markdown-editor' },
-  { label: t('mobileNav.encoding'), route: '/base64-tools', icon: Lock, matchPrefix: '/base64-tools,/url-tools' },
-  { label: t('mobileNav.crypto'), route: '/hash-tools', icon: Key, matchPrefix: '/hash-tools,/crypto-tools' },
-  { label: t('mobileNav.time'), route: '/timestamp-tools', icon: Clock, matchPrefix: '/timestamp-tools,/time-calculator' },
-  { label: t('mobileNav.generator'), route: '/uuid-tools', icon: MagicStick, matchPrefix: '/uuid-tools,/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
-  { label: t('mobileNav.qr'), route: '/qr-tools', icon: Grid, matchPrefix: '/qr-tools' },
-  { label: t('mobileNav.transfer'), route: '/text-transfer', icon: ChatDotRound, matchPrefix: '/text-transfer' },
+  { label: t('mobileNav.home'), route: '/', icon: 'home', matchPrefix: '' },
+  { label: t('mobileNav.file'), route: '/file-upload', icon: 'upload_file', matchPrefix: '/file-upload' },
+  { label: t('mobileNav.transfer'), route: '/text-transfer', icon: 'chat', matchPrefix: '/text-transfer' },
+  { label: t('mobileNav.generator'), route: '/password-tools', icon: 'password', matchPrefix: '/password-tools,/apikey-tools,/jwt-debugger,/diff-tool' },
+  { label: t('mobileNav.uuid'), route: '/uuid-tools', icon: 'fingerprint', matchPrefix: '/uuid-tools' },
 ])
 
 // --- Methods ---
@@ -243,6 +232,52 @@ function onMenuSelect(index) {
   }
 }
 
+// Route-to-tool-meta mapping for recent tools tracking
+const routeMeta = {}
+const _routeIconMap = {
+  '/file-upload': 'upload_file', '/text-transfer': 'chat',
+  '/json-tools': 'data_object', '/yaml-tools': 'code_blocks',
+  '/markdown-tools': 'article', '/data-conversion': 'transform',
+  '/markdown-editor': 'edit_note', '/base64-tools': 'swap_horiz',
+  '/url-tools': 'link', '/hash-tools': 'tag',
+  '/crypto-tools': 'enhanced_encryption', '/timestamp-tools': 'schedule',
+  '/time-calculator': 'timer', '/uuid-tools': 'fingerprint',
+  '/password-tools': 'password', '/apikey-tools': 'key',
+  '/jwt-debugger': 'encrypted', '/diff-tool': 'difference',
+  '/qr-tools': 'qr_code_2',
+}
+const _catIconMap = {
+  file: 'upload_file', transfer: 'chat', data: 'database', encoding: 'code',
+  crypto: 'shield', time: 'schedule', generator: 'auto_awesome', other: 'qr_code_2',
+}
+toolCategories.forEach(cat => {
+  const routes = {
+    file: ['/file-upload'],
+    transfer: ['/text-transfer'],
+    data: ['/json-tools', '/yaml-tools', '/markdown-tools', '/data-conversion', '/markdown-editor'],
+    encoding: ['/base64-tools', '/url-tools'],
+    crypto: ['/hash-tools', '/crypto-tools'],
+    time: ['/timestamp-tools', '/time-calculator'],
+    generator: ['/uuid-tools', '/password-tools', '/apikey-tools', '/jwt-debugger', '/diff-tool'],
+    other: ['/qr-tools'],
+  }
+  const labelKeys = {
+    '/file-upload': 'sidebar.fileUpload', '/text-transfer': 'sidebar.textTransfer',
+    '/json-tools': 'sidebar.jsonTools', '/yaml-tools': 'sidebar.yamlTools',
+    '/markdown-tools': 'sidebar.markdownTools', '/data-conversion': 'sidebar.dataConversion',
+    '/markdown-editor': 'sidebar.markdownEditor', '/base64-tools': 'sidebar.base64Tools',
+    '/url-tools': 'sidebar.urlTools', '/hash-tools': 'sidebar.hashTools',
+    '/crypto-tools': 'sidebar.cryptoTools', '/timestamp-tools': 'sidebar.timestampTools',
+    '/time-calculator': 'sidebar.timeCalculator', '/uuid-tools': 'sidebar.uuidTools',
+    '/password-tools': 'sidebar.passwordTools', '/apikey-tools': 'sidebar.apikeyTools',
+    '/jwt-debugger': 'sidebar.jwtDebugger', '/diff-tool': 'sidebar.diffTool',
+    '/qr-tools': 'sidebar.qrTools',
+  }
+  ;(routes[cat.id] || []).forEach(r => {
+    routeMeta[r] = { label: t(labelKeys[r]), icon: _routeIconMap[r] || _catIconMap[cat.id] || cat.icon, color: cat.color }
+  })
+})
+
 // --- Lifecycle ---
 onMounted(() => {
   themeStore.initTheme()
@@ -251,6 +286,24 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   deviceStore.cleanupListener()
+})
+
+// Auto-scroll active bottom nav tab into view on route change
+watch(currentPath, (path) => {
+  if (deviceStore.isMobile && bottomNavRef.value) {
+    requestAnimationFrame(() => {
+      const active = bottomNavRef.value.querySelector('.bottom-nav-item.active')
+      active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    })
+  }
+
+  // Record recent tool visit
+  if (path !== '/') {
+    const entry = routeMeta[path]
+    if (entry) {
+      addRecentTool({ route: path, label: entry.label, icon: entry.icon, color: entry.color })
+    }
+  }
 })
 </script>
 
@@ -482,6 +535,11 @@ onBeforeUnmount(() => {
   background-color: var(--dt-bg-card);
   border-top: 1px solid var(--dt-border-light);
   z-index: 100;
+  position: relative;
+}
+
+.app-bottom-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .bottom-nav-item {
@@ -490,12 +548,16 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  padding: 4px 0;
+  padding: 6px 4px;
   text-decoration: none;
   color: var(--dt-text-secondary);
   transition: color var(--dt-transition-fast);
   gap: 2px;
-  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-icon {
+  font-size: 20px;
 }
 
 .bottom-nav-item .el-icon {
@@ -513,11 +575,8 @@ onBeforeUnmount(() => {
 
 .bottom-nav-label {
   font-size: 10px;
-  line-height: 1;
+  line-height: 1.2;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 48px;
 }
 
 /* =========================================

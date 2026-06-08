@@ -458,11 +458,4 @@ export default {
   font-size: 13px;
   line-height: 1.5;
 }
-
-@media (max-width: 768px) {
-  .action-buttons { flex-direction: column; }
-  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
-  .el-row { flex-direction: column; }
-  .el-col { max-width: 100% !important; flex: 0 0 100% !important; }
-}
 </style>

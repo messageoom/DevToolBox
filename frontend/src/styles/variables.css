@@ -207,3 +207,31 @@ a {
 .el-sub-menu__title {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* ===== Touch-friendly defaults (mobile) ===== */
+@media (max-width: 768px) {
+  .el-button {
+    min-height: 40px;
+  }
+
+  .el-input__inner {
+    min-height: 40px;
+    font-size: 16px;
+  }
+
+  .el-select .el-input__inner {
+    min-height: 40px;
+  }
+
+  .el-input-number .el-input__inner {
+    min-height: 40px;
+  }
+
+  .el-checkbox {
+    min-height: 40px;
+  }
+
+  .app-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}

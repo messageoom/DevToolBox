@@ -215,6 +215,10 @@ class Api:
 
     @property
     def token_url(self):
+        return f"http://{_get_local_ip()}:{self._port}/?token={self._access_token}"
+
+    @property
+    def local_token_url(self):
         return f"{self.base_url}/?token={self._access_token}"
 
     def set_window(self, window):
@@ -251,7 +255,7 @@ class Api:
             'version': self._version,
             'uptime': uptime,
             'server_running': self._server_running,
-            'access_url': network_url,
+            'access_url': self.token_url,
             'local_url': self.base_url,
             'network_url': network_url,
             'local_ip': local_ip,
@@ -354,6 +358,25 @@ class Api:
         try:
             webbrowser.open(self.token_url)
             return {'success': True}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    def get_qr_code(self):
+        """Generate QR code for the access URL as base64 PNG."""
+        try:
+            import qrcode
+            from io import BytesIO
+            import base64
+
+            qr = qrcode.QRCode(version=1, box_size=10, border=2)
+            qr.add_data(self.token_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color='#1d1d1f', back_color='#ffffff')
+
+            buf = BytesIO()
+            img.save(buf, format='PNG')
+            b64 = base64.b64encode(buf.getvalue()).decode('ascii')
+            return {'success': True, 'image': 'data:image/png;base64,' + b64, 'url': self.token_url}
         except Exception as e:
             return {'success': False, 'error': str(e)}
 
@@ -933,6 +956,105 @@ select.form-input {
 }
 .log-filter-btn:hover { background: var(--card); }
 .log-filter-btn.active { background: rgba(0,113,227,0.15); border-color: var(--accent); color: var(--accent); }
+
+/* QR Code Modal — Telegram-inspired */
+.qr-card {
+  background: #1c1c1e;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  min-width: 320px;
+  max-width: 380px;
+  overflow: hidden;
+  animation: qrFadeIn 0.25s ease;
+}
+@keyframes qrFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.qr-header {
+  text-align: center;
+  padding: 28px 24px 16px;
+  background: linear-gradient(135deg, rgba(0,113,227,0.12) 0%, rgba(88,86,214,0.08) 100%);
+}
+.qr-brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.qr-title {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dim);
+  margin: 0 0 0;
+}
+.qr-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+}
+.qr-body {
+  display: flex;
+  justify-content: center;
+  padding: 20px 24px;
+}
+.qr-img-wrap {
+  padding: 12px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+}
+.qr-img-wrap img {
+  width: 192px;
+  height: 192px;
+  display: block;
+  border-radius: 4px;
+}
+.qr-footer {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.qr-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.qr-url-row:hover { border-color: var(--accent); }
+.qr-url-row:active { transform: scale(0.98); }
+.qr-url-row code {
+  flex: 1;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qr-url-row svg { color: var(--text-dim); flex-shrink: 0; }
+.qr-close-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.qr-close-btn:hover { background: var(--card-hover); color: var(--text); }
+.qr-close-btn:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -1007,6 +1129,10 @@ select.form-input {
           <button class="btn btn-primary" id="btn-open-browser" onclick="api.open_browser()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             Open in Browser
+          </button>
+          <button class="btn btn-primary" id="btn-qr-scan" onclick="showQrCode()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="21" y1="21" x2="21" y2="21.01"/><line x1="17" y1="21" x2="17" y2="21.01"/></svg>
+            <span id="btn-qr-label">QR Code</span>
           </button>
           <button class="btn btn-ghost" id="btn-copy-url" onclick="copyMainUrl()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -1193,6 +1319,29 @@ select.form-input {
   </div>
 </div>
 
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qr-modal" onclick="if(event.target===this)closeQrModal()">
+  <div class="qr-card">
+    <div class="qr-header">
+      <div class="qr-brand">DevToolBox</div>
+      <p id="qr-modal-title" class="qr-title">Scan to Access</p>
+      <p id="qr-modal-desc" class="qr-desc">Scan with your phone camera</p>
+    </div>
+    <div class="qr-body">
+      <div class="qr-img-wrap">
+        <img id="qr-modal-img" src="" alt="QR Code" />
+      </div>
+    </div>
+    <div class="qr-footer">
+      <div class="qr-url-row" onclick="copyUrl('qr-modal')">
+        <code id="qr-modal-url">-</code>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </div>
+      <button class="qr-close-btn" onclick="closeQrModal()" id="qr-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1207,6 +1356,7 @@ const LANG = {
     localAccess: '本地访问', networkAccess: '网络访问',
     openInBrowser: '在浏览器中打开', copied: '已复制！', copyFailed: '复制失败',
     copyUrl: '复制URL', openStorage: '打开存储',
+    qrCode: '扫码访问', scanToAccess: '扫码访问', scanDesc: '使用手机相机扫描二维码',
     uptime: '运行时间', files: '文件数', diskUsage: '磁盘使用',
     // Security
     securityCenter: '安全中心', accessToken: '访问令牌', refreshToken: '刷新令牌',
@@ -1239,7 +1389,7 @@ const LANG = {
     // Footer
     footer: 'DevToolBox — 本地优先的开发工具箱',
     // Modal
-    confirm: '确认', areYouSure: '你确定吗？', cancel: '取消',
+    confirm: '确认', areYouSure: '你确定吗？', cancel: '取消', close: '关闭',
     // Language
     lang: 'EN'
   },
@@ -1251,6 +1401,7 @@ const LANG = {
     localAccess: 'Local Access', networkAccess: 'Network Access',
     openInBrowser: 'Open in Browser', copied: 'Copied!', copyFailed: 'Copy failed',
     copyUrl: 'Copy URL', openStorage: 'Open Storage',
+    qrCode: 'QR Code', scanToAccess: 'Scan to Access', scanDesc: 'Scan QR code with your phone camera',
     uptime: 'Uptime', files: 'Files', diskUsage: 'Disk Usage',
     // Security
     securityCenter: 'Security Center', accessToken: 'Access Token', refreshToken: 'Refresh Token',
@@ -1283,7 +1434,7 @@ const LANG = {
     // Footer
     footer: 'DevToolBox — Local-First Developer Toolkit',
     // Modal
-    confirm: 'Confirm', areYouSure: 'Are you sure?', cancel: 'Cancel',
+    confirm: 'Confirm', areYouSure: 'Are you sure?', cancel: 'Cancel', close: 'Close',
     // Language
     lang: '中文'
   }
@@ -1382,6 +1533,11 @@ function applyTranslations() {
   el = document.getElementById('logs-card-title'); if (el) el.textContent = t('logsCardTitle');
   // Language toggle button
   el = document.getElementById('lang-toggle'); if (el) el.textContent = t('lang');
+  // QR modal
+  el = document.getElementById('btn-qr-label'); if (el) el.textContent = t('qrCode');
+  el = document.getElementById('qr-modal-title'); if (el) el.textContent = t('scanToAccess');
+  el = document.getElementById('qr-modal-desc'); if (el) el.textContent = t('scanDesc');
+  el = document.getElementById('qr-close-btn'); if (el) el.textContent = t('close');
   // Re-render temp tokens
   if (_lastTempTokens) renderTempTokens(_lastTempTokens);
 }
@@ -1570,6 +1726,7 @@ function copyUrl(type) {
   if (type === 'local') text = _statusData.local_url || '';
   else if (type === 'network') text = _statusData.network_url || '';
   else if (type === 'token') text = _statusData.access_url || '';
+  else if (type === 'qr-modal') text = _statusData.qr_url || '';
   api.copy_text(text).then(r => showToast(r.success ? t('copied') : t('copyFailed')));
 }
 
@@ -1659,6 +1816,22 @@ function showModal(title, message, onConfirm) {
 }
 function closeModal() { document.getElementById('confirm-modal').classList.remove('active'); _modalAction = null; }
 function modalConfirmAction() { if (_modalAction) _modalAction(); closeModal(); }
+
+// --- QR Code Modal ---
+async function showQrCode() {
+  try {
+    const r = await api.get_qr_code();
+    if (r.success) {
+      document.getElementById('qr-modal-img').src = r.image;
+      document.getElementById('qr-modal-url').textContent = r.url;
+      _statusData.qr_url = r.url;
+      document.getElementById('qr-modal').classList.add('active');
+    } else {
+      showToast(r.error || t('failed'));
+    }
+  } catch(e) { showToast(t('failed')); }
+}
+function closeQrModal() { document.getElementById('qr-modal').classList.remove('active'); }
 
 // --- Toast ---
 function showToast(msg) {

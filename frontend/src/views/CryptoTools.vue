@@ -951,8 +951,6 @@ onMounted(async () => {
   .algorithm-selector :deep(.algorithm-grid) {
     grid-template-columns: 1fr !important;
   }
-  .action-buttons { flex-direction: column; }
-  .action-buttons .el-button { width: 100%; margin-left: 0 !important; margin-top: 8px; }
   .el-tabs :deep(.el-tabs__content) { padding: 8px; }
 }
 </style>
