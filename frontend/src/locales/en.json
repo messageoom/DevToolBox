@@ -1400,6 +1400,35 @@
       "renamePlaceholder": "Enter new name",
       "cancel": "Cancel",
       "confirm": "OK"
+    },
+    "im": {
+      "title": "IM Chat",
+      "inputPlaceholder": "Type a message, Enter to send...",
+      "send": "Send",
+      "dropFiles": "Drop files to upload",
+      "uploadFile": "Upload file",
+      "uploadImage": "Upload image",
+      "download": "Download image",
+      "imageOf": "{current}/{total}",
+      "onlineDevices": "Online Devices",
+      "noDevices": "No other devices online",
+      "groupChat": "Group Chat",
+      "memberCount": "{count} members",
+      "noMessages": "No messages yet",
+      "hintPeer": "Send text, code, images, or files to this device",
+      "hintGroup": "Broadcast a message to all online devices",
+      "disconnected": "Disconnected",
+      "retrying": "Reconnecting...",
+      "thisDevice": "This device",
+      "unnamed": "Unnamed",
+      "renameTitle": "Rename Device",
+      "renamePlaceholder": "Enter new name",
+      "cancel": "Cancel",
+      "confirm": "OK",
+      "typing": "typing...",
+      "uploadFail": "Upload failed: {error}",
+      "forwarded": "Forwarded",
+      "copied": "Copied"
     }
   }
 }

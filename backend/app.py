@@ -24,6 +24,7 @@ try:
     from .modules.password_tools import password_tools_bp
     from .modules.apikey_tools import apikey_tools_bp
     from .modules.settings import settings_bp
+    from .modules.im import im_bp
 except ImportError:
     try:
         from modules.file_upload import file_upload_bp
@@ -41,6 +42,7 @@ except ImportError:
         from modules.password_tools import password_tools_bp
         from modules.apikey_tools import apikey_tools_bp
         from modules.settings import settings_bp
+        from modules.im import im_bp
     except ImportError:
         from backend.modules.file_upload import file_upload_bp
         from backend.modules.json_tools import json_tools_bp
@@ -57,6 +59,7 @@ except ImportError:
         from backend.modules.password_tools import password_tools_bp
         from backend.modules.apikey_tools import apikey_tools_bp
         from backend.modules.settings import settings_bp
+        from backend.modules.im import im_bp
 
 # Lock page for unauthorized access
 try:
@@ -109,6 +112,16 @@ def create_app(access_token=None):
             except ImportError:
                 from backend.modules.text_transfer import register_socketio_events
         register_socketio_events(socketio)
+
+        # IM module (SocketIO events)
+        try:
+            from .modules.im import register_im_events
+        except ImportError:
+            try:
+                from modules.im import register_im_events
+            except ImportError:
+                from backend.modules.im import register_im_events
+        register_im_events(socketio)
     app.config['SOCKETIO'] = socketio
 
     # Token 认证中间件
@@ -201,6 +214,7 @@ def create_app(access_token=None):
     app.register_blueprint(password_tools_bp, url_prefix='/api/password-tools')
     app.register_blueprint(apikey_tools_bp, url_prefix='/api/apikey-tools')
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
+    app.register_blueprint(im_bp, url_prefix='/api/im')
 
     # 前端静态文件服务（打包模式）
     frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')

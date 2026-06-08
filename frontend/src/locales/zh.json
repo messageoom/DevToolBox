@@ -1400,6 +1400,35 @@
       "renamePlaceholder": "输入新名称",
       "cancel": "取消",
       "confirm": "确定"
+    },
+    "im": {
+      "title": "IM 通信",
+      "inputPlaceholder": "输入消息，Enter 发送...",
+      "send": "发送",
+      "dropFiles": "拖放文件以上传",
+      "uploadFile": "上传文件",
+      "uploadImage": "上传图片",
+      "download": "下载图片",
+      "imageOf": "{current}/{total}",
+      "onlineDevices": "在线设备",
+      "noDevices": "暂无其他设备在线",
+      "groupChat": "群聊",
+      "memberCount": "{count} 位成员",
+      "noMessages": "暂无消息",
+      "hintPeer": "向此设备发送文本、代码、图片或文件",
+      "hintGroup": "向所有在线设备广播消息",
+      "disconnected": "连接已断开",
+      "retrying": "正在重连...",
+      "thisDevice": "当前设备",
+      "unnamed": "未命名",
+      "renameTitle": "修改设备名称",
+      "renamePlaceholder": "输入新名称",
+      "cancel": "取消",
+      "confirm": "确定",
+      "typing": "正在输入...",
+      "uploadFail": "上传失败: {error}",
+      "forwarded": "已转发",
+      "copied": "已复制"
     }
   }
 }
