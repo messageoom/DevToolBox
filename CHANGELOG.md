@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- IM 设备身份持久化改为 localStorage，token 变更或新标签页不会丢失身份
+
 - SocketIO 传输改为 polling-only，避免 threading 模式下 WebSocket 升级兼容性问题
 - 移动端传输页面布局重构：会话列表回归正常文档流，保留 App header 和底部导航
 - 群聊头像从 `#` 文字改为 Material Symbols `groups` 图标
