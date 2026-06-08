@@ -37,8 +37,10 @@
               type="textarea"
               :rows="4"
             />
-            <div class="action-section" style="margin-top: 8px;">
-              <el-button size="small" @click="copyResult">{{ $t('common.copy') }}</el-button>
+            <div class="field-toolbar" v-if="hashResult" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(hashResult)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
             </div>
           </div>
         </div>
@@ -138,8 +140,10 @@
               type="textarea"
               :rows="4"
             />
-            <div class="action-section" style="margin-top: 8px;">
-              <el-button size="small" @click="copyHmacResult">{{ $t('common.copy') }}</el-button>
+            <div class="field-toolbar" v-if="hmacResult" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(hmacResult)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
             </div>
           </div>
         </div>
@@ -176,6 +180,11 @@
               <div class="output-section" v-if="bcryptResult">
                 <h4 class="section-title">{{ $t('tools.hash.label.bcryptHash') }}</h4>
                 <el-input v-model="bcryptResult" readonly />
+                <div class="field-toolbar" v-if="bcryptResult" style="margin-top: 6px;">
+                  <el-button link size="small" type="primary" @click="copyText(bcryptResult)">
+                    <el-icon><CopyDocument /></el-icon> Copy
+                  </el-button>
+                </div>
               </div>
 
               <el-divider>{{ $t('tools.hash.bcryptForm.verifyBcrypt') }}</el-divider>
@@ -228,6 +237,11 @@
               <div class="output-section" v-if="pbkdf2Result">
                 <h4 class="section-title">{{ $t('tools.hash.label.pbkdf2Result') }}</h4>
                 <el-input v-model="pbkdf2Result" readonly />
+                <div class="field-toolbar" v-if="pbkdf2Result" style="margin-top: 6px;">
+                  <el-button link size="small" type="primary" @click="copyText(pbkdf2Result)">
+                    <el-icon><CopyDocument /></el-icon> Copy
+                  </el-button>
+                </div>
                 <div style="margin-top: 8px; color: var(--dt-text-secondary); font-size: 12px;">
                   {{ $t('tools.hash.message.pbkdf2Meta', { salt: pbkdf2ResultSalt, iterations: pbkdf2Iterations, length: pbkdf2Dklen }) }}
                 </div>
@@ -242,7 +256,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Lock } from '@element-plus/icons-vue'
+import { Lock, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useDeviceStore } from '@/stores/device.js'
 import HashAlgorithmCardSelector from '@/components/HashAlgorithmCardSelector.vue'
@@ -252,6 +266,7 @@ export default {
   name: 'HashTools',
   components: {
     Lock,
+    CopyDocument,
     HashAlgorithmCardSelector,
     ToolPage
   },
@@ -490,22 +505,53 @@ export default {
       }
     },
 
-    copyResult() {
-      navigator.clipboard.writeText(this.hashResult).then(() => {
+    copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copied'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
         ElMessage.success(this.$t('common.copied'))
-      })
+      } catch (e) {
+        ElMessage.error(this.$t('common.copyFailed') || 'Copy failed')
+      }
+      document.body.removeChild(textarea)
+    },
+
+    copyResult() {
+      this.copyText(this.hashResult)
     },
 
     copyHmacResult() {
-      navigator.clipboard.writeText(this.hmacResult).then(() => {
-        ElMessage.success(this.$t('common.copied'))
-      })
+      this.copyText(this.hmacResult)
     }
   }
 }
 </script>
 
 <style scoped>
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
 .action-buttons {
   display: flex;
   gap: 15px;

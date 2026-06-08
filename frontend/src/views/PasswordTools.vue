@@ -167,6 +167,12 @@
               </el-descriptions-item>
             </el-descriptions>
 
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(strengthPassword)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
+
             <div class="suggestions-section" v-if="strengthResult.suggestions.length > 0">
               <h4 class="section-title">{{ $t('tools.password.labels.suggestions') }}</h4>
               <div class="suggestion-tags">
@@ -243,6 +249,11 @@
             <div class="passphrase-display">
               {{ passphraseResult.passphrase }}
             </div>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(passphraseResult.passphrase)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
             <div class="word-tags">
               <el-tag
                 v-for="(word, index) in passphraseResult.words"
@@ -264,7 +275,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Lock } from '@element-plus/icons-vue'
+import { Lock, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 
@@ -272,6 +283,7 @@ export default {
   name: 'PasswordTools',
   components: {
     Lock,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -438,6 +450,35 @@ export default {
       }).catch(() => {
         ElMessage.error(this.$t('tools.password.messages.copyFail'))
       })
+    },
+
+    copyText(text) {
+      if (!text) return
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch {
+        ElMessage.error(this.$t('tools.password.messages.copyFail'))
+      }
+      document.body.removeChild(textarea)
     }
   }
 }

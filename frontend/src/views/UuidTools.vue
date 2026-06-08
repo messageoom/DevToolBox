@@ -115,6 +115,11 @@
                 {{ validateResult.variant }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(validateInput)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -169,6 +174,11 @@
                 {{ parseResult.fields.node }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(parseResult.uuid)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
 
             <!-- v1 extra fields -->
             <template v-if="parseResult.version === 1 && parseResult.time !== undefined">
@@ -197,7 +207,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Key } from '@element-plus/icons-vue'
+import { Key, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 
@@ -205,6 +215,7 @@ export default {
   name: 'UuidTools',
   components: {
     Key,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -278,6 +289,34 @@ export default {
       navigator.clipboard.writeText(text).then(() => {
         ElMessage.success(this.$t('tools.uuid.messages.copiedAllUuids'))
       })
+    },
+
+    copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch {
+        ElMessage.error('Copy failed')
+      }
+      document.body.removeChild(textarea)
     },
 
     async validateUUID() {

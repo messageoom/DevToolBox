@@ -52,9 +52,14 @@
                 </template>
                 <div class="qr-result" v-if="generatedQrCode">
                   <img :src="'data:image/png;base64,' + generatedQrCode" :alt="$t('tools.qr.title')" />
-                  <el-button type="success" @click="downloadQrCode" style="margin-top: 20px;">
-                    {{ $t('tools.qr.label.downloadQr') }}
-                  </el-button>
+                  <div class="field-toolbar" style="margin-top: 20px;">
+                    <el-button type="success" @click="downloadQrCode">
+                      {{ $t('tools.qr.label.downloadQr') }}
+                    </el-button>
+                    <el-button link size="small" type="primary" @click="copyText(generateContent)">
+                      <el-icon><CopyDocument /></el-icon> Copy
+                    </el-button>
+                  </div>
                 </div>
                 <div class="no-result" v-else>
                   <p>{{ $t('tools.qr.label.qrPlaceholder') }}</p>
@@ -152,9 +157,14 @@
                 </template>
                 <div class="qr-result" v-if="beautifiedQrCode">
                   <img :src="'data:image/png;base64,' + beautifiedQrCode" :alt="$t('tools.qr.title')" />
-                  <el-button type="success" @click="downloadBeautifiedQrCode" style="margin-top: 20px;">
-                    {{ $t('tools.qr.label.downloadBeautified') }}
-                  </el-button>
+                  <div class="field-toolbar" style="margin-top: 20px;">
+                    <el-button type="success" @click="downloadBeautifiedQrCode">
+                      {{ $t('tools.qr.label.downloadBeautified') }}
+                    </el-button>
+                    <el-button link size="small" type="primary" @click="copyText(generateContent)">
+                      <el-icon><CopyDocument /></el-icon> Copy
+                    </el-button>
+                  </div>
                 </div>
                 <div class="no-result" v-else>
                   <p>{{ $t('tools.qr.label.beautifyPlaceholder') }}</p>
@@ -169,7 +179,7 @@
 </template>
 
 <script>
-import { UploadFilled, Crop } from '@element-plus/icons-vue'
+import { UploadFilled, Crop, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
@@ -179,6 +189,7 @@ export default {
   components: {
     UploadFilled,
     Crop,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -319,6 +330,37 @@ export default {
       link.href = 'data:image/png;base64,' + base64Data
       link.download = filename
       link.click()
+    },
+
+    copyText(text) {
+      if (!text) {
+        return
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this.fallbackCopyText(text)
+        })
+      } else {
+        this.fallbackCopyText(text)
+      }
+    },
+
+    fallbackCopyText(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch (e) {
+        ElMessage.error('Copy failed')
+      }
+      document.body.removeChild(textarea)
     }
   }
 }
@@ -340,6 +382,13 @@ export default {
 
 .qr-result {
   text-align: center;
+}
+
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .qr-result img {

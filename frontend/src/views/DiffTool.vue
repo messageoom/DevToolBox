@@ -58,6 +58,11 @@
               </div>
             </div>
           </div>
+          <div class="field-toolbar" v-if="diffResult.length > 0 && viewMode === 'unified'" style="margin-top: 6px;">
+            <el-button link size="small" type="primary" @click="copyDiff">
+              <el-icon><CopyDocument /></el-icon> Copy
+            </el-button>
+          </div>
           <el-empty v-else :description="$t('tools.diff.placeholder')" />
         </el-tab-pane>
 
@@ -94,6 +99,11 @@
               </div>
             </div>
           </div>
+          <div class="field-toolbar" v-if="diffResult.length > 0 && viewMode === 'side-by-side'" style="margin-top: 6px;">
+            <el-button link size="small" type="primary" @click="copyDiff">
+              <el-icon><CopyDocument /></el-icon> Copy
+            </el-button>
+          </div>
           <el-empty v-else :description="$t('tools.diff.placeholder')" />
         </el-tab-pane>
       </el-tabs>
@@ -102,7 +112,7 @@
 </template>
 
 <script>
-import { DocumentCopy } from '@element-plus/icons-vue'
+import { DocumentCopy, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import ToolPage from '@/components/ToolPage.vue'
 
@@ -200,6 +210,7 @@ export default {
   name: 'DiffTool',
   components: {
     DocumentCopy,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -308,11 +319,33 @@ export default {
         const marker = item.type === 'add' ? '+' : item.type === 'remove' ? '-' : ' '
         return marker + ' ' + item.line
       })
-      navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        ElMessage.success(this.$t('tools.diff.copiedToClipboard'))
-      }).catch(() => {
+      this.copyText(lines.join('\n'))
+    },
+    copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+    _fallbackCopy(text) {
+      try {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.style.position = 'fixed'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch {
         ElMessage.error(this.$t('tools.diff.copyFail'))
-      })
+      }
     }
   }
 }

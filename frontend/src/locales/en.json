@@ -131,7 +131,10 @@
         "minify": "Minify",
         "validate": "Validate",
         "escape": "Escape",
-        "unescape": "Unescape"
+        "unescape": "Unescape",
+        "sample": "Sample",
+        "clear": "Clear",
+        "copy": "Copy"
       },
       "placeholder": {
         "inputJson": "Enter JSON string...",
@@ -140,6 +143,10 @@
         "inputText": "Enter text to escape...",
         "escapeResult": "Escaped string will appear here...",
         "unescapeResult": "Unescaped text will appear here..."
+      },
+      "stats": {
+        "chars": "chars",
+        "lines": "lines"
       },
       "message": {
         "validateSuccess": "Validation passed",
@@ -155,7 +162,8 @@
         "escapeFail": "Escaping failed",
         "escapeInputRequired": "Please enter text to escape",
         "unescapeSuccess": "Unescaped successfully",
-        "unescapeFail": "Unescaping failed"
+        "unescapeFail": "Unescaping failed",
+        "copied": "Copied to clipboard"
       }
     },
     "yaml": {
@@ -181,6 +189,15 @@
         "inputJson": "Enter JSON string...",
         "yamlResult": "Converted YAML will appear here..."
       },
+      "action": {
+        "sample": "Sample",
+        "clear": "Clear",
+        "copy": "Copy"
+      },
+      "stats": {
+        "chars": "chars",
+        "lines": "lines"
+      },
       "message": {
         "formatSuccess": "Formatted successfully",
         "formatFail": "Formatting failed",
@@ -191,7 +208,8 @@
         "inputRequired": "Please enter a YAML string",
         "convertSuccess": "Converted successfully",
         "convertFail": "Conversion failed",
-        "inputJsonRequired": "Please enter a JSON string"
+        "inputJsonRequired": "Please enter a JSON string",
+        "copied": "Copied to clipboard"
       }
     },
     "base64": {
@@ -241,7 +259,14 @@
         "decode": "Decode",
         "validate": "Validate",
         "fileEncode": "File Encode",
-        "fileDecode": "File Decode"
+        "fileDecode": "File Decode",
+        "sample": "Sample",
+        "clear": "Clear",
+        "copy": "Copy"
+      },
+      "stats": {
+        "chars": "chars",
+        "lines": "lines"
       },
       "message": {
         "validatePass": "Validation passed",
@@ -263,7 +288,8 @@
         "inputBase64FileRequired": "Please enter Base64 encoded file data",
         "validBase64": "The input is valid Base64 encoding",
         "invalidBase64": "The input is not valid Base64 encoding",
-        "clickDownloadDecodedFile": "Click to download decoded file"
+        "clickDownloadDecodedFile": "Click to download decoded file",
+        "copied": "Copied to clipboard"
       }
     },
     "url": {
@@ -1147,7 +1173,11 @@
         "pdfDropzone": "Drop PDF file here, or click to upload",
         "pdfUploadHint": "Only PDF files allowed, max 10MB",
         "pageCount": "Pages",
-        "pageUnit": "pages"
+        "pageUnit": "pages",
+        "sample": "Sample",
+        "clear": "Clear",
+        "copy": "Copy",
+        "lines": "lines"
       },
       "message": {
         "convertSuccess": "Converted successfully",
@@ -1166,7 +1196,8 @@
         "pdfFailResponse": "PDF generation failed: server response error",
         "pdfFailNetwork": "PDF generation failed: unable to connect to server",
         "htmlDownloadSuccess": "HTML file downloaded successfully",
-        "downloadFail": "Download failed"
+        "downloadFail": "Download failed",
+        "copied": "Copied to clipboard"
       }
     },
     "markdown": {
@@ -1223,9 +1254,21 @@
         "tableCount": "Tables",
         "blockquoteCount": "Blockquotes",
         "headingStats": "Heading Statistics",
+        "h1": "H1 Headings",
+        "h2": "H2 Headings",
+        "h3": "H3 Headings",
+        "h4": "H4 Headings",
+        "h5": "H5 Headings",
+        "h6": "H6 Headings",
+        "totalHeadings": "Total",
         "unorderedListItems": "Unordered List Items",
         "orderedListItems": "Ordered List Items",
-        "downloadFullHtml": "Download Full HTML File"
+        "downloadFullHtml": "Download Full HTML File",
+        "sample": "Sample",
+        "clear": "Clear",
+        "copy": "Copy",
+        "chars": "chars",
+        "lines": "lines"
       },
       "message": {
         "convertSuccess": "Converted successfully",
@@ -1240,7 +1283,10 @@
         "validateSuccess": "Validated successfully",
         "validateFail": "Validation failed",
         "statsSuccess": "Statistics completed",
-        "statsFail": "Statistics failed"
+        "statsFail": "Statistics failed",
+        "copied": "Copied to clipboard",
+        "downloadSuccess": "Downloaded successfully",
+        "downloadFail": "Download failed"
       }
     },
     "markdownEditor": {

@@ -13,6 +13,14 @@
               style="width: 100%;"
               @input="updateMdPreview"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="markdownInput">
+                {{ markdownInput.length }} {{ $t('tools.dataConversion.label.chars') }} · {{ lineCount(markdownInput) }} {{ $t('tools.dataConversion.label.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('markdown')">{{ $t('tools.dataConversion.label.sample') }}</el-button>
+              </div>
+            </div>
           </div>
           <div class="preview-toggle">
             <el-checkbox v-model="showMdPreview">{{ $t('tools.dataConversion.label.showPreview') }}</el-checkbox>
@@ -37,6 +45,16 @@
               readonly
               style="width: 100%;"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="htmlOutput">
+                {{ htmlOutput.length }} {{ $t('tools.dataConversion.label.chars') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" type="primary" @click="copyText(htmlOutput)">
+                  <el-icon><CopyDocument /></el-icon> {{ $t('tools.dataConversion.label.copy') }}
+                </el-button>
+              </div>
+            </div>
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="2" size="small" border>
                 <el-descriptions-item :label="$t('tools.dataConversion.label.originalLength')">
@@ -68,6 +86,14 @@
               style="width: 100%;"
               @input="updateHtmlPreview"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="htmlInput">
+                {{ htmlInput.length }} {{ $t('tools.dataConversion.label.chars') }} · {{ lineCount(htmlInput) }} {{ $t('tools.dataConversion.label.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('html')">{{ $t('tools.dataConversion.label.sample') }}</el-button>
+              </div>
+            </div>
           </div>
           <div class="preview-toggle">
             <el-checkbox v-model="showHtmlPreview">{{ $t('tools.dataConversion.label.showPreview') }}</el-checkbox>
@@ -92,6 +118,16 @@
               readonly
               style="width: 100%;"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="markdownOutput">
+                {{ markdownOutput.length }} {{ $t('tools.dataConversion.label.chars') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" type="primary" @click="copyText(markdownOutput)">
+                  <el-icon><CopyDocument /></el-icon> {{ $t('tools.dataConversion.label.copy') }}
+                </el-button>
+              </div>
+            </div>
             <div class="stats" v-if="conversionStats">
               <el-descriptions :column="2" size="small" border>
                 <el-descriptions-item :label="$t('tools.dataConversion.label.originalLength')">
@@ -122,6 +158,14 @@
               :placeholder="$t('tools.dataConversion.label.inputMarkdown')"
               style="width: 100%;"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="markdownInput">
+                {{ markdownInput.length }} {{ $t('tools.dataConversion.label.chars') }} · {{ lineCount(markdownInput) }} {{ $t('tools.dataConversion.label.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('markdown')">{{ $t('tools.dataConversion.label.sample') }}</el-button>
+              </div>
+            </div>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertMdToPdf" :loading="converting">
@@ -185,6 +229,16 @@
               readonly
               style="width: 100%;"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="markdownFromPdf">
+                {{ markdownFromPdf.length }} {{ $t('tools.dataConversion.label.chars') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" type="primary" @click="copyText(markdownFromPdf)">
+                  <el-icon><CopyDocument /></el-icon> {{ $t('tools.dataConversion.label.copy') }}
+                </el-button>
+              </div>
+            </div>
             <div class="stats" v-if="pdfConversionStats">
               <el-descriptions :column="2" size="small" border>
                 <el-descriptions-item :label="$t('tools.dataConversion.label.pageCount')">
@@ -215,6 +269,14 @@
               :placeholder="$t('tools.dataConversion.label.inputHtml')"
               style="width: 100%;"
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="htmlInput">
+                {{ htmlInput.length }} {{ $t('tools.dataConversion.label.chars') }} · {{ lineCount(htmlInput) }} {{ $t('tools.dataConversion.label.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('html')">{{ $t('tools.dataConversion.label.sample') }}</el-button>
+              </div>
+            </div>
           </div>
           <div class="action-section">
             <el-button type="primary" @click="convertHtmlToPdf" :loading="converting">
@@ -250,7 +312,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Switch, UploadFilled } from '@element-plus/icons-vue'
+import { Switch, UploadFilled, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { marked } from 'marked'
 
@@ -263,11 +325,56 @@ import { useRouter } from 'vue-router'
 import ToolPage from '@/components/ToolPage.vue'
 import { useDeviceStore } from '@/stores/device.js'
 
+const SAMPLES = {
+  markdown: `# DevToolBox 使用指南
+
+## 简介
+
+**DevToolBox** 是一款功能强大的开发者工具箱。
+
+## 功能特性
+
+- JSON/YAML 工具
+- Markdown 编辑器
+- 文件管理
+- 文本传输
+
+### 代码示例
+
+\`\`\`python
+def hello():
+    print("Hello, DevToolBox!")
+\`\`\`
+
+> 让开发更高效！
+
+| 工具 | 状态 |
+|------|------|
+| JSON | ✅ |
+| YAML | ✅ |`,
+  html: `<h1>DevToolBox</h1>
+<h2>功能列表</h2>
+<ul>
+  <li><strong>JSON工具</strong> — 格式化、压缩、验证</li>
+  <li><strong>YAML工具</strong> — 格式化、转换</li>
+  <li><strong>Markdown工具</strong> — 转换、统计</li>
+</ul>
+<blockquote>
+  <p>DevToolBox 让开发更高效！</p>
+</blockquote>
+<table>
+  <tr><th>工具</th><th>状态</th></tr>
+  <tr><td>JSON</td><td>✅</td></tr>
+  <tr><td>YAML</td><td>✅</td></tr>
+</table>`
+}
+
 export default {
   name: 'DataConversion',
   components: {
     Switch,
     UploadFilled,
+    CopyDocument,
     PdfErrorDialog,
     ToolPage
   },
@@ -322,6 +429,37 @@ export default {
     }
   },
   methods: {
+    lineCount(text) {
+      if (!text) return 0
+      return text.split('\n').length
+    },
+
+    async copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text)
+        ElMessage.success(this.$t('tools.dataConversion.message.copied'))
+      } catch {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        ElMessage.success(this.$t('tools.dataConversion.message.copied'))
+      }
+    },
+
+    loadSample(type) {
+      const sample = SAMPLES[type]
+      if (!sample) return
+      switch (type) {
+        case 'markdown': this.markdownInput = sample; break
+        case 'html': this.htmlInput = sample; break
+      }
+    },
+
     updateMdPreview() {
       if (this.markdownInput) {
         try {
@@ -702,6 +840,26 @@ export default {
 </script>
 
 <style scoped>
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  min-height: 24px;
+}
+
+.field-stats {
+  font-size: 12px;
+  color: var(--dt-text-tertiary, #909399);
+  line-height: 24px;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
 .stats {
   margin-top: var(--dt-spacing-md);
 }

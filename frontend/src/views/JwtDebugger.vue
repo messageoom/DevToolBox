@@ -38,6 +38,11 @@
             readonly
             class="code-textarea"
           />
+          <div class="field-toolbar" style="margin-top: 6px;">
+            <el-button link size="small" type="primary" @click="copyText(headerJson)">
+              <el-icon><CopyDocument /></el-icon> Copy
+            </el-button>
+          </div>
         </el-card>
 
         <!-- Payload -->
@@ -55,6 +60,11 @@
             readonly
             class="code-textarea"
           />
+          <div class="field-toolbar" style="margin-top: 6px;">
+            <el-button link size="small" type="primary" @click="copyText(payloadJson)">
+              <el-icon><CopyDocument /></el-icon> Copy
+            </el-button>
+          </div>
           <div v-if="hasSpecialClaims" class="claims-section">
             <el-descriptions :column="1" border size="small">
               <el-descriptions-item v-if="parsed.payload.exp !== undefined" :label="$t('tools.jwt.expirationTime')">
@@ -100,6 +110,11 @@
           <div class="signature-content">
             <code class="signature-code">{{ truncatedSignature }}</code>
           </div>
+          <div class="field-toolbar" style="margin-top: 6px;">
+            <el-button link size="small" type="primary" @click="copyText(parsed.signature)">
+              <el-icon><CopyDocument /></el-icon> Copy
+            </el-button>
+          </div>
           <el-alert
             :title="$t('tools.jwt.tip')"
             type="info"
@@ -119,13 +134,14 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Unlock } from '@element-plus/icons-vue'
+import { Unlock, CopyDocument } from '@element-plus/icons-vue'
 import ToolPage from '@/components/ToolPage.vue'
 
 export default {
   name: 'JwtDebugger',
   components: {
     Unlock,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -262,6 +278,36 @@ export default {
       }).catch(() => {
         ElMessage.error(this.$t('common.copyFail'))
       })
+    },
+
+    copyText(text) {
+      if (!text) return
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch {
+        ElMessage.error(this.$t('common.copyFail'))
+      } finally {
+        document.body.removeChild(textarea)
+      }
     },
 
     isExpired(exp) {

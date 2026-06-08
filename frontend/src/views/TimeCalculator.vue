@@ -66,6 +66,11 @@
                 {{ calculatedResult.operation }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(calculatedResult.result_timestamp)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -131,6 +136,11 @@
                 {{ timeDifference.direction === 'positive' ? $t('tools.timeCalc.label.forward') : $t('tools.timeCalc.label.backward') }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(timeDifference.difference.human_readable)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -192,6 +202,11 @@
                 {{ businessDaysResult.holiday_days }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(String(businessDaysResult.business_days))">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -201,7 +216,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Calendar } from '@element-plus/icons-vue'
+import { Calendar, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useDeviceStore } from '@/stores/device.js'
 import ToolPage from '@/components/ToolPage.vue'
@@ -210,6 +225,7 @@ export default {
   name: 'TimeCalculator',
   components: {
     Calendar,
+    CopyDocument,
     ToolPage
   },
   data() {
@@ -324,6 +340,34 @@ export default {
       } finally {
         this.businessCalculating = false
       }
+    },
+
+    copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch (e) {
+        ElMessage.error('Copy failed')
+      }
+      document.body.removeChild(textarea)
     }
   }
 }

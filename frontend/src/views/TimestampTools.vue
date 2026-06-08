@@ -25,6 +25,18 @@
               </el-descriptions-item>
             </el-descriptions>
 
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(currentTimestamp.timestamp)">
+                <el-icon><CopyDocument /></el-icon> Copy Timestamp
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(currentTimestamp.timestamp_ms)">
+                <el-icon><CopyDocument /></el-icon> Copy Timestamp (ms)
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(currentTimestamp.datetime)">
+                <el-icon><CopyDocument /></el-icon> Copy ISO
+              </el-button>
+            </div>
+
             <h4 class="section-title" style="margin-top: 30px;">{{ $t('tools.timestamp.label.multiTimezone') }}</h4>
             <el-alert
               :title="$t('tools.timestamp.label.currentTimezone')"
@@ -97,6 +109,23 @@
                 {{ convertedTimestamp.formatted.utc }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(convertedTimestamp.timestamp)">
+                <el-icon><CopyDocument /></el-icon> Copy Timestamp
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(convertedTimestamp.datetime)">
+                <el-icon><CopyDocument /></el-icon> Copy ISO
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(convertedTimestamp.formatted.beijing)">
+                <el-icon><CopyDocument /></el-icon> Copy Beijing Time
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(convertedTimestamp.formatted.local)">
+                <el-icon><CopyDocument /></el-icon> Copy Local Time
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(convertedTimestamp.formatted.utc)">
+                <el-icon><CopyDocument /></el-icon> Copy UTC Time
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -155,6 +184,17 @@
                 {{ parsedResult.parsed.weekday }} ({{ parsedResult.parsed.isoweekday }})
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(parsedResult.timestamp)">
+                <el-icon><CopyDocument /></el-icon> Copy Timestamp
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(parsedResult.timestamp_ms)">
+                <el-icon><CopyDocument /></el-icon> Copy Timestamp (ms)
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(parsedResult.datetime)">
+                <el-icon><CopyDocument /></el-icon> Copy ISO
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -226,6 +266,14 @@
                 {{ addTimeResult.result_datetime }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(addTimeResult.result_timestamp)">
+                <el-icon><CopyDocument /></el-icon> Copy Result Timestamp
+              </el-button>
+              <el-button link size="small" type="primary" @click="copyText(addTimeResult.result_datetime)">
+                <el-icon><CopyDocument /></el-icon> Copy Result Datetime
+              </el-button>
+            </div>
             <h4 class="section-title" style="margin-top: 20px;">{{ $t('tools.timestamp.label.operationList') }}</h4>
             <el-descriptions :column="1" border>
               <el-descriptions-item
@@ -301,6 +349,11 @@
               <el-table-column prop="result_timestamp" :label="$t('tools.timestamp.label.resultTimestamp')" min-width="160" />
               <el-table-column prop="result_datetime" :label="$t('tools.timestamp.label.resultDatetime')" min-width="200" />
             </el-table>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(batchResults.map(r => r.result_timestamp + '  ' + r.result_datetime).join('\n'))">
+                <el-icon><CopyDocument /></el-icon> Copy All Results
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -318,6 +371,11 @@
               <el-table-column prop="format_name" :label="$t('tools.timestamp.label.formatName')" min-width="200" />
               <el-table-column prop="format_pattern" :label="$t('tools.timestamp.label.formatPattern')" min-width="300" />
             </el-table>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(formatsList.map(f => f.format_name + ': ' + f.format_pattern).join('\n'))">
+                <el-icon><CopyDocument /></el-icon> Copy All Formats
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -327,7 +385,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Clock, Delete } from '@element-plus/icons-vue'
+import { Clock, CopyDocument, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import { useDeviceStore } from '@/stores/device.js'
@@ -336,6 +394,7 @@ export default {
   name: 'TimestampTools',
   components: {
     Clock,
+    CopyDocument,
     Delete,
     ToolPage
   },
@@ -551,12 +610,50 @@ export default {
       } finally {
         this.formatsLoading = false
       }
+    },
+
+    // 复制文本到剪贴板
+    copyText(text) {
+      const value = String(text)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(value)
+        })
+      } else {
+        this._fallbackCopy(value)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch (e) {
+        ElMessage.error('Copy failed')
+      }
+      document.body.removeChild(textarea)
     }
   }
 }
 </script>
 
 <style scoped>
+/* Copy button toolbar */
+.field-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
 /* 时区相关样式 */
 .timezone-header {
   display: flex;

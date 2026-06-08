@@ -17,6 +17,15 @@
               :placeholder="$t('tools.base64.placeholder.inputText')"
               clearable
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="encodeInput">
+                {{ encodeInput.length }} {{ $t('tools.base64.stats.chars') }} · {{ lineCount(encodeInput) }} {{ $t('tools.base64.stats.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('encode')">{{ $t('tools.base64.action.sample') }}</el-button>
+                <el-button link size="small" v-if="encodeInput || encodeOutput" @click="encodeInput = ''; encodeOutput = ''">{{ $t('tools.base64.action.clear') }}</el-button>
+              </div>
+            </div>
           </template>
           <template #output>
             <el-input
@@ -26,6 +35,14 @@
               readonly
               :placeholder="$t('tools.base64.placeholder.encodeResult')"
             />
+            <div class="field-toolbar" v-if="encodeOutput">
+              <span class="field-stats">
+                {{ encodeOutput.length }} {{ $t('tools.base64.stats.chars') }}
+              </span>
+              <el-button link size="small" type="primary" @click="copyText(encodeOutput)">
+                <el-icon><CopyDocument /></el-icon> {{ $t('tools.base64.action.copy') }}
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -46,6 +63,15 @@
               :placeholder="$t('tools.base64.placeholder.inputBase64')"
               clearable
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="decodeInput">
+                {{ decodeInput.length }} {{ $t('tools.base64.stats.chars') }} · {{ lineCount(decodeInput) }} {{ $t('tools.base64.stats.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('decode')">{{ $t('tools.base64.action.sample') }}</el-button>
+                <el-button link size="small" v-if="decodeInput || decodeOutput" @click="decodeInput = ''; decodeOutput = ''">{{ $t('tools.base64.action.clear') }}</el-button>
+              </div>
+            </div>
           </template>
           <template #output>
             <el-input
@@ -55,6 +81,14 @@
               readonly
               :placeholder="$t('tools.base64.placeholder.decodeResult')"
             />
+            <div class="field-toolbar" v-if="decodeOutput">
+              <span class="field-stats">
+                {{ decodeOutput.length }} {{ $t('tools.base64.stats.chars') }}
+              </span>
+              <el-button link size="small" type="primary" @click="copyText(decodeOutput)">
+                <el-icon><CopyDocument /></el-icon> {{ $t('tools.base64.action.copy') }}
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -75,6 +109,15 @@
               :placeholder="$t('tools.base64.placeholder.inputText')"
               clearable
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="urlSafeEncodeInput">
+                {{ urlSafeEncodeInput.length }} {{ $t('tools.base64.stats.chars') }} · {{ lineCount(urlSafeEncodeInput) }} {{ $t('tools.base64.stats.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('urlSafeEncode')">{{ $t('tools.base64.action.sample') }}</el-button>
+                <el-button link size="small" v-if="urlSafeEncodeInput || urlSafeEncodeOutput" @click="urlSafeEncodeInput = ''; urlSafeEncodeOutput = ''">{{ $t('tools.base64.action.clear') }}</el-button>
+              </div>
+            </div>
           </template>
           <template #output>
             <el-input
@@ -84,6 +127,14 @@
               readonly
               :placeholder="$t('tools.base64.placeholder.urlSafeEncodeResult')"
             />
+            <div class="field-toolbar" v-if="urlSafeEncodeOutput">
+              <span class="field-stats">
+                {{ urlSafeEncodeOutput.length }} {{ $t('tools.base64.stats.chars') }}
+              </span>
+              <el-button link size="small" type="primary" @click="copyText(urlSafeEncodeOutput)">
+                <el-icon><CopyDocument /></el-icon> {{ $t('tools.base64.action.copy') }}
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -104,6 +155,15 @@
               :placeholder="$t('tools.base64.placeholder.inputUrlSafeBase64')"
               clearable
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="urlSafeDecodeInput">
+                {{ urlSafeDecodeInput.length }} {{ $t('tools.base64.stats.chars') }} · {{ lineCount(urlSafeDecodeInput) }} {{ $t('tools.base64.stats.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('urlSafeDecode')">{{ $t('tools.base64.action.sample') }}</el-button>
+                <el-button link size="small" v-if="urlSafeDecodeInput || urlSafeDecodeOutput" @click="urlSafeDecodeInput = ''; urlSafeDecodeOutput = ''">{{ $t('tools.base64.action.clear') }}</el-button>
+              </div>
+            </div>
           </template>
           <template #output>
             <el-input
@@ -113,6 +173,14 @@
               readonly
               :placeholder="$t('tools.base64.placeholder.decodeResult')"
             />
+            <div class="field-toolbar" v-if="urlSafeDecodeOutput">
+              <span class="field-stats">
+                {{ urlSafeDecodeOutput.length }} {{ $t('tools.base64.stats.chars') }}
+              </span>
+              <el-button link size="small" type="primary" @click="copyText(urlSafeDecodeOutput)">
+                <el-icon><CopyDocument /></el-icon> {{ $t('tools.base64.action.copy') }}
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -134,6 +202,15 @@
               :placeholder="$t('tools.base64.placeholder.inputValidateBase64')"
               clearable
             />
+            <div class="field-toolbar">
+              <span class="field-stats" v-if="validateInput">
+                {{ validateInput.length }} {{ $t('tools.base64.stats.chars') }} · {{ lineCount(validateInput) }} {{ $t('tools.base64.stats.lines') }}
+              </span>
+              <div class="toolbar-actions">
+                <el-button link size="small" @click="loadSample('validate')">{{ $t('tools.base64.action.sample') }}</el-button>
+                <el-button link size="small" v-if="validateInput || validateResult !== null" @click="validateInput = ''; validateResult = null">{{ $t('tools.base64.action.clear') }}</el-button>
+              </div>
+            </div>
           </template>
         </ToolSection>
         <div v-if="validateResult !== null" style="margin-top: 16px;">
@@ -177,6 +254,14 @@
               readonly
               :placeholder="$t('tools.base64.placeholder.fileEncodeResult')"
             />
+            <div class="field-toolbar" v-if="fileEncodeOutput">
+              <span class="field-stats">
+                {{ fileEncodeOutput.length }} {{ $t('tools.base64.stats.chars') }}
+              </span>
+              <el-button link size="small" type="primary" @click="copyText(fileEncodeOutput)">
+                <el-icon><CopyDocument /></el-icon> {{ $t('tools.base64.action.copy') }}
+              </el-button>
+            </div>
             <div v-if="fileEncodeInfo" style="margin-top: 12px;">
               <el-descriptions :column="3" border size="small">
                 <el-descriptions-item :label="$t('tools.base64.label.fileName')">{{ fileEncodeInfo.filename }}</el-descriptions-item>
@@ -243,11 +328,19 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Key, UploadFilled, Download } from '@element-plus/icons-vue'
+import { Key, UploadFilled, Download, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
 import { useDeviceStore } from '@/stores/device.js'
+
+const SAMPLES = {
+  encode: 'Hello, DevToolBox! 你好，开发者工具箱！',
+  decode: 'SGVsbG8sIERldlRvb2xCb3ghIOS9oOWlvuW4ruWKoOS4iuS8gOWFuOS6i++8gQ==',
+  urlSafeEncode: 'Hello, DevToolBox! This is a test with special chars: +/=',
+  urlSafeDecode: 'SGVsbG8sIERldlRvb2xCb3ghIFRoaXMgaXMgYSB0ZXN0IHdpdGggc3BlY2lhbCBjaGFyczogKy89',
+  validate: 'SGVsbG8gV29ybGQ='
+}
 
 export default {
   name: 'Base64Tools',
@@ -255,6 +348,7 @@ export default {
     Key,
     UploadFilled,
     Download,
+    CopyDocument,
     ToolPage,
     ToolSection
   },
@@ -296,6 +390,40 @@ export default {
     }
   },
   methods: {
+    lineCount(text) {
+      if (!text) return 0
+      return text.split('\n').length
+    },
+
+    async copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text)
+        ElMessage.success(this.$t('tools.base64.message.copied'))
+      } catch {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        ElMessage.success(this.$t('tools.base64.message.copied'))
+      }
+    },
+
+    loadSample(tab) {
+      const sample = SAMPLES[tab]
+      if (!sample) return
+      switch (tab) {
+        case 'encode': this.encodeInput = sample; break
+        case 'decode': this.decodeInput = sample; break
+        case 'urlSafeEncode': this.urlSafeEncodeInput = sample; break
+        case 'urlSafeDecode': this.urlSafeDecodeInput = sample; break
+        case 'validate': this.validateInput = sample; break
+      }
+    },
+
     async encodeBase64() {
       if (!this.encodeInput.trim()) {
         ElMessage.warning(this.$t('tools.base64.message.inputTextRequired'))
@@ -505,6 +633,25 @@ export default {
 </script>
 
 <style scoped>
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  min-height: 24px;
+}
+
+.field-stats {
+  font-size: 12px;
+  color: var(--dt-text-tertiary, #909399);
+  line-height: 24px;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 4px;
+}
+
 @media (max-width: 768px) {
   .el-form-item :deep(.el-form-item__label) { width: auto !important; min-width: 60px; }
   .el-form-item :deep(.el-form-item__content) { flex: 1; }

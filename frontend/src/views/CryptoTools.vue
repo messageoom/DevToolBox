@@ -279,6 +279,11 @@
               type="textarea"
               :rows="4"
             />
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(hashResult)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -291,7 +296,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDeviceStore } from '@/stores/device.js'
 import { ElMessage } from 'element-plus'
-import { Key } from '@element-plus/icons-vue'
+import { Key, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 const { t } = useI18n()
@@ -304,6 +309,24 @@ import KeyPairDisplay from '@/components/crypto/KeyPairDisplay.vue'
 import SymmetricCryptoPanel from '@/components/crypto/SymmetricCryptoPanel.vue'
 import SignVerifyPanel from '@/components/crypto/SignVerifyPanel.vue'
 import PublicKeyCryptoPanel from '@/components/crypto/PublicKeyCryptoPanel.vue'
+
+// ---- Copy helper ----
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success(t('common.copySuccess'))
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ElMessage.success(t('common.copySuccess'))
+  }
+}
 
 // ---- Top-level navigation ----
 const activeMenu = ref('encryption')

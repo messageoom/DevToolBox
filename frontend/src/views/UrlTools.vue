@@ -22,6 +22,12 @@
               readonly
               :placeholder="$t('tools.url.encode.resultPlaceholder')"
             />
+            <div class="field-toolbar" v-if="encodeOutput" style="margin-top: 6px;">
+              <span style="font-size: 12px; color: #909399;">{{ encodeOutput.length }} chars</span>
+              <el-button link size="small" type="primary" @click="copyText(encodeOutput)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -47,6 +53,12 @@
               readonly
               :placeholder="$t('tools.url.decode.resultPlaceholder')"
             />
+            <div class="field-toolbar" v-if="decodeOutput" style="margin-top: 6px;">
+              <span style="font-size: 12px; color: #909399;">{{ decodeOutput.length }} chars</span>
+              <el-button link size="small" type="primary" @click="copyText(decodeOutput)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </template>
         </ToolSection>
       </el-tab-pane>
@@ -163,6 +175,11 @@
               readonly
               :placeholder="$t('tools.url.build.inputLabel')"
             />
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(buildResult)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -303,6 +320,11 @@
                     readonly
                     :placeholder="$t('tools.url.queryCodec.encode.placeholder')"
                   />
+                  <div class="field-toolbar" style="margin-top: 6px;">
+                    <el-button link size="small" type="primary" @click="copyText(queryEncodeResult)">
+                      <el-icon><CopyDocument /></el-icon> Copy
+                    </el-button>
+                  </div>
                 </div>
               </el-tab-pane>
 
@@ -377,6 +399,12 @@
               :placeholder="$t('tools.url.har.resultPlaceholder')"
               style="font-family: 'Courier New', monospace; font-size: 12px;"
             />
+            <div class="field-toolbar" v-if="harOutput" style="margin-top: 6px;">
+              <span style="font-size: 12px; color: #909399;">{{ harOutput.length }} chars</span>
+              <el-button link size="small" type="primary" @click="copyText(harOutput)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -495,6 +523,11 @@
                     readonly
                     style="font-family: 'Courier New', monospace; font-size: 12px;"
                   />
+                  <div class="field-toolbar" style="margin-top: 6px;">
+                    <el-button link size="small" type="primary" @click="copyText(responseBodyText)">
+                      <el-icon><CopyDocument /></el-icon> Copy
+                    </el-button>
+                  </div>
                 </el-tab-pane>
                 <el-tab-pane :label="$t('tools.url.api.responseHeaders')" name="headers">
                   <div class="headers-display">
@@ -622,6 +655,11 @@
                     readonly
                     style="font-family: 'Courier New', monospace; font-size: 12px;"
                   />
+                  <div class="field-toolbar" style="margin-top: 6px;">
+                    <el-button link size="small" type="primary" @click="copyText(curlResponseBodyText)">
+                      <el-icon><CopyDocument /></el-icon> Copy
+                    </el-button>
+                  </div>
                 </el-tab-pane>
                 <el-tab-pane :label="$t('tools.url.api.responseHeaders')" name="headers">
                   <div class="headers-display">
@@ -634,6 +672,11 @@
                   <div class="curl-command-display">
                     <h5>{{ $t('tools.url.curl.rawCurl') }}</h5>
                     <pre class="curl-command">{{ curlResponse.curl_command }}</pre>
+                    <div class="field-toolbar" style="margin-top: 6px;">
+                      <el-button link size="small" type="primary" @click="copyText(curlResponse.curl_command)">
+                        <el-icon><CopyDocument /></el-icon> Copy
+                      </el-button>
+                    </div>
                     <h5>{{ $t('tools.url.curl.parsedRequest') }}</h5>
                     <div class="parsed-request">
                       <p><strong>{{ $t('tools.url.api.method') }}:</strong> {{ curlResponse.parsed_request.method }}</p>
@@ -660,7 +703,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Link } from '@element-plus/icons-vue'
+import { Link, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
@@ -669,6 +712,7 @@ export default {
   name: 'UrlTools',
   components: {
     Link,
+    CopyDocument,
     ToolPage,
     ToolSection
   },
@@ -749,6 +793,23 @@ export default {
     }
   },
   methods: {
+    async copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text)
+        ElMessage.success('Copied to clipboard')
+      } catch {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        ElMessage.success('Copied to clipboard')
+      }
+    },
+
     async encodeUrl() {
       if (!this.encodeInput.trim()) {
         ElMessage.warning(this.$t('tools.url.encode.placeholder'))
@@ -1473,6 +1534,13 @@ export default {
   padding: 15px;
   background-color: var(--dt-bg-section);
   margin-bottom: 15px;
+}
+
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 @media (max-width: 768px) {

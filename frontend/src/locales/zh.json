@@ -131,7 +131,10 @@
         "minify": "压缩",
         "validate": "验证",
         "escape": "转义",
-        "unescape": "反转义"
+        "unescape": "反转义",
+        "sample": "示例",
+        "clear": "清空",
+        "copy": "复制"
       },
       "placeholder": {
         "inputJson": "请输入JSON字符串...",
@@ -140,6 +143,10 @@
         "inputText": "请输入要转义的文本...",
         "escapeResult": "转义后的字符串将显示在这里...",
         "unescapeResult": "反转义后的文本将显示在这里..."
+      },
+      "stats": {
+        "chars": "字符",
+        "lines": "行"
       },
       "message": {
         "validateSuccess": "验证成功",
@@ -155,7 +162,8 @@
         "escapeFail": "转义失败",
         "escapeInputRequired": "请输入要转义的文本",
         "unescapeSuccess": "反转义成功",
-        "unescapeFail": "反转义失败"
+        "unescapeFail": "反转义失败",
+        "copied": "已复制到剪贴板"
       }
     },
     "yaml": {
@@ -181,6 +189,15 @@
         "inputJson": "请输入JSON字符串...",
         "yamlResult": "转换后的YAML将显示在这里..."
       },
+      "action": {
+        "sample": "示例",
+        "clear": "清空",
+        "copy": "复制"
+      },
+      "stats": {
+        "chars": "字符",
+        "lines": "行"
+      },
       "message": {
         "formatSuccess": "格式化成功",
         "formatFail": "格式化失败",
@@ -191,7 +208,8 @@
         "inputRequired": "请输入YAML字符串",
         "convertSuccess": "转换成功",
         "convertFail": "转换失败",
-        "inputJsonRequired": "请输入JSON字符串"
+        "inputJsonRequired": "请输入JSON字符串",
+        "copied": "已复制到剪贴板"
       }
     },
     "base64": {
@@ -241,7 +259,14 @@
         "decode": "解码",
         "validate": "校验",
         "fileEncode": "文件编码",
-        "fileDecode": "文件解码"
+        "fileDecode": "文件解码",
+        "sample": "示例",
+        "clear": "清空",
+        "copy": "复制"
+      },
+      "stats": {
+        "chars": "字符",
+        "lines": "行"
       },
       "message": {
         "validatePass": "校验通过",
@@ -263,7 +288,8 @@
         "inputBase64FileRequired": "请输入Base64编码的文件数据",
         "validBase64": "输入的文本是有效的Base64编码",
         "invalidBase64": "输入的文本不是有效的Base64编码",
-        "clickDownloadDecodedFile": "点击下载解码文件"
+        "clickDownloadDecodedFile": "点击下载解码文件",
+        "copied": "已复制到剪贴板"
       }
     },
     "url": {
@@ -1147,7 +1173,11 @@
         "pdfDropzone": "将PDF文件拖到此处，或点击上传",
         "pdfUploadHint": "只能上传PDF文件，且不超过10MB",
         "pageCount": "页数",
-        "pageUnit": "页"
+        "pageUnit": "页",
+        "sample": "示例",
+        "clear": "清空",
+        "copy": "复制",
+        "lines": "行"
       },
       "message": {
         "convertSuccess": "转换成功",
@@ -1166,7 +1196,8 @@
         "pdfFailResponse": "PDF生成失败: 服务器响应错误",
         "pdfFailNetwork": "PDF生成失败: 无法连接到服务器",
         "htmlDownloadSuccess": "HTML文件下载成功",
-        "downloadFail": "下载失败"
+        "downloadFail": "下载失败",
+        "copied": "已复制到剪贴板"
       }
     },
     "markdown": {
@@ -1223,9 +1254,21 @@
         "tableCount": "表格数",
         "blockquoteCount": "引用块数",
         "headingStats": "标题统计",
+        "h1": "一级标题",
+        "h2": "二级标题",
+        "h3": "三级标题",
+        "h4": "四级标题",
+        "h5": "五级标题",
+        "h6": "六级标题",
+        "totalHeadings": "总计",
         "unorderedListItems": "无序列表项",
         "orderedListItems": "有序列表项",
-        "downloadFullHtml": "下载完整HTML文件"
+        "downloadFullHtml": "下载完整HTML文件",
+        "sample": "示例",
+        "clear": "清空",
+        "copy": "复制",
+        "chars": "字符",
+        "lines": "行"
       },
       "message": {
         "convertSuccess": "转换成功",
@@ -1240,7 +1283,10 @@
         "validateSuccess": "验证成功",
         "validateFail": "验证失败",
         "statsSuccess": "统计完成",
-        "statsFail": "统计失败"
+        "statsFail": "统计失败",
+        "copied": "已复制到剪贴板",
+        "downloadSuccess": "下载成功",
+        "downloadFail": "下载失败"
       }
     },
     "markdownEditor": {

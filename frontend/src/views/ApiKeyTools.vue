@@ -148,6 +148,11 @@
                 {{ validateResult.has_prefix ? $t('tools.apikey.label.yesNo').split('/')[0] : $t('tools.apikey.label.yesNo').split('/')[1] }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(valKey)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
             <div v-if="validateResult.issues && validateResult.issues.length > 0" class="issues-list">
               <h4 class="section-title" style="color: var(--el-color-danger);">{{ $t('tools.apikey.label.issueList') }}</h4>
               <ul>
@@ -200,6 +205,11 @@
               />
               <el-button size="small" @click="copyKey(hashResult.hash)">{{ $t('tools.apikey.label.copy') }}</el-button>
             </div>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(hashResult.hash)">
+                <el-icon><CopyDocument /></el-icon> Copy
+              </el-button>
+            </div>
 
             <el-descriptions :column="2" border size="small" style="margin-top: 12px;">
               <el-descriptions-item :label="$t('tools.apikey.label.algorithm')">
@@ -215,6 +225,11 @@
                 {{ hashResult.masked }}
               </el-descriptions-item>
             </el-descriptions>
+            <div class="field-toolbar" style="margin-top: 6px;">
+              <el-button link size="small" type="primary" @click="copyText(hashResult.masked)">
+                <el-icon><CopyDocument /></el-icon> Copy Masked Key
+              </el-button>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -224,7 +239,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { Key } from '@element-plus/icons-vue'
+import { Key, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 
@@ -232,6 +247,7 @@ export default {
   name: 'ApiKeyTools',
   components: {
     Key,
+    CopyDocument,
     ToolPage,
   },
   data() {
@@ -374,6 +390,35 @@ export default {
       } finally {
         this.hashing = false
       }
+    },
+
+    copyText(text) {
+      if (!text) return
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          ElMessage.success(this.$t('common.copySuccess'))
+        }).catch(() => {
+          this._fallbackCopy(text)
+        })
+      } else {
+        this._fallbackCopy(text)
+      }
+    },
+
+    _fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        ElMessage.success(this.$t('common.copySuccess'))
+      } catch {
+        ElMessage.error(this.$t('tools.apikey.message.copyFail'))
+      }
+      document.body.removeChild(textarea)
     },
   },
 }
