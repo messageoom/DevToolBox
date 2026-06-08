@@ -78,8 +78,9 @@ export function useTextTransfer() {
     loadIdentity()
 
     socket = io({
-      transports: ['polling', 'websocket'],
+      transports: ['polling'],
       path: '/socket.io',
+      upgrade: false,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,

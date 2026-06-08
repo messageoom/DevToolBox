@@ -62,11 +62,12 @@ export function useIm() {
     loadIdentity()
 
     socket = io({
-      transports: ['polling', 'websocket'],
+      transports: ['polling'],
       path: '/socket.io',
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
+      upgrade: false,
     })
 
     socket.on('connect', () => {

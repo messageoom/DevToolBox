@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2026-06-08
+
+### Added
+
+- IM 即时通讯：替代原文本传输，支持文本、代码、图片、文件、链接等多种消息类型
+- 消息持久化：SQLite 存储，支持离线消息、历史记录、消息搜索
+- 图片缩略图：Pillow 自动生成 200x200 WebP 缩略图
+- 代码消息高亮：highlight.js 支持 18 种常见语言语法高亮
+- 文件传输：支持任意格式文件上传，全局限制 20GB
+- 图片灯箱：全屏预览、左右切换、缩略图条、键盘导航
+- 移动端 Telegram 风格 IM 布局：会话列表（正常文档流）+ 聊天视图（全屏沉浸式滑入）
+- 移动端会话列表：当前用户头像/名称 + "本设备"标签 + 在线人数 + 连接状态
+- 移动端聊天视图：对方头像+名称+在线状态顶部栏，右滑返回会话列表
+- 消息气泡：发送/接收区分样式，群聊显示发送者名称
+- 拖拽/粘贴上传：聊天输入区支持拖拽文件和 Ctrl+V 粘贴图片
+- 消息类型自动识别：输入内容自动检测为文本/代码/链接
+- 消息操作：复制、删除、转发
+- 输入状态提示：实时显示 "正在输入..."
+
+### Changed
+
+- SocketIO 传输改为 polling-only，避免 threading 模式下 WebSocket 升级兼容性问题
+- 移动端传输页面布局重构：会话列表回归正常文档流，保留 App header 和底部导航
+- 群聊头像从 `#` 文字改为 Material Symbols `groups` 图标
+- 在线状态指示从头像 absolute 定位改为名称后 inline 圆点
+- i18n 修复：`disconnecting` key 统一为 `disconnected`
+
+### Fixed
+
+- 移动端 IM 页面 z-index 过低导致 App header 遮挡聊天内容
+- 移动端会话列表负边距导致 "在线设备" 文字溢出屏幕
+- 移动端聊天页顶部显示 "DevToolBox" 而非对方信息
+- SocketIO WebSocket 升级失败 "Invalid frame header" 错误
+
 ## [2.1.0] - 2026-06-08
 
 ### Added

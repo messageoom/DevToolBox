@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import logging
 
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 
 frontend_logger = logging.getLogger('frontend')
 

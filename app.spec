@@ -27,6 +27,7 @@ a = Analysis(
         'modules.apikey_tools',
         'modules.settings',
         'modules.text_transfer',
+        'modules.im',
         'utils',
         'utils.ssrf_protection',
         'utils.path_safety',

@@ -1428,7 +1428,9 @@
       "typing": "typing...",
       "uploadFail": "Upload failed: {error}",
       "forwarded": "Forwarded",
-      "copied": "Copied"
+      "copied": "Copied",
+      "you": "You",
+      "yesterday": "Yesterday"
     }
   }
 }

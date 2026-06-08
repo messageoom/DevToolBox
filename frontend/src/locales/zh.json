@@ -1428,7 +1428,9 @@
       "typing": "正在输入...",
       "uploadFail": "上传失败: {error}",
       "forwarded": "已转发",
-      "copied": "已复制"
+      "copied": "已复制",
+      "you": "你",
+      "yesterday": "昨天"
     }
   }
 }
