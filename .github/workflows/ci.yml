@@ -182,19 +182,16 @@ jobs:
         shell: bash
         run: |
           # Extract the topmost version section from CHANGELOG.md
-          # Works with format: ## [X.Y.Z] - YYYY-MM-DD ...until next ## [
           python3 -c "
-          import re, sys
+          import re
           with open('CHANGELOG.md', encoding='utf-8') as f:
               content = f.read()
-          # Find first ## [version] block
           pattern = r'(## \[[^\]]+\][^\n]*\n(?:(?!\n## \[).)*)'
           match = re.search(pattern, content, re.DOTALL)
-          if match:
-              print(match.group(1).strip())
-          else:
-              print('See CHANGELOG.md for details.')
-          " > /tmp/release_body.md
+          body = match.group(1).strip() if match else 'See CHANGELOG.md for details.'
+          with open('/tmp/release_body.md', 'w', encoding='utf-8') as f:
+              f.write(body)
+          "
           echo "Release body preview:"
           head -20 /tmp/release_body.md
 
