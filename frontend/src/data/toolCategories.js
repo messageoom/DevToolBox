@@ -20,14 +20,14 @@ export const toolCategories = [
   },
   {
     id: 'data',
-    icon: 'data_object',
+    icon: 'database',
     route: '/json-tools',
     color: '#8b5cf6',
     tools: ['JSON', 'YAML', 'Markdown', 'Base64']
   },
   {
     id: 'encoding',
-    icon: 'swap_horiz',
+    icon: 'code',
     route: '/base64-tools',
     color: '#f59e0b',
     tools: ['base64', 'urlEncode', 'timestamp']

@@ -1699,7 +1699,7 @@ setTimeout(() => { if (!api) init(); }, 500);
 #  Main entry
 # ---------------------------------------------------------------------------
 
-def run_gui_app(app, host, port, access_token, version='2.0.0'):
+def run_gui_app(app, host, port, access_token, version='dev'):
     """Start Flask in daemon thread, then open pywebview native window."""
 
     start_time = time.time()

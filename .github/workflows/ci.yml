@@ -63,26 +63,39 @@ jobs:
           retention-days: 7
 
   build-release:
-    name: Build (${{ matrix.os }})
+    name: Build (${{ matrix.config.label }})
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [backend-check, frontend-build]
     strategy:
+      fail-fast: false
       matrix:
-        include:
+        config:
           - os: windows-latest
+            label: Windows
             artifact: DevToolBox-windows
-            pattern: dist/CLI/DevToolBox*.exe
+            ext: .exe
           - os: macos-latest
+            label: macOS
             artifact: DevToolBox-macos
-            pattern: dist/CLI/DevToolBox*
+            ext: ''
           - os: ubuntu-latest
+            label: Linux
             artifact: DevToolBox-linux
-            pattern: dist/CLI/DevToolBox*
-    runs-on: ${{ matrix.os }}
+            ext: ''
+    runs-on: ${{ matrix.config.os }}
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          # refs/tags/v2.1.0 → 2.1.0
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version: $VERSION"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -100,7 +113,17 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpango1.0-dev libharfbuzz-dev libffi-dev libjpeg-dev zlib1g-dev libgirepository1.0-dev gir1.2-webkit2-4.1
+          sudo apt-get install -y \
+            libpango1.0-dev libharfbuzz-dev libffi-dev \
+            libjpeg-dev zlib1g-dev libgirepository1.0-dev \
+            gir1.2-webkit2-4.1
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # pywebview uses system WebKit — no extra brew needed on macOS 14+
+          # Ensure Xcode command line tools are available
+          xcode-select -p || xcode-select --install 2>/dev/null || true
 
       - name: Install frontend dependencies
         run: cd frontend && npm ci
@@ -112,18 +135,75 @@ jobs:
         run: pip install -r requirements.txt pyinstaller
 
       - name: Build executable
-        run: python build.py
+        run: python build.py --version ${{ steps.version.outputs.version }}
         env:
           PYTHONUTF8: 1
+
+      - name: Generate SHA256 checksum
+        id: checksum
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DIST_DIR="dist/GUI_${VERSION}"
+          if [ ! -d "$DIST_DIR" ]; then
+            echo "::error::Output directory $DIST_DIR not found"
+            ls -R dist/ || true
+            exit 1
+          fi
+          cd "$DIST_DIR"
+          # Find the main executable
+          if [ "${{ matrix.config.ext }}" = ".exe" ]; then
+            EXE_FILE=$(ls DevToolBox-*.exe 2>/dev/null | head -1)
+          else
+            EXE_FILE=$(ls DevToolBox-* 2>/dev/null | grep -v '\.sh$' | grep -v '\.md$' | head -1)
+          fi
+          if [ -z "$EXE_FILE" ]; then
+            echo "::error::No executable found in $DIST_DIR"
+            ls -la
+            exit 1
+          fi
+          echo "exe_file=$EXE_FILE" >> "$GITHUB_OUTPUT"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            certutil -hashfile "$EXE_FILE" SHA256 | grep -v ":" | tr -d ' \r\n' > "${EXE_FILE}.sha256"
+          else
+            shasum -a 256 "$EXE_FILE" > "${EXE_FILE}.sha256"
+          fi
+          echo "Checksum generated:"
+          cat "${EXE_FILE}.sha256"
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: dist/CLI/
+          name: ${{ matrix.config.artifact }}
+          path: dist/GUI_${{ steps.version.outputs.version }}/
+
+      - name: Extract latest changelog
+        id: changelog
+        shell: bash
+        run: |
+          # Extract the topmost version section from CHANGELOG.md
+          # Works with format: ## [X.Y.Z] - YYYY-MM-DD ...until next ## [
+          python3 -c "
+          import re, sys
+          with open('CHANGELOG.md', encoding='utf-8') as f:
+              content = f.read()
+          # Find first ## [version] block
+          pattern = r'(## \[[^\]]+\][^\n]*\n(?:(?!\n## \[).)*)'
+          match = re.search(pattern, content, re.DOTALL)
+          if match:
+              print(match.group(1).strip())
+          else:
+              print('See CHANGELOG.md for details.')
+          " > /tmp/release_body.md
+          echo "Release body preview:"
+          head -20 /tmp/release_body.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.pattern }}
-          body_path: CHANGELOG.md
+          files: |
+            dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}
+            dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}.sha256
+          body_path: /tmp/release_body.md
+          draft: false
+          prerelease: false

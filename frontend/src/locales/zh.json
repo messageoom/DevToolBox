@@ -526,7 +526,8 @@
         "hashVerified": "哈希验证通过",
         "hashMatchDesc": "输入的哈希值与计算结果匹配",
         "hashMismatchDesc": "输入的哈希值与计算结果不匹配",
-        "pbkdf2Meta": "盐值: {salt} | 迭代: {iterations} | 长度: {length}字节"
+        "pbkdf2Meta": "盐值: {salt} | 迭代: {iterations} | 长度: {length}字节",
+        "inputBcryptHash": "请输入bcrypt哈希值"
       },
       "algorithmSelector": {
         "searchPlaceholder": "搜索算法...",
@@ -755,6 +756,8 @@
         "batchTimeInput": "批量时间输入",
         "operationType": "操作类型",
         "addSub": "加/减",
+        "add": "加",
+        "subtract": "减",
         "unit": "单位",
         "amount": "数量",
         "inputType": "输入类型",
@@ -851,7 +854,7 @@
         "strengthCheck": "强度检测",
         "mnemonic": "助记密码"
       },
-      "label": {
+      "labels": {
         "passwordLength": "密码长度",
         "charTypes": "字符类型",
         "uppercase": "大写字母 (A-Z)",
@@ -891,7 +894,7 @@
         "generateMnemonic": "生成助记密码",
         "mnemonicResult": "生成结果"
       },
-      "message": {
+      "messages": {
         "selectCharType": "请至少选择一种字符类型",
         "generatedCount": "成功生成 {count} 个密码",
         "generateFail": "生成失败",
@@ -911,12 +914,14 @@
         "validate": "验证UUID",
         "parse": "解析UUID"
       },
-      "label": {
+      "labels": {
         "version": "版本",
         "uuidV1": "UUID v1 (基于时间)",
         "uuidV3": "UUID v3 (基于MD5)",
         "uuidV4": "UUID v4 (随机)",
         "uuidV5": "UUID v5 (基于SHA-1)",
+        "uuidV6": "UUID v6 (排序)",
+        "uuidV7": "UUID v7 (时间排序)",
         "count": "数量",
         "uppercase": "大写",
         "namespace": "命名空间",
@@ -942,11 +947,11 @@
         "clockSequence": "时钟序列",
         "uuidV1Details": "UUID v1 详细信息"
       },
-      "placeholder": {
+      "placeholders": {
         "nameInput": "请输入名称 (v3/v5 必填)",
         "uuidInput": "请输入UUID字符串，如: 550e8400-e29b-41d4-a716-446655440000"
       },
-      "message": {
+      "messages": {
         "v3v5NameRequired": "v3 和 v5 版本需要输入名称",
         "generatedCount": "成功生成 {count} 个 UUID",
         "generateFail": "生成失败",

@@ -19,3 +19,30 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-track {
   background-color: #1d1e1f;
 }
+
+html.dark .app-content::-webkit-scrollbar-thumb {
+  background-color: #434343;
+}
+
+html.dark .app-content::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+html.dark .el-textarea__inner::-webkit-scrollbar-thumb {
+  background-color: #363637;
+}
+
+html.dark .el-textarea__inner::-webkit-scrollbar-thumb:hover {
+  background-color: #434343;
+}
+
+/* Dark mode input focus glow */
+html.dark .el-input__wrapper:focus-within,
+html.dark .el-textarea__inner:focus {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.25);
+}
+
+/* Dark mode selection */
+html.dark ::selection {
+  background: rgba(64, 158, 255, 0.35);
+}

@@ -88,6 +88,7 @@ a = Analysis(
         'webview.platforms.winforms',
         'webview.platforms.cocoa',
         'webview.platforms.gtk',
+        'uuid6',
     ],
     hookspath=[],
     hooksconfig={},

@@ -528,7 +528,7 @@ export default {
         document.execCommand('copy')
         ElMessage.success(this.$t('common.copied'))
       } catch (e) {
-        ElMessage.error(this.$t('common.copyFailed') || 'Copy failed')
+        ElMessage.error(this.$t('common.copyFail') || 'Copy failed')
       }
       document.body.removeChild(textarea)
     },

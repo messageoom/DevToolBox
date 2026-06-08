@@ -11,7 +11,7 @@
         </el-button>
       </slot>
     </div>
-    <div v-if="hasOutput" class="output-section">
+    <div v-if="hasOutput" class="output-section" :aria-busy="loading">
       <h4 class="section-title">{{ outputLabel }}</h4>
       <slot name="output" />
     </div>

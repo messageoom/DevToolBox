@@ -15,6 +15,7 @@
 | 分类 | 工具 | 功能 |
 |------|------|------|
 | 文件工具 | 文件上传 | 多格式上传、分类管理、安全存储 |
+| 文本传输 | 文本传输 | 局域网设备间实时文本传输与群聊 |
 | 数据工具 | JSON | 格式化、压缩、验证、转义 |
 | 数据工具 | YAML | 格式化、压缩、验证、JSON 互转 |
 | 数据工具 | Markdown 编辑器 | 实时预览、多主题、导出 HTML/PDF |
@@ -82,6 +83,28 @@ cd frontend && npm run dev
 ### 一键启动（Windows）
 
 下载 `DevToolBox.exe`，双击运行即可，无需安装 Python 或 Node.js。
+
+### 打包发布
+
+```bash
+# 版本号自动从 backend/app.py 的 __version__ 读取
+python build.py
+
+# 或指定版本号
+python build.py --version v2.1.0
+```
+
+### 版本管理
+
+```bash
+# 安装 bump-my-version（已包含在 requirements.txt）
+pip install bump-my-version
+
+# 升级版本号（自动更新 backend/app.py + frontend/package.json + git tag）
+bump-my-version bump patch   # 2.1.0 → 2.1.1
+bump-my-version bump minor   # 2.1.0 → 2.2.0
+bump-my-version bump major   # 2.1.0 → 3.0.0
+```
 
 ## 项目结构
 

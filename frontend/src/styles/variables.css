@@ -116,3 +116,94 @@ html.dark {
 .el-button {
   transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
+/* ===== Global Micro-interactions ===== */
+
+/* Custom scrollbar for content area */
+.app-content {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.app-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-content::-webkit-scrollbar-thumb {
+  background: var(--dt-border-light);
+  border-radius: 3px;
+}
+
+.app-content::-webkit-scrollbar-thumb:hover {
+  background: var(--dt-border-base);
+}
+
+/* Textarea scrollbar */
+.el-textarea__inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.el-textarea__inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.el-textarea__inner::-webkit-scrollbar-thumb {
+  background: var(--dt-border-lighter);
+  border-radius: 3px;
+}
+
+.el-textarea__inner::-webkit-scrollbar-thumb:hover {
+  background: var(--dt-border-light);
+}
+
+/* Input focus glow */
+.el-input__wrapper:focus-within,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dt-primary) 20%, transparent);
+}
+
+/* Card hover lift (applies to el-card inside tool pages) */
+.el-card {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* Tab bar indicator smooth transition */
+.el-tabs__active-bar {
+  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* Smooth tab nav scroll */
+.el-tabs__nav {
+  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* Alert entrance animation */
+.el-alert {
+  animation: alertSlideIn 0.3s ease;
+}
+
+@keyframes alertSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Selection color */
+::selection {
+  background: color-mix(in srgb, var(--dt-primary) 30%, transparent);
+  color: inherit;
+}
+
+/* Link hover transition */
+a {
+  transition: color 0.15s ease;
+}
+
+/* Smooth menu item transitions */
+.el-menu-item,
+.el-sub-menu__title {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}

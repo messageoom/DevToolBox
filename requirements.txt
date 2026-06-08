@@ -27,3 +27,5 @@ pywebview>=5.0
 Flask-SocketIO==5.3.6
 python-engineio==4.9.0
 simple-websocket>=1.0.0
+bump-my-version>=1.0.0
+uuid6>=2024.1.0

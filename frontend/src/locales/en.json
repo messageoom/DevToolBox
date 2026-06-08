@@ -526,7 +526,8 @@
         "hashVerified": "Hash verification passed",
         "hashMatchDesc": "The entered hash matches the computed result",
         "hashMismatchDesc": "The entered hash does not match the computed result",
-        "pbkdf2Meta": "Salt: {salt} | Iterations: {iterations} | Length: {length} bytes"
+        "pbkdf2Meta": "Salt: {salt} | Iterations: {iterations} | Length: {length} bytes",
+        "inputBcryptHash": "Please enter a bcrypt hash"
       },
       "algorithmSelector": {
         "searchPlaceholder": "Search algorithms...",
@@ -755,6 +756,8 @@
         "batchTimeInput": "Batch Time Input",
         "operationType": "Operation Type",
         "addSub": "Add/Subtract",
+        "add": "Add",
+        "subtract": "Subtract",
         "unit": "Unit",
         "amount": "Amount",
         "inputType": "Input Type",
@@ -851,7 +854,7 @@
         "strengthCheck": "Strength Check",
         "mnemonic": "Mnemonic Password"
       },
-      "label": {
+      "labels": {
         "passwordLength": "Password Length",
         "charTypes": "Character Types",
         "uppercase": "Uppercase (A-Z)",
@@ -891,7 +894,7 @@
         "generateMnemonic": "Generate Mnemonic",
         "mnemonicResult": "Generated Results"
       },
-      "message": {
+      "messages": {
         "selectCharType": "Please select at least one character type",
         "generatedCount": "Successfully generated {count} password(s)",
         "generateFail": "Generation failed",
@@ -911,12 +914,14 @@
         "validate": "Validate UUID",
         "parse": "Parse UUID"
       },
-      "label": {
+      "labels": {
         "version": "Version",
         "uuidV1": "UUID v1 (Time-based)",
         "uuidV3": "UUID v3 (MD5-based)",
         "uuidV4": "UUID v4 (Random)",
         "uuidV5": "UUID v5 (SHA-1-based)",
+        "uuidV6": "UUID v6 (Sortable)",
+        "uuidV7": "UUID v7 (Time-ordered)",
         "count": "Count",
         "uppercase": "Uppercase",
         "namespace": "Namespace",
@@ -942,11 +947,11 @@
         "clockSequence": "Clock Sequence",
         "uuidV1Details": "UUID v1 Details"
       },
-      "placeholder": {
+      "placeholders": {
         "nameInput": "Enter name (required for v3/v5)",
         "uuidInput": "Enter UUID string, e.g.: 550e8400-e29b-41d4-a716-446655440000"
       },
-      "message": {
+      "messages": {
         "v3v5NameRequired": "v3 and v5 require a name input",
         "generatedCount": "Successfully generated {count} UUID(s)",
         "generateFail": "Generation failed",

@@ -92,7 +92,7 @@ def _copy_to_clipboard(text):
     return False
 
 
-def run_tray_app(app, host, port, access_token, version='2.0.0'):
+def run_tray_app(app, host, port, access_token, version='dev'):
     """Main entry: start Flask in background, run system tray in main thread."""
     import pystray
 
@@ -170,7 +170,7 @@ def run_tray_app(app, host, port, access_token, version='2.0.0'):
         flask_thread.join()
 
 
-def run_console_app(app, host, port, access_token, version='2.0.0'):
+def run_console_app(app, host, port, access_token, version='dev'):
     """Fallback: run without tray, just console output + Flask blocking."""
     base_url = f"http://127.0.0.1:{port}"
     token_url = f"{base_url}/?token={access_token}"

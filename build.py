@@ -3,8 +3,8 @@
 DevToolBox 一键打包脚本
 
 使用方法：
-python build.py                    # 常规打包到 dist/CLI 目录
-python build.py --version v2.0.0   # 带版本号打包到 dist/CLI_v2.0.0 目录
+python build.py                    # 自动从 backend/app.py 读取版本号打包
+python build.py --version v2.1.0   # 指定版本号打包
 """
 
 import os
@@ -25,6 +25,17 @@ import platform
 from pathlib import Path
 
 
+def read_version_from_app():
+    """Read __version__ from backend/app.py as the single source of truth."""
+    app_py = Path(__file__).parent / "backend" / "app.py"
+    if not app_py.exists():
+        return None
+    import re
+    content = app_py.read_text(encoding='utf-8')
+    match = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", content)
+    return match.group(1) if match else None
+
+
 def get_platform_suffix():
     """Return platform suffix like '-windows-x64', '-macos-arm64', '-linux-x64'"""
     os_map = {'win32': 'windows', 'darwin': 'macos', 'linux': 'linux'}
@@ -38,13 +49,13 @@ def get_platform_suffix():
 class DevToolBoxBuilder:
     def __init__(self, version=None):
         self.project_root = Path(__file__).parent
-        self.version = version
+        self.version = version or read_version_from_app()
         self.backend_dir = self.project_root / "backend"
         self.frontend_dir = self.project_root / "frontend"
-        if version:
-            self.dist_dir = self.project_root / "dist" / f"CLI_{version}"
+        if self.version:
+            self.dist_dir = self.project_root / "dist" / f"GUI_{self.version}"
         else:
-            self.dist_dir = self.project_root / "dist" / "CLI"
+            self.dist_dir = self.project_root / "dist" / "GUI"
         self.frontend_dist = self.frontend_dir / "dist"
 
     def run_command(self, command, cwd=None, description=""):
@@ -154,10 +165,11 @@ class DevToolBoxBuilder:
         default_dist_dir = self.project_root / "dist"
         pyinstaller_name = "DevToolBox.exe" if sys.platform == "win32" else "DevToolBox"
 
-        # Target name with platform suffix
+        # Target name with version + platform suffix
         platform_suffix = get_platform_suffix()
         ext = ".exe" if sys.platform == "win32" else ""
-        final_name = f"DevToolBox{platform_suffix}{ext}"
+        ver_tag = f"-{self.version}" if self.version else ""
+        final_name = f"DevToolBox{ver_tag}{platform_suffix}{ext}"
 
         default_exe_path = default_dist_dir / pyinstaller_name
         target_exe_path = self.dist_dir / final_name
@@ -268,6 +280,8 @@ https://github.com/messageoom/DevToolBox/issues
 
     def build(self):
         print("🚀 开始打包 DevToolBox...")
+        if self.version:
+            print(f"📦 版本: {self.version}")
         print("=" * 50)
         start_time = time.time()
         try:
@@ -288,6 +302,11 @@ https://github.com/messageoom/DevToolBox/issues
             print("🎉 打包完成！")
             print(f"⏱️  总耗时: {duration:.2f} 秒")
             print(f"📁 输出目录: {self.dist_dir}")
+            if self.version:
+                tag_name = f"v{self.version}"
+                print(f"\n🏷️  建议打 Git Tag:")
+                print(f"   git tag {tag_name}")
+                print(f"   git push origin {tag_name}")
             print("\n📋 下一步操作:")
             print("1. 进入dist目录")
             print("2. 运行启动脚本或直接运行DevToolBox可执行文件")
@@ -300,9 +319,11 @@ https://github.com/messageoom/DevToolBox/issues
 
 def main():
     parser = argparse.ArgumentParser(description='DevToolBox 打包工具')
-    parser.add_argument('--version', type=str, help='指定版本号，例如 v2.0.0')
+    parser.add_argument('--version', type=str, help='指定版本号（默认从 backend/app.py 自动读取）')
     args = parser.parse_args()
     builder = DevToolBoxBuilder(version=args.version)
+    if builder.version:
+        print(f"📦 版本: {builder.version}")
     success = builder.build()
     if success:
         print("\n✅ DevToolBox 打包成功完成！")

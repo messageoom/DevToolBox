@@ -4,6 +4,11 @@ import logging
 from datetime import datetime, timezone
 
 try:
+    import uuid6
+except ImportError:
+    uuid6 = None
+
+try:
     from ..utils.error_handler import safe_error
 except ImportError:
     from backend.utils.error_handler import safe_error
@@ -58,8 +63,12 @@ def generate_uuid():
         uppercase = data.get('uppercase', False)
 
         # Validate version
-        if version not in (1, 3, 4, 5):
-            return jsonify({'error': '版本号必须是 1、3、4 或 5'}), 400
+        if version not in (1, 3, 4, 5, 6, 7):
+            return jsonify({'error': '版本号必须是 1、3、4、5、6 或 7'}), 400
+
+        # v6 and v7 require uuid6 library
+        if version in (6, 7) and uuid6 is None:
+            return jsonify({'error': 'UUID v6/v7 需要 uuid6 库，请运行: pip install uuid6'}), 400
 
         # Validate count
         try:
@@ -88,6 +97,10 @@ def generate_uuid():
             elif version == 5:
                 ns = NAMESPACE_MAP[namespace_str]
                 generated = uuid.uuid5(ns, name)
+            elif version == 6:
+                generated = uuid6.uuid6()
+            elif version == 7:
+                generated = uuid6.uuid7()
             else:
                 return jsonify({'error': f'不支持的版本: {version}'}), 400
 

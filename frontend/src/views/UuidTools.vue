@@ -12,6 +12,8 @@
                 <el-option :label="$t('tools.uuid.labels.uuidV3')" :value="3" />
                 <el-option :label="$t('tools.uuid.labels.uuidV4')" :value="4" />
                 <el-option :label="$t('tools.uuid.labels.uuidV5')" :value="5" />
+                <el-option :label="$t('tools.uuid.labels.uuidV6')" :value="6" />
+                <el-option :label="$t('tools.uuid.labels.uuidV7')" :value="7" />
               </el-select>
             </div>
             <div class="config-item">

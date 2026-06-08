@@ -94,7 +94,7 @@
     >
       <div class="content-wrapper" :class="{ 'content-wrapper--padded': !isMarkdownEditor }">
         <router-view v-slot="{ Component }">
-          <transition name="page-fade" mode="out-in">
+          <transition name="page-slide" mode="out-in">
             <component :is="Component" />
           </transition>
         </router-view>
@@ -456,14 +456,19 @@ onBeforeUnmount(() => {
 /* =========================================
    Page Transition
    ========================================= */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.2s ease;
+.page-slide-enter-active,
+.page-slide-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.page-fade-enter-from,
-.page-fade-leave-to {
+.page-slide-enter-from {
   opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 /* =========================================

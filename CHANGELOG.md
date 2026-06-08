@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-06-08
+
+### Added
+
+- 文本传输：局域网设备间实时文本传输与群聊（SocketIO + WebRTC）
+- 全工具页面交互优化：14 个工具页统一添加复制按钮、示例数据、字符/行数统计、一键清空
+- 页面路由过渡动画：slide+fade 替代简单 fade，切换更有层次感
+- 工具区段入场动画：input/action/output 依次淡入上滑（staggered delay）
+- Tab 内容切换过渡动画：淡入+微上滑
+- 输出区域加载态 shimmer 动画
+- 文件上传页 UI/UX 全面打磨：上传进度条、文件卡片 hover 抬升、拖拽视觉反馈、分类折叠过渡、自适应预览高度、文件搜索、新文件高亮脉冲、空状态浮动动画
+- 全局微交互：自定义滚动条、input 聚焦光晕、Alert 入场动画、文本选中色、Tab 指示条贝塞尔曲线过渡
+- 暗色模式下所有交互效果同步适配
+- GUI 打包输出目录改为 `dist/GUI_vX.Y.Z/`，exe 名含版本+平台后缀
+
+### Changed
+
+- 编码工具分类图标：swap_horiz → code（花括号风格）
+- 数据工具分类图标：data_object → database（数据库风格）
+- 路由过渡名：page-fade → page-slide
+- ToolSection 组件支持 `aria-busy` 属性配合加载态
+
 ## [2.0.2] - 2026-06-01
 
 ### Added
