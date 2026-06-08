@@ -46,7 +46,7 @@ export function useTextTransfer() {
 
   function loadIdentity() {
     try {
-      const raw = sessionStorage.getItem(IDENTITY_KEY)
+      const raw = localStorage.getItem(IDENTITY_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
         myId.value = parsed.nodeId || generateId()
@@ -58,7 +58,7 @@ export function useTextTransfer() {
   }
 
   function saveIdentity() {
-    sessionStorage.setItem(IDENTITY_KEY, JSON.stringify({
+    localStorage.setItem(IDENTITY_KEY, JSON.stringify({
       nodeId: myId.value,
       name: myName.value,
     }))
