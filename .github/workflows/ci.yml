@@ -181,19 +181,18 @@ jobs:
         id: changelog
         shell: bash
         run: |
-          # Extract the topmost version section from CHANGELOG.md
+          BODY_FILE="$RUNNER_TEMP/release_body.md"
           python3 -c "
-          import re
+          import re, os
           with open('CHANGELOG.md', encoding='utf-8') as f:
               content = f.read()
           pattern = r'(## \[[^\]]+\][^\n]*\n(?:(?!\n## \[).)*)'
           match = re.search(pattern, content, re.DOTALL)
           body = match.group(1).strip() if match else 'See CHANGELOG.md for details.'
-          with open('/tmp/release_body.md', 'w', encoding='utf-8') as f:
+          with open(os.environ['BODY_FILE'], 'w', encoding='utf-8') as f:
               f.write(body)
           "
-          echo "Release body preview:"
-          head -20 /tmp/release_body.md
+          echo "body_file=$BODY_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -201,6 +200,6 @@ jobs:
           files: |
             dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}
             dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}.sha256
-          body_path: /tmp/release_body.md
+          body_path: ${{ steps.changelog.outputs.body_file }}
           draft: false
           prerelease: false
