@@ -319,6 +319,8 @@ onBeforeUnmount(() => {
 
 .message-text.text-collapsed {
   max-height: 200px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .text-expand-btn {
