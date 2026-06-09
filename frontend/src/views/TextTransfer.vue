@@ -116,6 +116,7 @@
               @delete="onDeleteMessage"
               @forward="onForwardMessage"
               @long-press="onMessageLongPress"
+              @preview-file="onPreviewFile"
             />
           </template>
         </div>
@@ -253,6 +254,7 @@
               @delete="onDeleteMessage"
               @forward="onForwardMessage"
               @long-press="onMessageLongPress"
+              @preview-file="onPreviewFile"
             />
           </template>
         </div>
@@ -321,6 +323,23 @@
       {{ t('tools.im.cancel') }}
     </button>
   </el-drawer>
+
+  <!-- File preview drawer (md / html) -->
+  <el-drawer
+    v-model="filePreviewVisible"
+    :title="filePreviewName"
+    direction="btt"
+    size="90%"
+    class="file-preview-drawer"
+  >
+    <div v-if="filePreviewType === 'md'" class="file-preview-md" v-html="filePreviewContent"></div>
+    <iframe
+      v-else-if="filePreviewType === 'html'"
+      :srcdoc="filePreviewContent"
+      class="file-preview-iframe"
+      sandbox="allow-same-origin"
+    ></iframe>
+  </el-drawer>
   </div><!-- /.text-transfer-root -->
 </template>
 
@@ -334,6 +353,7 @@ import { useDeviceStore } from '@/stores/device.js'
 import { useIm } from '@/composables/useIm.js'
 import { useLightbox } from '@/composables/useLightbox.js'
 import { copyToClipboard } from '@/utils/format.js'
+import { marked } from 'marked'
 import ImMessage from '@/components/im/ImMessage.vue'
 import ImChatInput from '@/components/im/ImChatInput.vue'
 import ImLightbox from '@/components/im/ImLightbox.vue'
@@ -409,6 +429,10 @@ const actionSheetVisible = ref(false)
 const actionSheetMsg = ref(null)
 const isAtBottom = ref(true)
 const unreadScrollCount = ref(0)
+const filePreviewVisible = ref(false)
+const filePreviewName = ref('')
+const filePreviewType = ref('')
+const filePreviewContent = ref('')
 
 // Close overlay AND disconnect SocketIO before the page-slide leave transition.
 onBeforeRouteLeave(() => {
@@ -614,6 +638,30 @@ function openLightboxForImage(msg) {
     .filter(m => m.msgType === 'image' && m.attachment?.url)
     .map(m => ({ url: m.attachment.url, thumbnail: m.attachment.thumbnail || '', filename: m.attachment.filename || '' }))
   lightbox.open(imgs, Math.max(0, imgs.findIndex(img => img.url === msg.attachment?.url)))
+}
+async function onPreviewFile({ url, filename, mime }) {
+  const name = (filename || '').toLowerCase()
+  const isHtml = name.endsWith('.html') || name.endsWith('.htm') || (mime && mime.includes('html'))
+  const isMd = name.endsWith('.md') || name.endsWith('.markdown') || (mime && mime.includes('markdown'))
+  if (!isHtml && !isMd) return
+
+  filePreviewName.value = filename || 'Preview'
+  filePreviewContent.value = ''
+  filePreviewType.value = isMd ? 'md' : 'html'
+
+  try {
+    const resp = await fetch(url)
+    const text = await resp.text()
+    if (isMd) {
+      marked.setOptions({ breaks: true, gfm: true })
+      filePreviewContent.value = marked.parse(text)
+    } else {
+      filePreviewContent.value = text
+    }
+  } catch {
+    filePreviewContent.value = isMd ? '*Failed to load file*' : ''
+  }
+  filePreviewVisible.value = true
 }
 function showRenameDialog() {
   renameInput.value = myName.value || ''
@@ -1210,6 +1258,91 @@ watch(activeMessages, (newVal, oldVal) => {
 }
 .action-sheet-cancel:active {
   background: var(--dt-bg-hover);
+}
+
+/* ===== File preview drawer ===== */
+.file-preview-drawer :deep(.el-drawer__header) {
+  margin-bottom: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--dt-border-light);
+}
+.file-preview-drawer :deep(.el-drawer__body) {
+  padding: 0;
+  background: var(--dt-bg-page);
+}
+.file-preview-md {
+  padding: 20px;
+  overflow-y: auto;
+  height: 100%;
+  font-size: var(--dt-font-size-sm);
+  line-height: 1.6;
+  color: var(--dt-text-primary);
+}
+.file-preview-md :deep(h1),
+.file-preview-md :deep(h2),
+.file-preview-md :deep(h3),
+.file-preview-md :deep(h4) {
+  margin: 0.8em 0 0.4em;
+  font-weight: 600;
+}
+.file-preview-md :deep(h1) { font-size: 1.4em; }
+.file-preview-md :deep(h2) { font-size: 1.2em; }
+.file-preview-md :deep(h3) { font-size: 1.1em; }
+.file-preview-md :deep(p) { margin: 0.5em 0; }
+.file-preview-md :deep(ul),
+.file-preview-md :deep(ol) { margin: 0.5em 0; padding-left: 1.5em; }
+.file-preview-md :deep(blockquote) {
+  margin: 0.5em 0;
+  padding: 0.4em 1em;
+  border-left: 3px solid var(--dt-primary);
+  opacity: 0.85;
+}
+.file-preview-md :deep(code) {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  background: var(--dt-bg-section);
+}
+.file-preview-md :deep(pre) {
+  margin: 0.6em 0;
+  border-radius: var(--dt-radius-sm);
+  overflow-x: auto;
+}
+.file-preview-md :deep(pre code) {
+  display: block;
+  padding: 0.8em;
+  background: #1e1e2e;
+  color: #cdd6f4;
+}
+.file-preview-md :deep(table) {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+.file-preview-md :deep(th),
+.file-preview-md :deep(td) {
+  border: 1px solid var(--dt-border-light);
+  padding: 0.4em 0.8em;
+  text-align: left;
+}
+.file-preview-md :deep(th) {
+  background: var(--dt-bg-section);
+  font-weight: 600;
+}
+.file-preview-md :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--dt-border-light);
+  margin: 1em 0;
+}
+.file-preview-md :deep(img) {
+  max-width: 100%;
+  border-radius: var(--dt-radius-sm);
+}
+.file-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
 }
 </style>
 

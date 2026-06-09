@@ -1444,7 +1444,8 @@
       "expandCode": "展开代码",
       "collapseCode": "收起代码",
       "expandText": "展开全文",
-      "collapseText": "收起"
+      "collapseText": "收起",
+      "preview": "预览"
     }
   }
 }

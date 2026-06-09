@@ -78,6 +78,7 @@
         :size="msg.attachment?.size || 0"
         :mime="msg.attachment?.mime || ''"
         :url="msg.attachment?.url || ''"
+        @preview-file="$emit('preview-file', $event)"
       />
 
       <!-- Link message -->
@@ -122,7 +123,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['preview-image', 'delete', 'copy', 'forward', 'long-press'])
+const emit = defineEmits(['preview-image', 'delete', 'copy', 'forward', 'long-press', 'preview-file'])
 
 const { t } = useI18n()
 const deviceStore = useDeviceStore()

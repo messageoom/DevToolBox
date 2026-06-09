@@ -11,13 +11,21 @@
         <div class="file-progress-bar" :style="{ width: (progress * 100) + '%' }"></div>
       </div>
     </div>
+    <button
+      v-if="canPreview && url && (progress == null || progress >= 1)"
+      class="file-action-btn file-preview-btn"
+      @click="$emit('preview-file', { url, filename, mime })"
+      :title="t('tools.im.preview')"
+    >
+      <span class="material-symbols-rounded">visibility</span>
+    </button>
     <a
       v-if="url && (progress == null || progress >= 1)"
-      class="file-download-btn"
+      class="file-action-btn file-download-btn"
       :href="url"
       target="_blank"
       rel="noopener noreferrer"
-      title="Download"
+      :title="t('tools.im.download')"
     >
       <span class="material-symbols-rounded">download</span>
     </a>
@@ -26,6 +34,11 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const PREVIEW_EXTENSIONS = ['.md', '.markdown', '.html', '.htm']
 
 const props = defineProps({
   filename: {
@@ -51,6 +64,8 @@ const props = defineProps({
   },
 })
 
+defineEmits(['preview-file'])
+
 const fileIcon = computed(() => {
   const mime = props.mime.toLowerCase()
   if (mime.startsWith('image/')) return 'image'
@@ -60,6 +75,11 @@ const fileIcon = computed(() => {
   if (mime === 'application/zip' || mime.startsWith('application/x-')) return 'folder_zip'
   if (mime.startsWith('text/')) return 'description'
   return 'draft'
+})
+
+const canPreview = computed(() => {
+  const name = props.filename.toLowerCase()
+  return PREVIEW_EXTENSIONS.some(ext => name.endsWith(ext))
 })
 
 const formattedSize = computed(() => {
@@ -128,25 +148,28 @@ const formattedSize = computed(() => {
   margin-top: 2px;
 }
 
-.file-download-btn {
+.file-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: var(--dt-radius-sm);
+  border: none;
+  cursor: pointer;
   color: var(--dt-text-secondary);
   text-decoration: none;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  background: none;
 }
 
-.file-download-btn:hover {
+.file-action-btn:hover {
   background: color-mix(in srgb, var(--dt-primary) 10%, transparent);
   color: var(--dt-primary);
 }
 
-.file-download-btn .material-symbols-rounded {
+.file-action-btn .material-symbols-rounded {
   font-size: 20px;
 }
 

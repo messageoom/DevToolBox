@@ -1444,7 +1444,8 @@
       "expandCode": "Expand code",
       "collapseCode": "Collapse code",
       "expandText": "Show more",
-      "collapseText": "Show less"
+      "collapseText": "Show less",
+      "preview": "Preview"
     }
   }
 }
