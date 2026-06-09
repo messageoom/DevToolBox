@@ -1,5 +1,5 @@
 <template>
-  <div class="im-file-card">
+  <div class="im-file-card" :class="{ 'file-card-sent': direction === 'sent' }">
     <div class="file-icon-wrap">
       <span class="material-symbols-rounded file-icon">{{ fileIcon }}</span>
     </div>
@@ -62,6 +62,7 @@ const props = defineProps({
   mime: { type: String, default: '' },
   url: { type: String, default: '' },
   progress: { type: Number, default: null },
+  direction: { type: String, default: 'received' },
 })
 
 defineEmits(['preview-file'])
@@ -103,16 +104,28 @@ const formattedSize = computed(() => {
   align-items: center;
   gap: var(--dt-spacing-sm);
   padding: var(--dt-spacing-sm) var(--dt-spacing-md);
-  background: var(--dt-bg-section);
+  background: var(--dt-bg-card);
   border: 1px solid var(--dt-border-lighter);
   border-radius: var(--dt-radius-md);
   min-width: 220px;
   max-width: 320px;
-  transition: background 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .im-file-card:hover {
   background: var(--dt-bg-hover);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Sent-direction file card: subtle accent tint instead of gray */
+.file-card-sent {
+  background: color-mix(in srgb, var(--dt-primary) 6%, var(--dt-bg-card));
+  border-color: color-mix(in srgb, var(--dt-primary) 18%, var(--dt-border-lighter));
+}
+
+.file-card-sent:hover {
+  background: color-mix(in srgb, var(--dt-primary) 10%, var(--dt-bg-card));
 }
 
 .file-icon-wrap {
@@ -124,6 +137,10 @@ const formattedSize = computed(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.file-card-sent .file-icon-wrap {
+  background: color-mix(in srgb, var(--dt-primary) 14%, transparent);
 }
 
 .file-icon {

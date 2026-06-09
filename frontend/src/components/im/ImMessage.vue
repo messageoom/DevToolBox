@@ -12,6 +12,8 @@
         'bubble-sent': msg.direction === 'sent',
         'bubble-received': msg.direction === 'received',
         'bubble-media': msg.msgType === 'image' || msg.msgType === 'video',
+        'bubble-file': msg.msgType === 'file',
+        'bubble-code': msg.msgType === 'code',
         'long-pressing': isLongPressing,
       }"
       @touchstart.passive="onTouchStart"
@@ -78,6 +80,7 @@
         :size="msg.attachment?.size || 0"
         :mime="msg.attachment?.mime || ''"
         :url="msg.attachment?.url || ''"
+        :direction="msg.direction"
         @preview-file="$emit('preview-file', $event)"
       />
 
@@ -294,6 +297,37 @@ onBeforeUnmount(() => {
 }
 .bubble-media .message-meta {
   padding: 2px 4px 0;
+}
+
+/* File bubbles: transparent wrapper — file card provides its own visual identity */
+.bubble-file {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.bubble-file .message-meta {
+  padding: 2px 4px 0;
+}
+/* In sent direction, keep meta text legible */
+.bubble-file.message-bubble .message-time {
+  color: var(--dt-text-secondary);
+  opacity: 0.7;
+}
+
+/* Code bubbles: transparent wrapper — code block has its own dark bg */
+.bubble-code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.bubble-code .message-meta {
+  padding: 2px 4px 0;
+}
+.bubble-code.message-bubble .message-time {
+  color: var(--dt-text-secondary);
+  opacity: 0.7;
 }
 
 /* =========================================
@@ -514,13 +548,7 @@ onBeforeUnmount(() => {
 }
 
 /* =========================================
-   Override ImCodeBlock inside sent bubble
-   ========================================= */
-.bubble-sent :deep(.im-code-block) {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* =========================================
+   Video message
    Video message
    ========================================= */
 .video-message {
