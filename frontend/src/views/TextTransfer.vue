@@ -308,31 +308,31 @@ const ConvPreview = {
       const prefix = name ? `${name}: ` : ''
       const badge = props.unread > 0 ? h('span', { class: 'tg-badge' }, props.unread) : null
 
-      // Image: thumbnail (no extra text when thumb exists)
+      // Image: name text first, then thumbnail
       if (last.msgType === 'image') {
         const src = last.attachment?.thumbnail || last.attachment?.url
         const children = []
+        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.uploadImage') + ']'}`))
         if (src) {
           children.push(h('div', { class: 'tg-conv-thumb-wrap' }, [
             h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
           ]))
         }
-        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.uploadImage') + ']'}`))
         if (badge) children.push(badge)
         return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
       }
 
-      // Video: thumbnail + play icon
+      // Video: name text first, then thumbnail
       if (last.msgType === 'video') {
         const src = last.attachment?.thumbnail
         const children = []
+        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.video', '视频') + ']'}`))
         if (src) {
           children.push(h('div', { class: 'tg-conv-thumb-wrap tg-conv-thumb-wrap--video' }, [
             h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
             h('span', { class: 'tg-conv-play-icon material-symbols-rounded' }, 'play_arrow'),
           ]))
         }
-        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.video', '视频') + ']'}`))
         if (badge) children.push(badge)
         return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
       }
@@ -497,19 +497,49 @@ function getLastMsgPreview(peerId) {
   const text = last.content || ''
   return prefix + (text.length > 30 ? text.slice(0, 30) + '...' : text)
 }
+// Track last-seen message ID per conversation — persisted to localStorage
+const SEEN_IDS_KEY = 'im_seen_ids'
+
+function loadSeenIds() {
+  try { return JSON.parse(localStorage.getItem(SEEN_IDS_KEY)) || {} } catch { return {} }
+}
+function saveSeenIds() {
+  try { localStorage.setItem(SEEN_IDS_KEY, JSON.stringify(seenIds.value)) } catch {}
+}
+
+const seenIds = ref(loadSeenIds())
+
 function unreadCount(peerId) {
   const msgs = messages.value[peerId]
   if (!msgs || !msgs.length) return 0
-  let c = 0
-  for (let i = msgs.length - 1; i >= 0; i--) {
-    if (msgs[i].direction === 'sent') break
-    c++
+  const lastSeenId = seenIds.value[peerId]
+  if (!lastSeenId) {
+    // No seen record — count trailing received messages
+    let c = 0
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].direction === 'sent') break
+      c++
+    }
+    return c
   }
-  return c
+  // Count received messages after the last seen message
+  let c = 0
+  let found = false
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].id === lastSeenId) { found = true; break }
+    if (msgs[i].direction === 'received') c++
+  }
+  return found ? c : 0
 }
 
 // --- Mobile nav ---
 function openChat(peer) {
+  const peerId = peer ? peer.nodeId : 'group'
+  const msgs = messages.value[peerId] || []
+  if (msgs.length > 0) {
+    seenIds.value[peerId] = msgs[msgs.length - 1].id
+    saveSeenIds()
+  }
   if (peer) selectPeer(peer)
   else selectGroupChat()
   mobileView.value = 'chat'
@@ -595,7 +625,7 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
+  padding: 12px 16px;
   background: var(--dt-bg-card);
   border-bottom: 1px solid var(--dt-border-light);
 }
@@ -673,10 +703,10 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 0;
+  padding: 12px 16px;
   cursor: pointer;
   transition: background 0.12s;
-  border-bottom: 1px solid color-mix(in srgb, var(--dt-border-light) 60%, transparent);
+  border-bottom: 1px solid var(--dt-border-light);
 }
 .tg-conv-item:active { background: var(--dt-bg-hover); }
 
@@ -1021,7 +1051,6 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   flex: 1;
   min-width: 0;
 }
-.tg-conv-preview-wrap--media { gap: 6px; }
 .tg-conv-preview-wrap .tg-conv-preview {
   font-size: 14px;
   color: var(--dt-text-secondary);
@@ -1032,6 +1061,9 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   min-width: 0;
   line-height: 1.4;
 }
+/* Media overrides — MUST be after the general rule above */
+.tg-conv-preview-wrap--media { gap: 4px; }
+.tg-conv-preview-wrap--media .tg-conv-preview { flex: 0 0 auto; }
 .tg-conv-thumb-wrap {
   position: relative;
   flex-shrink: 0;
