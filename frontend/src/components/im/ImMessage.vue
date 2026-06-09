@@ -106,6 +106,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDeviceStore } from '@/stores/device.js'
 import { marked } from 'marked'
+import { copyToClipboard } from '@/utils/format.js'
 import ImCodeBlock from './ImCodeBlock.vue'
 import ImImageMessage from './ImImageMessage.vue'
 import ImFileCard from './ImFileCard.vue'
@@ -191,7 +192,7 @@ watch(() => props.msg.content, () => {
 
 function handleCopy() {
   const text = props.msg.content || ''
-  navigator.clipboard.writeText(text).then(() => {
+  copyToClipboard(text).then(() => {
     ElMessage.success(t('common.copySuccess'))
     emit('copy', text)
   })

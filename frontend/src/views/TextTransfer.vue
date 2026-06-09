@@ -333,6 +333,7 @@ import { ChatDotRound } from '@element-plus/icons-vue'
 import { useDeviceStore } from '@/stores/device.js'
 import { useIm } from '@/composables/useIm.js'
 import { useLightbox } from '@/composables/useLightbox.js'
+import { copyToClipboard } from '@/utils/format.js'
 import ImMessage from '@/components/im/ImMessage.vue'
 import ImChatInput from '@/components/im/ImChatInput.vue'
 import ImLightbox from '@/components/im/ImLightbox.vue'
@@ -591,7 +592,7 @@ function onMessageLongPress(msg) {
 function actionCopy() {
   if (!actionSheetMsg.value) return
   const text = actionSheetMsg.value.content || ''
-  navigator.clipboard.writeText(text).then(() => {
+  copyToClipboard(text).then(() => {
     ElMessage.success(t('common.copySuccess'))
   })
   actionSheetVisible.value = false

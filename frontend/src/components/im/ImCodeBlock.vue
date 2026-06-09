@@ -71,6 +71,8 @@ hljs.registerLanguage('md', markdown)
 hljs.registerLanguage('plaintext', plaintext)
 hljs.registerLanguage('text', plaintext)
 
+import { copyToClipboard } from '@/utils/format.js'
+
 const MAX_HEIGHT = 300
 
 const props = defineProps({
@@ -131,7 +133,7 @@ onBeforeUnmount(() => {
 })
 
 function copyCode() {
-  navigator.clipboard.writeText(props.code).then(() => {
+  copyToClipboard(props.code).then(() => {
     copied.value = true
     ElMessage.success(t('common.copySuccess'))
     setTimeout(() => {
