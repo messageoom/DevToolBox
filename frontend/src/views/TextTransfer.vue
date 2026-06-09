@@ -374,10 +374,11 @@ const activeTyping = computed(() => {
 
 // --- P2P status helpers ---
 function p2pDotClass(nodeId) {
+  if (!connected.value) return ''
   const state = p2pStatus.value[nodeId]
-  // Mobile: always green (peer is online), add glow only for P2P direct
-  if (state === 'ready') return 'p2p-ready'
-  return ''
+  // Online: always green, add glow for P2P direct
+  if (state === 'ready') return 'online p2p-ready'
+  return 'online'
 }
 function p2pDotTitle(nodeId) {
   const state = p2pStatus.value[nodeId]
@@ -741,10 +742,14 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--dt-success, #67c23a);
+  background: var(--dt-danger, #f56c6c);
   flex-shrink: 0;
+  transition: background 0.3s;
 }
-.tg-online-dot-inline.p2p-ready {
+.tg-online-dot-inline.online {
+  background: var(--dt-success, #67c23a);
+}
+.tg-online-dot-inline.online.p2p-ready {
   box-shadow: 0 0 4px var(--dt-success, #67c23a);
 }
 /* P2P connection status dot (desktop sidebar) */
