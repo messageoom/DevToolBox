@@ -286,6 +286,7 @@ function handleControlMessage(fromId, msg) {
           msgType: msg.msgType || 'text',
           timestamp: msg.timestamp,
           attachment: msg.attachment || null,
+          isGroup: !!msg.isGroup,
           secure: true,
         })
       }
