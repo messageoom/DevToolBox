@@ -12,7 +12,11 @@
         'bubble-sent': msg.direction === 'sent',
         'bubble-received': msg.direction === 'received',
         'bubble-media': msg.msgType === 'image' || msg.msgType === 'video',
+        'long-pressing': isLongPressing,
       }"
+      @touchstart.passive="onTouchStart"
+      @touchend="onTouchEnd"
+      @touchmove.passive="onTouchMove"
     >
       <!-- Group chat: show sender name for received messages -->
       <div v-if="isGroup && msg.direction === 'received'" class="message-sender">
@@ -79,17 +83,18 @@
       </div>
     </div>
 
-    <!-- Copy button (visible on hover) -->
-    <button class="msg-action-btn" @click="handleCopy" :title="t('common.copy')">
+    <!-- Copy button (visible on hover, desktop only) -->
+    <button v-if="!deviceStore.isMobile" class="msg-action-btn" @click="handleCopy" :title="t('common.copy')">
       <span class="material-symbols-rounded">content_copy</span>
     </button>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { useDeviceStore } from '@/stores/device.js'
 import ImCodeBlock from './ImCodeBlock.vue'
 import ImImageMessage from './ImImageMessage.vue'
 import ImFileCard from './ImFileCard.vue'
@@ -106,9 +111,10 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['preview-image', 'delete', 'copy', 'forward'])
+const emit = defineEmits(['preview-image', 'delete', 'copy', 'forward', 'long-press'])
 
 const { t } = useI18n()
+const deviceStore = useDeviceStore()
 
 const formattedTime = computed(() => {
   const d = new Date(props.msg.timestamp)
@@ -160,6 +166,38 @@ function openVideo() {
   const url = props.msg.attachment?.url
   if (url) window.open(url, '_blank')
 }
+
+// --- Long-press detection (mobile only) ---
+const LONG_PRESS_DURATION = 400
+const longPressTimer = ref(null)
+const isLongPressing = ref(false)
+
+function onTouchStart() {
+  if (!deviceStore.isMobile) return
+  longPressTimer.value = setTimeout(() => {
+    isLongPressing.value = true
+    emit('long-press', props.msg)
+  }, LONG_PRESS_DURATION)
+}
+
+function onTouchEnd() {
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
+  }
+  setTimeout(() => { isLongPressing.value = false }, 100)
+}
+
+function onTouchMove() {
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
+  }
+}
+
+onBeforeUnmount(() => {
+  if (longPressTimer.value) clearTimeout(longPressTimer.value)
+})
 </script>
 
 <style scoped>
@@ -184,6 +222,13 @@ function openVideo() {
   max-width: 70%;
   padding: var(--dt-spacing-sm) var(--dt-spacing-md);
   border-radius: var(--dt-radius-lg);
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.message-bubble.long-pressing {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
   font-size: var(--dt-font-size-sm);
   line-height: 1.5;
   word-break: break-word;

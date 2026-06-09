@@ -83,6 +83,7 @@
             <div class="tg-bar-info">
               <span class="tg-bar-name">{{ activePeer.name }}</span>
               <span v-if="activeTyping" class="tg-bar-status tg-bar-status--typing">{{ t('tools.im.typing') }}</span>
+              <span v-else-if="p2pStatus[activePeer.nodeId] === 'ready'" class="tg-bar-status tg-bar-status--p2p">{{ t('tools.im.p2pDirect') }}</span>
               <span v-else class="tg-bar-status">{{ t('tools.im.online') }}</span>
             </div>
           </template>
@@ -96,7 +97,7 @@
         </div>
 
         <!-- Messages -->
-        <div class="tg-messages" ref="messagesContainer">
+        <div class="tg-messages" ref="messagesContainer" @scroll="onMessagesScroll">
           <div v-if="activeMessages.length === 0" class="tg-empty-chat">
             <span class="material-symbols-rounded tg-empty-chat-icon">forum</span>
             <p class="tg-empty-chat-title">{{ t('tools.im.noMessages') }}</p>
@@ -114,9 +115,24 @@
               @copy="onCopy"
               @delete="onDeleteMessage"
               @forward="onForwardMessage"
+              @long-press="onMessageLongPress"
             />
           </template>
         </div>
+
+        <!-- Scroll-to-bottom floating button -->
+        <transition name="scroll-btn-fade">
+          <button
+            v-if="!isAtBottom"
+            class="scroll-to-bottom-btn"
+            @click="scrollToBottom"
+          >
+            <span class="material-symbols-rounded">keyboard_arrow_down</span>
+            <span v-if="unreadScrollCount > 0" class="scroll-btn-badge">
+              {{ unreadScrollCount > 99 ? '99+' : unreadScrollCount }}
+            </span>
+          </button>
+        </transition>
 
         <!-- Fixed bottom input -->
         <ImChatInput
@@ -127,6 +143,34 @@
         />
       </div>
     </transition>
+
+    <!-- Mobile action sheet for message actions -->
+    <el-drawer
+      v-model="actionSheetVisible"
+      direction="btt"
+      :size="'auto'"
+      :show-close="false"
+      :with-header="false"
+      class="msg-action-sheet"
+    >
+      <div class="action-sheet-list">
+        <button class="action-sheet-item" @click="actionCopy">
+          <span class="material-symbols-rounded">content_copy</span>
+          <span>{{ t('common.copy') }}</span>
+        </button>
+        <button class="action-sheet-item" @click="actionForward">
+          <span class="material-symbols-rounded">forward</span>
+          <span>{{ t('tools.im.forward') }}</span>
+        </button>
+        <button class="action-sheet-item action-sheet-item--danger" @click="actionDelete">
+          <span class="material-symbols-rounded">delete</span>
+          <span>{{ t('common.delete') }}</span>
+        </button>
+      </div>
+      <button class="action-sheet-cancel" @click="actionSheetVisible = false">
+        {{ t('tools.im.cancel') }}
+      </button>
+    </el-drawer>
 
     <!-- Rename dialog -->
     <el-dialog
@@ -219,7 +263,7 @@
           </template>
         </div>
 
-        <div class="chat-messages" ref="messagesContainer">
+        <div class="chat-messages" ref="messagesContainer" @scroll="onMessagesScroll">
           <div v-if="activeMessages.length === 0" class="empty-messages">
             <span class="material-symbols-rounded empty-chat-icon">chat</span>
             <p class="empty-chat-title">{{ t('tools.im.noMessages') }}</p>
@@ -359,6 +403,10 @@ const messagesContainer = ref(null)
 const renameDialogVisible = ref(false)
 const renameInput = ref('')
 const mobileView = ref('list')
+const actionSheetVisible = ref(false)
+const actionSheetMsg = ref(null)
+const isAtBottom = ref(true)
+const unreadScrollCount = ref(0)
 
 // Close overlay AND disconnect SocketIO before the page-slide leave transition.
 // Without early disconnect, the long-polling connection blocks browser HTTP
@@ -539,6 +587,31 @@ function onForwardMessage(msg) {
   forwardMessage(msg, null)
   ElMessage.success(t('tools.im.forwarded'))
 }
+
+// --- Mobile long-press action sheet ---
+function onMessageLongPress(msg) {
+  actionSheetMsg.value = msg
+  actionSheetVisible.value = true
+}
+function actionCopy() {
+  if (!actionSheetMsg.value) return
+  const text = actionSheetMsg.value.content || ''
+  navigator.clipboard.writeText(text).then(() => {
+    ElMessage.success(t('common.copySuccess'))
+  })
+  actionSheetVisible.value = false
+}
+function actionForward() {
+  if (!actionSheetMsg.value) return
+  forwardMessage(actionSheetMsg.value, null)
+  ElMessage.success(t('tools.im.forwarded'))
+  actionSheetVisible.value = false
+}
+function actionDelete() {
+  if (!actionSheetMsg.value) return
+  deleteMessage(actionSheetMsg.value.id, activePeer.value?.nodeId || 'group')
+  actionSheetVisible.value = false
+}
 function openLightboxForImage(msg) {
   const imgs = activeMessages.value
     .filter(m => m.msgType === 'image' && m.attachment?.url)
@@ -556,9 +629,30 @@ function confirmRename() {
   renameDialogVisible.value = false
 }
 function scrollToBottom() {
-  if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    isAtBottom.value = true
+    unreadScrollCount.value = 0
+  }
 }
-watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
+function onMessagesScroll() {
+  const el = messagesContainer.value
+  if (!el) return
+  const threshold = 60
+  const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold
+  if (atBottom && !isAtBottom.value) {
+    unreadScrollCount.value = 0
+  }
+  isAtBottom.value = atBottom
+}
+watch(activeMessages, (newVal, oldVal) => {
+  const newCount = newVal.length - (oldVal?.length || 0)
+  if (isAtBottom.value) {
+    nextTick(scrollToBottom)
+  } else if (newCount > 0) {
+    unreadScrollCount.value += newCount
+  }
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -849,6 +943,62 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   color: var(--dt-primary);
   font-style: italic;
 }
+.tg-bar-status--p2p {
+  color: var(--dt-success, #67c23a);
+  font-weight: 500;
+}
+
+/* Scroll-to-bottom button */
+.scroll-to-bottom-btn {
+  position: absolute;
+  bottom: 70px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--dt-bg-card);
+  box-shadow: var(--dt-shadow-md);
+  color: var(--dt-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+.scroll-to-bottom-btn:active {
+  transform: scale(0.92);
+}
+.scroll-to-bottom-btn .material-symbols-rounded {
+  font-size: 24px;
+}
+.scroll-btn-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  background: var(--dt-danger, #f56c6c);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.scroll-btn-fade-enter-active,
+.scroll-btn-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.scroll-btn-fade-enter-from,
+.scroll-btn-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
 
 /* Messages */
 .tg-messages {
@@ -1012,6 +1162,58 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 
 .time-separator { display: flex; align-items: center; justify-content: center; padding: 8px 0; }
 .time-separator span { font-size: 11px; color: var(--dt-text-placeholder); background: var(--dt-bg-page); padding: 2px 10px; border-radius: 10px; }
+
+/* ===== Mobile action sheet ===== */
+.msg-action-sheet :deep(.el-drawer__body) {
+  padding: 0;
+  background: var(--dt-bg-card);
+}
+.action-sheet-list {
+  padding: 8px 0;
+}
+.action-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  color: var(--dt-text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+.action-sheet-item:active {
+  background: var(--dt-bg-hover);
+}
+.action-sheet-item .material-symbols-rounded {
+  font-size: 22px;
+  color: var(--dt-text-secondary);
+}
+.action-sheet-item--danger {
+  color: var(--dt-danger, #f56c6c);
+}
+.action-sheet-item--danger .material-symbols-rounded {
+  color: var(--dt-danger, #f56c6c);
+}
+.action-sheet-cancel {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px 16px;
+  padding: 12px;
+  border: none;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-bg-section);
+  color: var(--dt-text-secondary);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+.action-sheet-cancel:active {
+  background: var(--dt-bg-hover);
+}
 </style>
 
 <!-- ConvPreview uses render function — scoped styles don't apply, so these must be unscoped -->

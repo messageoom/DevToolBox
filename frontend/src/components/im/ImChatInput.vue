@@ -40,25 +40,16 @@
       />
 
       <el-button
-        v-if="!deviceStore.isMobile"
+        v-if="!deviceStore.isMobile || inputText.trim()"
         type="primary"
-        class="send-btn"
+        :class="deviceStore.isMobile ? 'send-btn-mobile-inline' : 'send-btn'"
         :disabled="disabled || !inputText.trim()"
         @click="handleSend"
       >
-        {{ t('tools.im.send') }}
+        <span v-if="deviceStore.isMobile" class="material-symbols-rounded">send</span>
+        <span v-else>{{ t('tools.im.send') }}</span>
       </el-button>
     </div>
-
-    <el-button
-      v-if="deviceStore.isMobile"
-      type="primary"
-      class="send-btn-mobile"
-      :disabled="disabled || !inputText.trim()"
-      @click="handleSend"
-    >
-      {{ t('tools.im.send') }}
-    </el-button>
 
     <!-- Hidden file inputs -->
     <input
@@ -300,9 +291,21 @@ function onPaste(e) {
   flex-shrink: 0;
 }
 
-.send-btn-mobile {
-  width: 100%;
-  margin-top: var(--dt-spacing-sm);
+.send-btn-mobile-inline {
+  flex-shrink: 0;
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.send-btn-mobile-inline .material-symbols-rounded {
+  font-size: 20px;
 }
 
 /* --- Hidden Inputs --- */
@@ -354,10 +357,6 @@ function onPaste(e) {
 @media (max-width: 768px) {
   .chat-textarea :deep(.el-textarea__inner) {
     font-size: 16px; /* Prevent iOS zoom */
-  }
-
-  .send-btn-mobile {
-    min-height: 40px;
   }
 }
 </style>

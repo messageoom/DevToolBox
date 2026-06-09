@@ -1438,7 +1438,9 @@
       "p2pConnecting": "正在建立P2P连接...",
       "p2pRelay": "服务器中转",
       "online": "在线",
-      "video": "视频"
+      "video": "视频",
+      "forward": "转发",
+      "p2pDirect": "P2P 直连"
     }
   }
 }

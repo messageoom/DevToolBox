@@ -1438,7 +1438,9 @@
       "p2pConnecting": "Establishing P2P connection...",
       "p2pRelay": "Server Relay",
       "online": "Online",
-      "video": "Video"
+      "video": "Video",
+      "forward": "Forward",
+      "p2pDirect": "P2P Direct"
     }
   }
 }
