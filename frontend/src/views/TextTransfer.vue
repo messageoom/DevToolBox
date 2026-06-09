@@ -758,15 +758,14 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: var(--dt-text-placeholder, #c0c4cc);
+  background: var(--dt-danger, #f56c6c);
   transition: background 0.3s;
 }
-.p2p-dot.p2p-ready {
+.p2p-dot.online {
   background: var(--dt-success, #67c23a);
 }
-.p2p-dot.p2p-connecting {
-  background: var(--dt-warning, #e6a23c);
-  animation: p2p-pulse 1.2s ease-in-out infinite;
+.p2p-dot.online.p2p-ready {
+  box-shadow: 0 0 4px var(--dt-success, #67c23a);
 }
 @keyframes p2p-pulse {
   0%, 100% { opacity: 1; }
