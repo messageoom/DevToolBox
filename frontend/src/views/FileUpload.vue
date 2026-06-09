@@ -71,7 +71,7 @@
         <transition name="grid-collapse">
           <div v-show="expandedCategories[cat.id]" class="file-grid">
             <div
-              v-for="file in cat.files"
+              v-for="file in getVisibleFiles(cat)"
               :key="file.name"
               class="file-card"
               :class="{ highlighted: highlightedFiles.has(file.name) }"
@@ -94,6 +94,18 @@
                 </button>
               </div>
             </div>
+            <!-- "More" card - mobile only, shown when category has more files -->
+            <div
+              v-if="hasMoreFiles(cat)"
+              class="file-card file-card--more"
+              @click="goToCategory(cat.id)"
+            >
+              <div class="more-overlay">
+                <span class="material-symbols-rounded more-icon">arrow_forward</span>
+                <span class="more-text">{{ t('tools.fileUpload.viewMore') }}</span>
+                <span class="more-count">+{{ cat.files.length - MOBILE_MAX_VISIBLE }}</span>
+              </div>
+            </div>
           </div>
         </transition>
       </div>
@@ -113,10 +125,14 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useDeviceStore } from '@/stores/device'
 import axios from 'axios'
 
 const { t } = useI18n()
+const router = useRouter()
+const deviceStore = useDeviceStore()
 
 const uploadRef = ref(null)
 const fileList = ref([])
@@ -126,6 +142,22 @@ const uploadProgress = ref(0)
 const searchQuery = ref('')
 const expandedCategories = reactive({})
 const highlightedFiles = reactive(new Set())
+
+const isMobile = computed(() => deviceStore.isMobile)
+const MOBILE_MAX_VISIBLE = 3 // Show 3 files + 1 "More" card = 2 rows (2 cols per row)
+
+function getVisibleFiles(cat) {
+  if (!isMobile.value) return cat.files
+  return cat.files.slice(0, MOBILE_MAX_VISIBLE)
+}
+
+function hasMoreFiles(cat) {
+  return isMobile.value && cat.files.length > MOBILE_MAX_VISIBLE
+}
+
+function goToCategory(categoryId) {
+  router.push(`/file-category/${categoryId}`)
+}
 
 const CATEGORY_META = {
   images:    { icon: 'image',            exts: ['png','jpg','jpeg','gif','bmp','webp','svg','ico'] },
@@ -772,6 +804,55 @@ onMounted(loadUploadedFiles)
 
   .file-card .el-button {
     min-height: 32px;
+  }
+
+  /* "More" card */
+  .file-card--more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dt-bg-section);
+    border: 1px dashed var(--dt-primary);
+    cursor: pointer;
+    min-height: 140px;
+    transition: all 0.2s ease;
+  }
+
+  .file-card--more:hover {
+    background: color-mix(in srgb, var(--dt-primary) 8%, transparent);
+    border-style: solid;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .file-card--more:active {
+    transform: translateY(0);
+  }
+
+  .more-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--dt-primary);
+  }
+
+  .more-icon {
+    font-size: 28px;
+    opacity: 0.7;
+  }
+
+  .more-text {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .more-count {
+    font-size: 11px;
+    color: var(--dt-text-secondary);
+    background: var(--dt-bg-card);
+    padding: 2px 10px;
+    border-radius: 99px;
   }
 }
 </style>
