@@ -311,6 +311,7 @@ onBeforeUnmount(() => {
 
 .message-text {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   overflow: hidden;
   transition: max-height 0.25s ease;
 }
@@ -361,6 +362,7 @@ onBeforeUnmount(() => {
 .message-markdown {
   font-size: var(--dt-font-size-sm);
   line-height: 1.6;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 .message-markdown :deep(h1),
