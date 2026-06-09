@@ -1430,7 +1430,10 @@
       "forwarded": "Forwarded",
       "copied": "Copied",
       "you": "You",
-      "yesterday": "Yesterday"
+      "yesterday": "Yesterday",
+      "p2pReady": "P2P Direct (E2E Encrypted)",
+      "p2pConnecting": "Establishing P2P connection...",
+      "p2pRelay": "Server Relay"
     }
   }
 }

@@ -93,9 +93,9 @@
       }"
     >
       <div class="content-wrapper" :class="{ 'content-wrapper--padded': !isMarkdownEditor }">
-        <router-view v-slot="{ Component }">
+        <router-view v-slot="{ Component, route }">
           <transition name="page-slide" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" :key="route.path" />
           </transition>
         </router-view>
       </div>

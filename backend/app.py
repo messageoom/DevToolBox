@@ -104,14 +104,18 @@ def create_app(access_token=None):
             async_mode='threading',
             manage_session=False,
         )
-        try:
-            from .modules.text_transfer import register_socketio_events
-        except ImportError:
-            try:
-                from modules.text_transfer import register_socketio_events
-            except ImportError:
-                from backend.modules.text_transfer import register_socketio_events
-        register_socketio_events(socketio)
+        logging.info('Socket.IO: server instance created')
+
+        # Inline diagnostic: test that event handlers actually work
+        @socketio.on('connect')
+        def _on_si_connect():
+            from flask import request as _r
+            logging.info('Socket.IO: 🔌 CLIENT CONNECTED sid=%s', _r.sid)
+
+        @socketio.on('disconnect')
+        def _on_si_disconnect():
+            from flask import request as _r
+            logging.info('Socket.IO: 🔌 CLIENT DISCONNECTED sid=%s', _r.sid)
 
         # IM module (SocketIO events)
         try:
@@ -121,7 +125,13 @@ def create_app(access_token=None):
                 from modules.im import register_im_events
             except ImportError:
                 from backend.modules.im import register_im_events
-        register_im_events(socketio)
+        try:
+            register_im_events(socketio)
+            logging.info('Socket.IO: ✅ IM events registered successfully')
+        except Exception as e:
+            logging.error('Socket.IO: ❌ register_im_events FAILED: %s', e, exc_info=True)
+    else:
+        logging.warning('Socket.IO: DISABLED — flask_socketio not installed! IM feature will NOT work.')
     app.config['SOCKETIO'] = socketio
 
     # Token 认证中间件
@@ -146,8 +156,10 @@ def create_app(access_token=None):
         if not config.get('security', {}).get('token_enabled', True):
             return None
 
-        # Exempt paths
-        if request.path in ('/favicon.ico', '/robots.txt', '/api/frontend-log') or request.path.startswith('/socket.io/'):
+        # Exempt paths — static assets, SocketIO, etc.
+        if (request.path in ('/favicon.ico', '/robots.txt', '/api/frontend-log')
+                or request.path.startswith('/socket.io/')
+                or request.path.startswith('/assets/')):
             return None
 
         provided = (
@@ -238,10 +250,10 @@ def create_app(access_token=None):
         log_fn('[Frontend] %s', msg)
         return jsonify({'success': True})
 
-    # 静态资源缓存头
+    # 静态资源缓存头 — only cache successful responses (not 403 errors)
     @app.after_request
     def add_cache_headers(response):
-        if '/assets/' in request.path:
+        if '/assets/' in request.path and response.status_code == 200:
             response.cache_control.max_age = 31536000
         return response
 

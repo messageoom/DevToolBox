@@ -21,12 +21,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  build: {
+    cssCodeSplit: false,
+  },
   server: {
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false
+      },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        ws: true,            // 关键：启用 WebSocket 代理
+        changeOrigin: true,
       }
     }
   }

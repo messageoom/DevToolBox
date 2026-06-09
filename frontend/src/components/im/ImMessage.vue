@@ -11,6 +11,7 @@
       :class="{
         'bubble-sent': msg.direction === 'sent',
         'bubble-received': msg.direction === 'received',
+        'bubble-media': msg.msgType === 'image' || msg.msgType === 'video',
       }"
     >
       <!-- Group chat: show sender name for received messages -->
@@ -36,6 +37,25 @@
         :filename="msg.attachment?.filename || ''"
         @preview="$emit('preview-image', msg)"
       />
+
+      <!-- Video message -->
+      <div v-else-if="msg.msgType === 'video'" class="video-message" @click="openVideo">
+        <div class="video-thumb-wrap">
+          <img
+            v-if="msg.attachment?.thumbnail"
+            :src="msg.attachment.thumbnail"
+            class="video-thumb"
+            loading="lazy"
+          />
+          <div v-else class="video-thumb video-thumb--placeholder">
+            <span class="material-symbols-rounded">movie</span>
+          </div>
+          <div class="video-play-overlay">
+            <span class="material-symbols-rounded video-play-btn">play_arrow</span>
+          </div>
+        </div>
+        <div v-if="msg.content" class="video-caption">{{ msg.content }}</div>
+      </div>
 
       <!-- File message -->
       <ImFileCard
@@ -135,6 +155,11 @@ function handleCopy() {
     emit('copy', text)
   })
 }
+
+function openVideo() {
+  const url = props.msg.attachment?.url
+  if (url) window.open(url, '_blank')
+}
 </script>
 
 <style scoped>
@@ -175,6 +200,17 @@ function handleCopy() {
   color: var(--dt-text-primary);
   border: 1px solid var(--dt-border-lighter);
   border-bottom-left-radius: var(--dt-radius-sm);
+}
+
+/* Media bubbles: no background, no padding — image IS the content */
+.bubble-media {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.bubble-media .message-meta {
+  padding: 2px 4px 0;
 }
 
 /* =========================================
@@ -272,6 +308,62 @@ function handleCopy() {
    ========================================= */
 .bubble-sent :deep(.im-code-block) {
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   Video message
+   ========================================= */
+.video-message {
+  cursor: pointer;
+  max-width: 280px;
+}
+.video-thumb-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.video-thumb {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+.video-thumb--placeholder {
+  height: 120px;
+  background: var(--dt-bg-hover, #2a2a2a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-thumb--placeholder .material-symbols-rounded {
+  font-size: 40px;
+  color: var(--dt-text-secondary);
+  opacity: 0.5;
+}
+.video-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  transition: background 0.15s;
+}
+.video-message:hover .video-play-overlay {
+  background: rgba(0,0,0,0.45);
+}
+.video-play-btn {
+  font-size: 40px;
+  color: #fff;
+}
+.video-caption {
+  font-size: 13px;
+  color: var(--dt-text-secondary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================================

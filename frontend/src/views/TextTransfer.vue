@@ -1,4 +1,6 @@
 <template>
+  <!-- Single root wrapper — required for <Transition mode="out-in"> in App.vue -->
+  <div class="text-transfer-root">
   <!-- Mobile: conversation list in normal flow, chat view as fixed overlay -->
   <div v-if="deviceStore.isMobile">
     <!-- Connection status banner (inline) -->
@@ -34,8 +36,7 @@
             <span class="tg-conv-time">{{ formatConvTime(lastMsgTime('group')) }}</span>
           </div>
           <div class="tg-conv-row">
-            <span class="tg-conv-preview">{{ getLastMsgPreview('group') }}</span>
-            <span v-if="unreadCount('group') > 0" class="tg-badge">{{ unreadCount('group') }}</span>
+            <conv-preview peer-id="group" :unread="unreadCount('group')" :messages="messages" />
           </div>
         </div>
       </div>
@@ -51,12 +52,11 @@
         <div class="tg-conv-body">
           <div class="tg-conv-row">
             <span class="tg-conv-name">{{ peer.name }}</span>
-            <span class="tg-online-dot-inline"></span>
+            <span class="tg-online-dot-inline" :class="p2pDotClass(peer.nodeId)" :title="p2pDotTitle(peer.nodeId)"></span>
             <span class="tg-conv-time">{{ formatConvTime(lastMsgTime(peer.nodeId)) }}</span>
           </div>
           <div class="tg-conv-row">
-            <span class="tg-conv-preview">{{ getLastMsgPreview(peer.nodeId) }}</span>
-            <span v-if="unreadCount(peer.nodeId) > 0" class="tg-badge">{{ unreadCount(peer.nodeId) }}</span>
+            <conv-preview :peer-id="peer.nodeId" :unread="unreadCount(peer.nodeId)" :messages="messages" />
           </div>
         </div>
       </div>
@@ -185,7 +185,7 @@
               <div class="peer-name">{{ peer.name }}</div>
               <div class="peer-ip">{{ peer.ip }}</div>
             </div>
-            <div class="online-dot"></div>
+            <div class="p2p-dot" :class="p2pDotClass(peer.nodeId)" :title="p2pDotTitle(peer.nodeId)"></div>
           </div>
           <div v-if="peers.length === 0" class="empty-peers">
             <span class="material-symbols-rounded empty-peers-icon">devices</span>
@@ -273,11 +273,13 @@
       <el-button type="primary" @click="confirmRename">{{ t('tools.im.confirm') }}</el-button>
     </template>
   </el-dialog>
+  </div><!-- /.text-transfer-root -->
 </template>
 
 <script setup>
-import { ref, nextTick, watch, computed } from 'vue'
+import { ref, nextTick, watch, computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { onBeforeRouteLeave } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ChatDotRound } from '@element-plus/icons-vue'
 import { useDeviceStore } from '@/stores/device.js'
@@ -286,6 +288,75 @@ import { useLightbox } from '@/composables/useLightbox.js'
 import ImMessage from '@/components/im/ImMessage.vue'
 import ImChatInput from '@/components/im/ImChatInput.vue'
 import ImLightbox from '@/components/im/ImLightbox.vue'
+import { h } from 'vue'
+
+// Inline component: conversation list last-message preview
+const ConvPreview = {
+  props: {
+    peerId: String,
+    unread: { type: Number, default: 0 },
+    messages: { type: Object, required: true },
+  },
+  setup(props) {
+    const { t } = useI18n()
+    return () => {
+      const msgs = props.messages[props.peerId]
+      const last = msgs?.length ? msgs[msgs.length - 1] : null
+      if (!last) return h('span', { class: 'tg-conv-preview' }, '')
+
+      const name = last.direction === 'sent' ? t('tools.im.you') : (last.peerName || '')
+      const prefix = name ? `${name}: ` : ''
+      const badge = props.unread > 0 ? h('span', { class: 'tg-badge' }, props.unread) : null
+
+      // Image: thumbnail (no extra text when thumb exists)
+      if (last.msgType === 'image') {
+        const src = last.attachment?.thumbnail || last.attachment?.url
+        const children = []
+        if (src) {
+          children.push(h('div', { class: 'tg-conv-thumb-wrap' }, [
+            h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
+          ]))
+        }
+        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.uploadImage') + ']'}`))
+        if (badge) children.push(badge)
+        return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
+      }
+
+      // Video: thumbnail + play icon
+      if (last.msgType === 'video') {
+        const src = last.attachment?.thumbnail
+        const children = []
+        if (src) {
+          children.push(h('div', { class: 'tg-conv-thumb-wrap tg-conv-thumb-wrap--video' }, [
+            h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
+            h('span', { class: 'tg-conv-play-icon material-symbols-rounded' }, 'play_arrow'),
+          ]))
+        }
+        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.video', '视频') + ']'}`))
+        if (badge) children.push(badge)
+        return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
+      }
+
+      // File: icon + filename
+      if (last.msgType === 'file') {
+        const fname = last.attachment?.filename || t('tools.im.uploadFile')
+        const children = [
+          h('span', { class: 'tg-conv-file-icon material-symbols-rounded' }, 'description'),
+          h('span', { class: 'tg-conv-preview' }, `${prefix}${fname}`),
+        ]
+        if (badge) children.push(badge)
+        return h('div', { class: 'tg-conv-preview-wrap' }, children)
+      }
+
+      // Text / code / link
+      const text = last.content || ''
+      const preview = prefix + (text.length > 30 ? text.slice(0, 30) + '...' : text)
+      const children = [h('span', { class: 'tg-conv-preview' }, preview)]
+      if (badge) children.push(badge)
+      return h('div', { class: 'tg-conv-preview-wrap' }, children)
+    }
+  }
+}
 import ToolPage from '@/components/ToolPage.vue'
 
 const { t } = useI18n()
@@ -309,6 +380,8 @@ const {
   rename,
   deleteMessage,
   forwardMessage,
+  disconnect,
+  p2pStatus,
 } = useIm()
 
 const messagesContainer = ref(null)
@@ -316,10 +389,32 @@ const renameDialogVisible = ref(false)
 const renameInput = ref('')
 const mobileView = ref('list')
 
+// Close overlay AND disconnect SocketIO before the page-slide leave transition.
+// Without early disconnect, the long-polling connection blocks browser HTTP
+// connections and stale event handlers can fire during the 0.2s transition,
+// which prevents the next page from rendering ("no content" bug).
+onBeforeRouteLeave(() => {
+  mobileView.value = 'list'
+})
+
 const activeTyping = computed(() => {
   if (!activePeer.value) return false
   return !!typingPeers.value[activePeer.value.nodeId]
 })
+
+// --- P2P status helpers ---
+function p2pDotClass(nodeId) {
+  const state = p2pStatus.value[nodeId]
+  if (state === 'ready') return 'p2p-ready'
+  if (state === 'connecting') return 'p2p-connecting'
+  return ''
+}
+function p2pDotTitle(nodeId) {
+  const state = p2pStatus.value[nodeId]
+  if (state === 'ready') return t('tools.im.p2pReady')
+  if (state === 'connecting') return t('tools.im.p2pConnecting')
+  return t('tools.im.p2pRelay')
+}
 
 // --- Identicon ---
 function hashStr(str) {
@@ -383,6 +478,10 @@ function formatConvTime(ts) {
 }
 
 // --- Conv list ---
+function getLastMsg(peerId) {
+  const msgs = messages.value[peerId]
+  return (msgs && msgs.length) ? msgs[msgs.length - 1] : null
+}
 function lastMsgTime(peerId) {
   const msgs = messages.value[peerId]
   return (!msgs || !msgs.length) ? 0 : msgs[msgs.length - 1].timestamp
@@ -623,15 +722,6 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   color: var(--dt-text-secondary);
   flex-shrink: 0;
 }
-.tg-conv-preview {
-  font-size: 14px;
-  color: var(--dt-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
-}
 .tg-badge {
   min-width: 20px;
   height: 20px;
@@ -652,6 +742,34 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   border-radius: 50%;
   background: var(--dt-success, #67c23a);
   flex-shrink: 0;
+}
+/* P2P connection status dot */
+.p2p-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--dt-text-placeholder, #c0c4cc);
+  transition: background 0.3s;
+}
+.p2p-dot.p2p-ready {
+  background: var(--dt-success, #67c23a);
+}
+.p2p-dot.p2p-connecting {
+  background: var(--dt-warning, #e6a23c);
+  animation: p2p-pulse 1.2s ease-in-out infinite;
+}
+.tg-online-dot-inline.p2p-ready {
+  background: var(--dt-success, #67c23a);
+  box-shadow: 0 0 4px var(--dt-success, #67c23a);
+}
+.tg-online-dot-inline.p2p-connecting {
+  background: var(--dt-warning, #e6a23c);
+  animation: p2p-pulse 1.2s ease-in-out infinite;
+}
+@keyframes p2p-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .tg-empty {
@@ -892,4 +1010,61 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 
 .time-separator { display: flex; align-items: center; justify-content: center; padding: 8px 0; }
 .time-separator span { font-size: 11px; color: var(--dt-text-placeholder); background: var(--dt-bg-page); padding: 2px 10px; border-radius: 10px; }
+</style>
+
+<!-- ConvPreview uses render function — scoped styles don't apply, so these must be unscoped -->
+<style>
+.tg-conv-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.tg-conv-preview-wrap--media { gap: 6px; }
+.tg-conv-preview-wrap .tg-conv-preview {
+  font-size: 14px;
+  color: var(--dt-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+.tg-conv-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.tg-conv-thumb-wrap .tg-conv-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+  background: var(--dt-bg-hover, #f0f0f0);
+}
+.tg-conv-thumb-wrap--video::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.tg-conv-thumb-wrap .tg-conv-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  color: #fff;
+  pointer-events: none;
+  z-index: 1;
+}
+.tg-conv-preview-wrap .tg-conv-file-icon {
+  font-size: 18px;
+  color: var(--dt-text-secondary);
+  flex-shrink: 0;
+}
 </style>

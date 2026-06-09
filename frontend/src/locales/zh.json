@@ -1430,7 +1430,10 @@
       "forwarded": "已转发",
       "copied": "已复制",
       "you": "你",
-      "yesterday": "昨天"
+      "yesterday": "昨天",
+      "p2pReady": "P2P 直连 (E2E加密)",
+      "p2pConnecting": "正在建立P2P连接...",
+      "p2pRelay": "服务器中转"
     }
   }
 }

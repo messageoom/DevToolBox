@@ -6,9 +6,13 @@
     <div class="file-info">
       <div class="file-name" :title="filename">{{ filename }}</div>
       <div class="file-size">{{ formattedSize }}</div>
+      <!-- P2P transfer progress bar -->
+      <div v-if="progress != null && progress < 1" class="file-progress">
+        <div class="file-progress-bar" :style="{ width: (progress * 100) + '%' }"></div>
+      </div>
     </div>
     <a
-      v-if="url"
+      v-if="url && (progress == null || progress >= 1)"
       class="file-download-btn"
       :href="url"
       target="_blank"
@@ -39,6 +43,11 @@ const props = defineProps({
   url: {
     type: String,
     default: '',
+  },
+  /** P2P transfer progress 0–1, null when not transferring */
+  progress: {
+    type: Number,
+    default: null,
   },
 })
 
@@ -139,5 +148,20 @@ const formattedSize = computed(() => {
 
 .file-download-btn .material-symbols-rounded {
   font-size: 20px;
+}
+
+/* P2P transfer progress */
+.file-progress {
+  height: 3px;
+  background: var(--dt-border-lighter);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.file-progress-bar {
+  height: 100%;
+  background: var(--dt-primary);
+  border-radius: 2px;
+  transition: width 0.15s ease;
 }
 </style>

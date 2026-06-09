@@ -4,11 +4,10 @@
       <img
         class="image-thumbnail"
         :src="displaySrc"
-        :alt="filename"
+        alt=""
         loading="lazy"
       />
     </div>
-    <div v-if="showFilename" class="image-filename">{{ filename }}</div>
   </div>
 </template>
 
@@ -34,13 +33,6 @@ defineEmits(['preview'])
 
 const displaySrc = computed(() => {
   return props.thumbnail || props.url
-})
-
-const showFilename = computed(() => {
-  if (!props.filename) return false
-  // Hide filename if it looks like a hash (e.g. "a1b2c3d4e5.png" with a long hex prefix)
-  const nameWithoutExt = props.filename.replace(/\.[^.]+$/, '')
-  return nameWithoutExt.length > 12 || !/^[a-f0-9]+$/.test(nameWithoutExt)
 })
 </script>
 
@@ -70,15 +62,5 @@ const showFilename = computed(() => {
   height: auto;
   object-fit: cover;
   border-radius: var(--dt-radius-md);
-}
-
-.image-filename {
-  font-size: var(--dt-font-size-xs);
-  color: var(--dt-text-secondary);
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
 }
 </style>

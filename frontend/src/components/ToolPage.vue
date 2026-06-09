@@ -36,6 +36,7 @@ const deviceStore = useDeviceStore()
 </script>
 
 <style scoped>
+/* v2.2.1 */
 .mobile-title {
   font-size: var(--dt-font-size-lg);
   font-weight: 600;
