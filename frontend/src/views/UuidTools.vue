@@ -281,31 +281,29 @@ export default {
     },
 
     copySingle(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success(this.$t('tools.uuid.messages.copiedToClipboard'))
-      })
+      this.copyText(text, this.$t('tools.uuid.messages.copiedToClipboard'))
     },
 
     copyAll() {
       const text = this.generatedUUIDs.join('\n')
-      navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success(this.$t('tools.uuid.messages.copiedAllUuids'))
-      })
+      this.copyText(text, this.$t('tools.uuid.messages.copiedAllUuids'))
     },
 
-    copyText(text) {
+    copyText(text, successMsg) {
+      if (!text) return
+      const msg = successMsg || this.$t('common.copySuccess')
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
+          ElMessage.success(msg)
         }).catch(() => {
-          this._fallbackCopy(text)
+          this._fallbackCopy(text, msg)
         })
       } else {
-        this._fallbackCopy(text)
+        this._fallbackCopy(text, msg)
       }
     },
 
-    _fallbackCopy(text) {
+    _fallbackCopy(text, successMsg) {
       const textarea = document.createElement('textarea')
       textarea.value = text
       textarea.style.position = 'fixed'
@@ -314,7 +312,7 @@ export default {
       textarea.select()
       try {
         document.execCommand('copy')
-        ElMessage.success(this.$t('common.copySuccess'))
+        ElMessage.success(successMsg || this.$t('common.copySuccess'))
       } catch {
         ElMessage.error('Copy failed')
       }
@@ -451,19 +449,99 @@ export default {
 }
 
 @media (max-width: 768px) {
+  /* ── Padding handled by ToolPage parent ── */
+  .tool-section {
+    padding-bottom: var(--dt-spacing-md, 16px);
+  }
+
+  /* ── Config: stack vertically with card style ── */
   .config-row {
     flex-direction: column;
     gap: 12px;
+    padding: 16px;
+    background: var(--dt-bg-section);
+    border-radius: var(--dt-radius-lg);
+    border: 1px solid var(--dt-border-lighter);
   }
 
   .config-item {
     min-width: 100%;
   }
 
+  .field-label {
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* ── Action button ── */
+  .action-section {
+    margin: 16px 0;
+  }
+
+  .action-section .el-button {
+    width: 100%;
+  }
+
+  /* ── Output section with card background ── */
+  .output-section {
+    padding: 16px;
+    background: var(--dt-bg-section);
+    border-radius: var(--dt-radius-lg);
+    border: 1px solid var(--dt-border-lighter);
+    margin-top: 16px;
+  }
+
+  /* ── UUID result items: card style ── */
+  .uuid-list {
+    gap: 10px;
+  }
+
   .uuid-item {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--dt-radius-md);
+    background: var(--dt-bg-card);
+    border: 1px solid var(--dt-border-lighter);
+    box-shadow: var(--dt-shadow-sm);
+  }
+
+  .uuid-text {
+    font-size: var(--dt-font-size-xs, 12px);
+    line-height: 1.6;
+    word-break: break-all;
+  }
+
+  .uuid-item .el-button {
+    align-self: flex-end;
+    min-height: 36px;
+  }
+
+  /* ── Input sections ── */
+  .input-section {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: var(--dt-font-size-sm, 13px);
+  }
+
+  /* ── Result header ── */
+  .result-header {
+    margin-bottom: 14px;
+  }
+
+  /* ── Descriptions ── */
+  :deep(.el-descriptions) {
+    --el-descriptions-table-border: none;
+  }
+
+  :deep(.el-descriptions .el-descriptions__body .el-descriptions__table) {
+    table-layout: fixed;
   }
 }
 </style>

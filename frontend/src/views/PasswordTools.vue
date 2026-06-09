@@ -361,20 +361,12 @@ export default {
     },
 
     copyPassword(pwd) {
-      navigator.clipboard.writeText(pwd).then(() => {
-        ElMessage.success(this.$t('tools.password.messages.copiedToClipboard'))
-      }).catch(() => {
-        ElMessage.error(this.$t('tools.password.messages.copyFail'))
-      })
+      this.copyText(pwd, this.$t('tools.password.messages.copiedToClipboard'))
     },
 
     copyAllPasswords() {
       const text = this.generatedPasswords.join('\n')
-      navigator.clipboard.writeText(text).then(() => {
-        ElMessage.success(this.$t('tools.password.messages.copiedAllPasswords'))
-      }).catch(() => {
-        ElMessage.error(this.$t('tools.password.messages.copyFail'))
-      })
+      this.copyText(text, this.$t('tools.password.messages.copiedAllPasswords'))
     },
 
     onPasswordInput() {
@@ -447,27 +439,24 @@ export default {
 
     copyPassphrase() {
       if (!this.passphraseResult) return
-      navigator.clipboard.writeText(this.passphraseResult.passphrase).then(() => {
-        ElMessage.success(this.$t('tools.password.messages.copiedToClipboard'))
-      }).catch(() => {
-        ElMessage.error(this.$t('tools.password.messages.copyFail'))
-      })
+      this.copyText(this.passphraseResult.passphrase, this.$t('tools.password.messages.copiedToClipboard'))
     },
 
-    copyText(text) {
+    copyText(text, successMsg) {
       if (!text) return
+      const msg = successMsg || this.$t('common.copySuccess')
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
+          ElMessage.success(msg)
         }).catch(() => {
-          this._fallbackCopy(text)
+          this._fallbackCopy(text, msg)
         })
       } else {
-        this._fallbackCopy(text)
+        this._fallbackCopy(text, msg)
       }
     },
 
-    _fallbackCopy(text) {
+    _fallbackCopy(text, successMsg) {
       const textarea = document.createElement('textarea')
       textarea.value = text
       textarea.style.position = 'fixed'
@@ -476,7 +465,7 @@ export default {
       textarea.select()
       try {
         document.execCommand('copy')
-        ElMessage.success(this.$t('common.copySuccess'))
+        ElMessage.success(successMsg || this.$t('common.copySuccess'))
       } catch {
         ElMessage.error(this.$t('tools.password.messages.copyFail'))
       }
@@ -643,46 +632,116 @@ export default {
 }
 
 @media (max-width: 768px) {
+  /* ── Padding handled by ToolPage parent ── */
+  .tool-section {
+    padding-bottom: var(--dt-spacing-md, 16px);
+  }
+
+  /* ── Form: top-aligned labels ── */
+  .tool-section :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
+  .tool-section :deep(.el-form-item__label) {
+    float: none !important;
+    display: block;
+    text-align: left;
+    padding-bottom: 4px;
+    width: auto !important;
+    font-size: var(--dt-font-size-sm, 13px);
+    color: var(--dt-text-secondary);
+    font-weight: 500;
+  }
+
+  .tool-section :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+  }
+
+  /* ── Slider: full width stacked ── */
   .slider-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
 
   .slider-number {
     width: 100%;
   }
 
+  /* ── Result sections with card background ── */
+  .result-section,
+  .strength-result,
+  .passphrase-result {
+    padding: 16px;
+    background: var(--dt-bg-section);
+    border-radius: var(--dt-radius-lg);
+    border: 1px solid var(--dt-border-lighter);
+  }
+
+  /* ── Password items: card style ── */
+  .password-list {
+    gap: 10px;
+  }
+
   .password-item {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--dt-radius-md);
+    background: var(--dt-bg-card);
+    border: 1px solid var(--dt-border-lighter);
+    box-shadow: var(--dt-shadow-sm);
   }
 
   .password-text {
     margin-right: 0;
     width: 100%;
+    font-size: var(--dt-font-size-sm, 13px);
+    line-height: 1.6;
+    padding: 4px 0;
   }
 
   .password-actions {
-    align-self: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
   }
 
+  /* ── Passphrase display ── */
   .passphrase-display {
-    font-size: 16px;
+    font-size: 15px;
     padding: 14px;
     letter-spacing: 1px;
+    border-radius: var(--dt-radius-lg);
   }
 
-  :deep(.el-form-item__label) {
-    width: 100px !important;
+  /* ── Hint text ── */
+  .hint-text {
+    margin-left: 0;
+    display: block;
+    margin-top: 4px;
+    font-size: var(--dt-font-size-xs, 12px);
   }
 
+  /* ── Strength level ── */
+  .strength-level {
+    font-size: var(--dt-font-size-lg, 16px);
+  }
+
+  /* ── el-descriptions ── */
   :deep(.el-descriptions) {
     --el-descriptions-table-border: none;
   }
 
   :deep(.el-descriptions .el-descriptions__body .el-descriptions__table) {
     table-layout: fixed;
+  }
+
+  /* ── Tag sizing ── */
+  .suggestion-tag,
+  .word-tag {
+    font-size: var(--dt-font-size-xs, 12px);
   }
 }
 </style>
