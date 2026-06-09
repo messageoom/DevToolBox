@@ -144,34 +144,6 @@
       </div>
     </transition>
 
-    <!-- Mobile action sheet for message actions -->
-    <el-drawer
-      v-model="actionSheetVisible"
-      direction="btt"
-      :size="'auto'"
-      :show-close="false"
-      :with-header="false"
-      class="msg-action-sheet"
-    >
-      <div class="action-sheet-list">
-        <button class="action-sheet-item" @click="actionCopy">
-          <span class="material-symbols-rounded">content_copy</span>
-          <span>{{ t('common.copy') }}</span>
-        </button>
-        <button class="action-sheet-item" @click="actionForward">
-          <span class="material-symbols-rounded">forward</span>
-          <span>{{ t('tools.im.forward') }}</span>
-        </button>
-        <button class="action-sheet-item action-sheet-item--danger" @click="actionDelete">
-          <span class="material-symbols-rounded">delete</span>
-          <span>{{ t('common.delete') }}</span>
-        </button>
-      </div>
-      <button class="action-sheet-cancel" @click="actionSheetVisible = false">
-        {{ t('tools.im.cancel') }}
-      </button>
-    </el-drawer>
-
     <!-- Rename dialog -->
     <el-dialog
       v-model="renameDialogVisible"
@@ -245,7 +217,6 @@
             <div class="peer-name">{{ t('tools.im.groupChat') }}</div>
             <div class="peer-ip">{{ t('tools.im.memberCount', { count: peers.length + 1 }) }}</div>
           </div>
-          </div>
         </div>
       </div>
 
@@ -281,6 +252,7 @@
               @copy="onCopy"
               @delete="onDeleteMessage"
               @forward="onForwardMessage"
+              @long-press="onMessageLongPress"
             />
           </template>
         </div>
@@ -320,6 +292,35 @@
       <el-button type="primary" @click="confirmRename">{{ t('tools.im.confirm') }}</el-button>
     </template>
   </el-dialog>
+
+  <!-- Mobile action sheet for message actions -->
+  <el-drawer
+    v-if="deviceStore.isMobile"
+    v-model="actionSheetVisible"
+    direction="btt"
+    :size="'auto'"
+    :show-close="false"
+    :with-header="false"
+    class="msg-action-sheet"
+  >
+    <div class="action-sheet-list">
+      <button class="action-sheet-item" @click="actionCopy">
+        <span class="material-symbols-rounded">content_copy</span>
+        <span>{{ t('common.copy') }}</span>
+      </button>
+      <button class="action-sheet-item" @click="actionForward">
+        <span class="material-symbols-rounded">forward</span>
+        <span>{{ t('tools.im.forward') }}</span>
+      </button>
+      <button class="action-sheet-item action-sheet-item--danger" @click="actionDelete">
+        <span class="material-symbols-rounded">delete</span>
+        <span>{{ t('common.delete') }}</span>
+      </button>
+    </div>
+    <button class="action-sheet-cancel" @click="actionSheetVisible = false">
+      {{ t('tools.im.cancel') }}
+    </button>
+  </el-drawer>
   </div><!-- /.text-transfer-root -->
 </template>
 
@@ -409,9 +410,6 @@ const isAtBottom = ref(true)
 const unreadScrollCount = ref(0)
 
 // Close overlay AND disconnect SocketIO before the page-slide leave transition.
-// Without early disconnect, the long-polling connection blocks browser HTTP
-// connections and stale event handlers can fire during the 0.2s transition,
-// which prevents the next page from rendering ("no content" bug).
 onBeforeRouteLeave(() => {
   mobileView.value = 'list'
 })
@@ -425,7 +423,6 @@ const activeTyping = computed(() => {
 function p2pDotClass(nodeId) {
   if (!connected.value) return ''
   const state = p2pStatus.value[nodeId]
-  // Online: always green, add glow for P2P direct
   if (state === 'ready') return 'online p2p-ready'
   return 'online'
 }
@@ -534,7 +531,6 @@ function unreadCount(peerId) {
   if (!msgs || !msgs.length) return 0
   const lastSeenId = seenIds.value[peerId]
   if (!lastSeenId) {
-    // No seen record — count trailing received messages
     let c = 0
     for (let i = msgs.length - 1; i >= 0; i--) {
       if (msgs[i].direction === 'sent') break
@@ -542,7 +538,6 @@ function unreadCount(peerId) {
     }
     return c
   }
-  // Count received messages after the last seen message
   let c = 0
   let found = false
   for (let i = msgs.length - 1; i >= 0; i--) {
@@ -612,6 +607,7 @@ function actionDelete() {
   deleteMessage(actionSheetMsg.value.id, activePeer.value?.nodeId || 'group')
   actionSheetVisible.value = false
 }
+
 function openLightboxForImage(msg) {
   const imgs = activeMessages.value
     .filter(m => m.msgType === 'image' && m.attachment?.url)

@@ -103,7 +103,6 @@ const props = defineProps({
   msg: {
     type: Object,
     required: true,
-    // { id, content, msgType, attachment, direction, peerName, timestamp, secure }
   },
   isGroup: {
     type: Boolean,
@@ -124,7 +123,6 @@ const formattedTime = computed(() => {
 const detectedLanguage = computed(() => {
   if (props.msg.msgType !== 'code') return ''
   const content = props.msg.content || ''
-  // Try to detect language from common patterns
   if (/^#!/.test(content)) return 'bash'
   if (/^import\s/.test(content) && /from\s+['"]/.test(content)) return 'python'
   if (/^(const|let|var|import|export|function|class)\s/.test(content)) return 'javascript'
@@ -138,7 +136,6 @@ const detectedLanguage = computed(() => {
   if (/^func\s/.test(content) && /package\s/.test(content)) return 'go'
   if (/^(fn\s|let\s|pub\s|use\s|mod\s)/.test(content)) return 'rust'
   if (/^(using|namespace|public\s+class)/.test(content)) return 'csharp'
-  // No specific match, let highlight.js auto-detect
   return ''
 })
 
@@ -222,16 +219,15 @@ onBeforeUnmount(() => {
   max-width: 70%;
   padding: var(--dt-spacing-sm) var(--dt-spacing-md);
   border-radius: var(--dt-radius-lg);
+  font-size: var(--dt-font-size-sm);
+  line-height: 1.5;
+  word-break: break-word;
   transition: transform 0.1s ease, opacity 0.1s ease;
 }
 
 .message-bubble.long-pressing {
   transform: scale(0.97);
   opacity: 0.85;
-}
-  font-size: var(--dt-font-size-sm);
-  line-height: 1.5;
-  word-break: break-word;
 }
 
 .bubble-sent {
