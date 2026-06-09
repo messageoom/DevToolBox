@@ -224,6 +224,7 @@ function onPaste(e) {
 <style scoped>
 .im-chat-input {
   position: relative;
+  flex-shrink: 0;
   border-top: 1px solid var(--dt-border-light);
   background: var(--dt-bg-card);
   padding: var(--dt-spacing-sm) var(--dt-spacing-md);

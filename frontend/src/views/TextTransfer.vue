@@ -778,6 +778,7 @@ watch(activeMessages, (newVal, oldVal) => {
   display: flex;
   flex-direction: column;
   background: var(--dt-bg-page);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Connection toast (inline banner) */
@@ -1000,6 +1001,8 @@ watch(activeMessages, (newVal, oldVal) => {
   align-items: center;
   gap: 10px;
   padding: 8px 6px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  flex-shrink: 0;
   background: var(--dt-bg-card);
   border-bottom: 1px solid var(--dt-border-light);
   flex-shrink: 0;
