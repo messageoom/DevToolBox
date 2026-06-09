@@ -193,7 +193,8 @@ function connect() {
   messages.value = loadMessagesFromStorage()
 
   socket = io({
-    transports: ['websocket', 'polling'],
+    transports: ['polling'],
+    upgrade: false,
     path: '/socket.io',
     reconnection: true,
     reconnectionAttempts: Infinity,
