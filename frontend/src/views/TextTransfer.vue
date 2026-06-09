@@ -324,7 +324,7 @@
     </button>
   </el-drawer>
 
-  <!-- File preview drawer (md / html) -->
+  <!-- File preview drawer (md / html / code) -->
   <el-drawer
     v-model="filePreviewVisible"
     :title="filePreviewName"
@@ -333,6 +333,9 @@
     class="file-preview-drawer"
   >
     <div v-if="filePreviewType === 'md'" class="file-preview-md" v-html="filePreviewContent"></div>
+    <div v-else-if="filePreviewType === 'code'" class="file-preview-code">
+      <pre><code class="hljs" v-html="filePreviewContent"></code></pre>
+    </div>
     <iframe
       v-else-if="filePreviewType === 'html'"
       :srcdoc="filePreviewContent"
@@ -354,6 +357,56 @@ import { useIm } from '@/composables/useIm.js'
 import { useLightbox } from '@/composables/useLightbox.js'
 import { copyToClipboard } from '@/utils/format.js'
 import { marked } from 'marked'
+import hljs from 'highlight.js/lib/core'
+import javascript from 'highlight.js/lib/languages/javascript'
+import python from 'highlight.js/lib/languages/python'
+import css from 'highlight.js/lib/languages/css'
+import xml from 'highlight.js/lib/languages/xml'
+import json from 'highlight.js/lib/languages/json'
+import bash from 'highlight.js/lib/languages/bash'
+import sql from 'highlight.js/lib/languages/sql'
+import java from 'highlight.js/lib/languages/java'
+import cpp from 'highlight.js/lib/languages/cpp'
+import csharp from 'highlight.js/lib/languages/csharp'
+import go from 'highlight.js/lib/languages/go'
+import rust from 'highlight.js/lib/languages/rust'
+import yaml from 'highlight.js/lib/languages/yaml'
+import ini from 'highlight.js/lib/languages/ini'
+import ruby from 'highlight.js/lib/languages/ruby'
+import php from 'highlight.js/lib/languages/php'
+import typescript from 'highlight.js/lib/languages/typescript'
+import plaintext from 'highlight.js/lib/languages/plaintext'
+import 'highlight.js/styles/github-dark.min.css'
+
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('js', javascript)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('ts', typescript)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('py', python)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('html', xml)
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('shell', bash)
+hljs.registerLanguage('sh', bash)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('cpp', cpp)
+hljs.registerLanguage('c', cpp)
+hljs.registerLanguage('csharp', csharp)
+hljs.registerLanguage('cs', csharp)
+hljs.registerLanguage('go', go)
+hljs.registerLanguage('rust', rust)
+hljs.registerLanguage('yaml', yaml)
+hljs.registerLanguage('yml', yaml)
+hljs.registerLanguage('ini', ini)
+hljs.registerLanguage('ruby', ruby)
+hljs.registerLanguage('rb', ruby)
+hljs.registerLanguage('php', php)
+hljs.registerLanguage('plaintext', plaintext)
+hljs.registerLanguage('text', plaintext)
 import ImMessage from '@/components/im/ImMessage.vue'
 import ImChatInput from '@/components/im/ImChatInput.vue'
 import ImLightbox from '@/components/im/ImLightbox.vue'
@@ -643,11 +696,10 @@ async function onPreviewFile({ url, filename, mime }) {
   const name = (filename || '').toLowerCase()
   const isHtml = name.endsWith('.html') || name.endsWith('.htm') || (mime && mime.includes('html'))
   const isMd = name.endsWith('.md') || name.endsWith('.markdown') || (mime && mime.includes('markdown'))
-  if (!isHtml && !isMd) return
 
   filePreviewName.value = filename || 'Preview'
   filePreviewContent.value = ''
-  filePreviewType.value = isMd ? 'md' : 'html'
+  filePreviewType.value = isMd ? 'md' : isHtml ? 'html' : 'code'
 
   try {
     const resp = await fetch(url)
@@ -655,8 +707,20 @@ async function onPreviewFile({ url, filename, mime }) {
     if (isMd) {
       marked.setOptions({ breaks: true, gfm: true })
       filePreviewContent.value = marked.parse(text)
-    } else {
+    } else if (isHtml) {
       filePreviewContent.value = text
+    } else {
+      // Code preview: use highlight.js for syntax highlighting
+      const ext = name.includes('.') ? name.split('.').pop() : ''
+      const langMap = { py: 'python', js: 'javascript', ts: 'typescript', jsx: 'javascript', tsx: 'typescript',
+        rb: 'ruby', yml: 'yaml', sh: 'bash', bash: 'bash', zsh: 'bash', rs: 'rust', go: 'go',
+        kt: 'java', scala: 'java', conf: 'ini', cfg: 'ini' }
+      const lang = langMap[ext] || ext
+      if (lang && hljs.getLanguage(lang)) {
+        filePreviewContent.value = hljs.highlight(text, { language: lang }).value
+      } else {
+        filePreviewContent.value = hljs.highlightAuto(text).value
+      }
     }
   } catch {
     filePreviewContent.value = isMd ? '*Failed to load file*' : ''
@@ -1343,6 +1407,22 @@ watch(activeMessages, (newVal, oldVal) => {
   height: 100%;
   border: none;
   background: #fff;
+}
+.file-preview-code {
+  height: 100%;
+  overflow-y: auto;
+  background: #1e1e2e;
+}
+.file-preview-code pre {
+  margin: 0;
+  padding: 16px;
+  min-height: 100%;
+}
+.file-preview-code pre code {
+  font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+  font-size: var(--dt-font-size-xs);
+  line-height: 1.5;
+  white-space: pre;
 }
 </style>
 

@@ -38,30 +38,30 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-const PREVIEW_EXTENSIONS = ['.md', '.markdown', '.html', '.htm']
+const PREVIEW_EXTENSIONS = [
+  '.md', '.markdown', '.html', '.htm',
+  '.txt', '.log', '.csv', '.tsv',
+  '.py', '.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte',
+  '.java', '.c', '.cpp', '.h', '.hpp',
+  '.go', '.rs', '.rb', '.php', '.swift', '.kt', '.scala',
+  '.sh', '.bash', '.zsh', '.bat', '.ps1',
+  '.json', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf',
+  '.xml', '.sql', '.css', '.scss', '.less', '.sass',
+  '.env', '.gitignore', '.dockerignore', '.editorconfig',
+  '.dockerfile', '.makefile',
+]
+
+const PREVIEW_MIMES = [
+  'text/', 'application/json', 'application/xml', 'application/javascript',
+  'application/x-yaml', 'application/yaml',
+]
 
 const props = defineProps({
-  filename: {
-    type: String,
-    default: '',
-  },
-  size: {
-    type: Number,
-    default: 0,
-  },
-  mime: {
-    type: String,
-    default: '',
-  },
-  url: {
-    type: String,
-    default: '',
-  },
-  /** P2P transfer progress 0–1, null when not transferring */
-  progress: {
-    type: Number,
-    default: null,
-  },
+  filename: { type: String, default: '' },
+  size: { type: Number, default: 0 },
+  mime: { type: String, default: '' },
+  url: { type: String, default: '' },
+  progress: { type: Number, default: null },
 })
 
 defineEmits(['preview-file'])
@@ -79,7 +79,10 @@ const fileIcon = computed(() => {
 
 const canPreview = computed(() => {
   const name = props.filename.toLowerCase()
-  return PREVIEW_EXTENSIONS.some(ext => name.endsWith(ext))
+  if (PREVIEW_EXTENSIONS.some(ext => name.endsWith(ext))) return true
+  const mime = props.mime.toLowerCase()
+  if (PREVIEW_MIMES.some(m => mime.startsWith(m) || mime === m)) return true
+  return false
 })
 
 const formattedSize = computed(() => {
