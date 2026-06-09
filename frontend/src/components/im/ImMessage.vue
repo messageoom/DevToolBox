@@ -271,9 +271,10 @@ onBeforeUnmount(() => {
 }
 
 .bubble-sent {
-  background: var(--dt-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--dt-primary) 85%, #6366f1), color-mix(in srgb, var(--dt-primary) 92%, #0ea5e9));
   color: #fff;
   border-bottom-right-radius: var(--dt-radius-sm);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--dt-primary) 20%, transparent);
 }
 
 .bubble-received {
@@ -281,6 +282,7 @@ onBeforeUnmount(() => {
   color: var(--dt-text-primary);
   border: 1px solid var(--dt-border-lighter);
   border-bottom-left-radius: var(--dt-radius-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* Media bubbles: no background, no padding — image IS the content */
