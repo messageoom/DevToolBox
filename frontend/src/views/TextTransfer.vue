@@ -375,8 +375,8 @@ const activeTyping = computed(() => {
 // --- P2P status helpers ---
 function p2pDotClass(nodeId) {
   const state = p2pStatus.value[nodeId]
+  // Mobile: always green (peer is online), add glow only for P2P direct
   if (state === 'ready') return 'p2p-ready'
-  if (state === 'connecting') return 'p2p-connecting'
   return ''
 }
 function p2pDotTitle(nodeId) {
@@ -744,7 +744,10 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   background: var(--dt-success, #67c23a);
   flex-shrink: 0;
 }
-/* P2P connection status dot */
+.tg-online-dot-inline.p2p-ready {
+  box-shadow: 0 0 4px var(--dt-success, #67c23a);
+}
+/* P2P connection status dot (desktop sidebar) */
 .p2p-dot {
   width: 8px;
   height: 8px;
@@ -757,14 +760,6 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   background: var(--dt-success, #67c23a);
 }
 .p2p-dot.p2p-connecting {
-  background: var(--dt-warning, #e6a23c);
-  animation: p2p-pulse 1.2s ease-in-out infinite;
-}
-.tg-online-dot-inline.p2p-ready {
-  background: var(--dt-success, #67c23a);
-  box-shadow: 0 0 4px var(--dt-success, #67c23a);
-}
-.tg-online-dot-inline.p2p-connecting {
   background: var(--dt-warning, #e6a23c);
   animation: p2p-pulse 1.2s ease-in-out infinite;
 }
