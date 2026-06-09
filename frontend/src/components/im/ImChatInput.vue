@@ -109,6 +109,10 @@ function detectMsgType(text) {
   if (/^[a-zA-Z0-9+/=]{20,}$/.test(trimmed)) return 'code'
   if (/[{}\[\];]/.test(trimmed) && trimmed.split('\n').length > 3) return 'code'
   if (/^https?:\/\//.test(trimmed)) return 'link'
+  // Markdown detection: headings, bold/italic, lists, blockquotes, tables, horizontal rules
+  if (/^#{1,6}\s/m.test(trimmed) || /\*\*[^*]+\*\*/.test(trimmed) || /^>\s/m.test(trimmed) ||
+      /^[-*+]\s/m.test(trimmed) || /^\d+\.\s/m.test(trimmed) || /^---$/m.test(trimmed) ||
+      /^\|.+\|$/m.test(trimmed) || /`[^`]+`/.test(trimmed)) return 'markdown'
   return 'text'
 }
 

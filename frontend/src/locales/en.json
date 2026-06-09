@@ -1440,7 +1440,11 @@
       "online": "Online",
       "video": "Video",
       "forward": "Forward",
-      "p2pDirect": "P2P Direct"
+      "p2pDirect": "P2P Direct",
+      "expandCode": "Expand code",
+      "collapseCode": "Collapse code",
+      "expandText": "Show more",
+      "collapseText": "Show less"
     }
   }
 }

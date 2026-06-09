@@ -1,17 +1,28 @@
 <template>
-  <div class="im-code-block">
+  <div class="im-code-block" ref="blockRef">
     <div class="code-header">
       <span class="code-lang">{{ displayLang }}</span>
+      <span v-if="lineCount" class="code-lines">{{ lineCount }} lines</span>
       <button class="code-copy-btn" @click="copyCode">
         {{ copied ? t('common.copied') || '✓' : t('common.copy') }}
       </button>
     </div>
-    <pre><code :class="codeClass" v-html="highlighted"></code></pre>
+    <div class="code-body" :class="{ collapsed: isCollapsed }" ref="bodyRef">
+      <pre><code :class="codeClass" v-html="highlighted"></code></pre>
+    </div>
+    <button v-if="needsCollapse && isCollapsed" class="code-expand-btn" @click="isCollapsed = false">
+      <span class="material-symbols-rounded">expand_more</span>
+      {{ t('tools.im.expandCode') }}
+    </button>
+    <button v-if="needsCollapse && !isCollapsed" class="code-expand-btn" @click="isCollapsed = true">
+      <span class="material-symbols-rounded">expand_less</span>
+      {{ t('tools.im.collapseCode') }}
+    </button>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import hljs from 'highlight.js/lib/core'
@@ -60,6 +71,8 @@ hljs.registerLanguage('md', markdown)
 hljs.registerLanguage('plaintext', plaintext)
 hljs.registerLanguage('text', plaintext)
 
+const MAX_HEIGHT = 300
+
 const props = defineProps({
   code: {
     type: String,
@@ -73,6 +86,10 @@ const props = defineProps({
 
 const { t } = useI18n()
 const copied = ref(false)
+const blockRef = ref(null)
+const bodyRef = ref(null)
+const needsCollapse = ref(false)
+const isCollapsed = ref(true)
 
 const highlighted = computed(() => {
   if (!props.code) return ''
@@ -89,9 +106,28 @@ const displayLang = computed(() => {
   return result.language || 'text'
 })
 
+const lineCount = computed(() => {
+  if (!props.code) return 0
+  return props.code.split('\n').length
+})
+
 const codeClass = computed(() => {
   const lang = props.language || displayLang.value || ''
   return lang ? `hljs language-${lang}` : 'hljs'
+})
+
+function checkHeight() {
+  if (bodyRef.value) {
+    needsCollapse.value = bodyRef.value.scrollHeight > MAX_HEIGHT
+  }
+}
+
+onMounted(() => {
+  checkHeight()
+})
+
+onBeforeUnmount(() => {
+  // cleanup
 })
 
 function copyCode() {
@@ -103,6 +139,14 @@ function copyCode() {
     }, 1500)
   })
 }
+
+// Re-check when code changes
+import { watch } from 'vue'
+watch(() => props.code, () => {
+  isCollapsed.value = true
+  // Need nextTick for DOM to update
+  setTimeout(checkHeight, 0)
+})
 </script>
 
 <style scoped>
@@ -111,6 +155,7 @@ function copyCode() {
   overflow: hidden;
   background: #1e1e2e;
   font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+  max-width: min(100%, 480px);
 }
 
 .code-header {
@@ -120,6 +165,7 @@ function copyCode() {
   padding: 6px 12px;
   background: rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 8px;
 }
 
 .code-lang {
@@ -127,6 +173,12 @@ function copyCode() {
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: inherit;
+}
+
+.code-lines {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
   font-family: inherit;
 }
 
@@ -145,6 +197,16 @@ function copyCode() {
 .code-copy-btn:hover {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.1);
+}
+
+.code-body {
+  max-height: none;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+
+.code-body.collapsed {
+  max-height: 300px;
 }
 
 .im-code-block pre {
@@ -168,5 +230,31 @@ function copyCode() {
   font-size: var(--dt-font-size-xs);
   line-height: 1.5;
   white-space: pre;
+}
+
+.code-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.code-expand-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.code-expand-btn .material-symbols-rounded {
+  font-size: 16px;
 }
 </style>

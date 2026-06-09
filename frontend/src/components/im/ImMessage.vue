@@ -24,7 +24,17 @@
       </div>
 
       <!-- Text message -->
-      <div v-if="msg.msgType === 'text'" class="message-text" v-html="linkify(msg.content)"></div>
+      <!-- Text message -->
+      <div v-if="msg.msgType === 'text'" class="message-text-wrapper">
+        <div class="message-text" :class="{ 'text-collapsed': isTextCollapsed }" ref="textRef" v-html="linkify(msg.content)"></div>
+        <button v-if="textNeedsCollapse" class="text-expand-btn" @click="isTextCollapsed = !isTextCollapsed">
+          <span class="material-symbols-rounded">{{ isTextCollapsed ? 'expand_more' : 'expand_less' }}</span>
+          {{ isTextCollapsed ? t('tools.im.expandText') : t('tools.im.collapseText') }}
+        </button>
+      </div>
+
+      <!-- Markdown message -->
+      <div v-else-if="msg.msgType === 'markdown'" class="message-markdown" v-html="renderedMarkdown"></div>
 
       <!-- Code message -->
       <ImCodeBlock
@@ -91,10 +101,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeUnmount } from 'vue'
+import { computed, ref, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDeviceStore } from '@/stores/device.js'
+import { marked } from 'marked'
 import ImCodeBlock from './ImCodeBlock.vue'
 import ImImageMessage from './ImImageMessage.vue'
 import ImFileCard from './ImFileCard.vue'
@@ -139,6 +150,12 @@ const detectedLanguage = computed(() => {
   return ''
 })
 
+const renderedMarkdown = computed(() => {
+  if (props.msg.msgType !== 'markdown' || !props.msg.content) return ''
+  marked.setOptions({ breaks: true, gfm: true })
+  return marked.parse(props.msg.content)
+})
+
 function linkify(text) {
   if (!text) return ''
   const escaped = text
@@ -150,6 +167,27 @@ function linkify(text) {
     '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>'
   )
 }
+
+// --- Long text collapse ---
+const TEXT_MAX_HEIGHT = 200
+const textRef = ref(null)
+const textNeedsCollapse = ref(false)
+const isTextCollapsed = ref(true)
+
+function checkTextHeight() {
+  if (textRef.value) {
+    textNeedsCollapse.value = textRef.value.scrollHeight > TEXT_MAX_HEIGHT
+  }
+}
+
+onMounted(() => {
+  checkTextHeight()
+})
+
+watch(() => props.msg.content, () => {
+  isTextCollapsed.value = true
+  setTimeout(checkTextHeight, 0)
+})
 
 function handleCopy() {
   const text = props.msg.content || ''
@@ -267,8 +305,41 @@ onBeforeUnmount(() => {
 /* =========================================
    Message Text
    ========================================= */
+.message-text-wrapper {
+  min-width: 0;
+}
+
 .message-text {
   white-space: pre-wrap;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+
+.message-text.text-collapsed {
+  max-height: 200px;
+}
+
+.text-expand-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--dt-radius-sm);
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--dt-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.text-expand-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.text-expand-btn .material-symbols-rounded {
+  font-size: 16px;
 }
 
 /* Links in messages */
@@ -282,6 +353,96 @@ onBeforeUnmount(() => {
 .bubble-received .message-text :deep(.chat-link) {
   color: var(--dt-primary);
   text-decoration-color: color-mix(in srgb, var(--dt-primary) 40%, transparent);
+}
+
+/* =========================================
+   Markdown Content
+   ========================================= */
+.message-markdown {
+  font-size: var(--dt-font-size-sm);
+  line-height: 1.6;
+  word-break: break-word;
+}
+.message-markdown :deep(h1),
+.message-markdown :deep(h2),
+.message-markdown :deep(h3),
+.message-markdown :deep(h4) {
+  margin: 0.5em 0 0.3em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.message-markdown :deep(h1) { font-size: 1.3em; }
+.message-markdown :deep(h2) { font-size: 1.15em; }
+.message-markdown :deep(h3) { font-size: 1.05em; }
+.message-markdown :deep(p) {
+  margin: 0.4em 0;
+}
+.message-markdown :deep(ul),
+.message-markdown :deep(ol) {
+  margin: 0.4em 0;
+  padding-left: 1.5em;
+}
+.message-markdown :deep(li) {
+  margin: 0.15em 0;
+}
+.message-markdown :deep(blockquote) {
+  margin: 0.5em 0;
+  padding: 0.3em 0.8em;
+  border-left: 3px solid var(--dt-primary);
+  opacity: 0.85;
+}
+.message-markdown :deep(code) {
+  font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.bubble-received .message-markdown :deep(code) {
+  background: var(--dt-bg-section);
+}
+.message-markdown :deep(pre) {
+  margin: 0.5em 0;
+  border-radius: var(--dt-radius-sm);
+  overflow-x: auto;
+}
+.message-markdown :deep(pre code) {
+  display: block;
+  padding: 0.6em 0.8em;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  font-size: var(--dt-font-size-xs);
+  line-height: 1.5;
+}
+.message-markdown :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--dt-border-light);
+  margin: 0.6em 0;
+}
+.message-markdown :deep(table) {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+.message-markdown :deep(th),
+.message-markdown :deep(td) {
+  border: 1px solid var(--dt-border-light);
+  padding: 0.3em 0.6em;
+  text-align: left;
+}
+.message-markdown :deep(th) {
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+.message-markdown :deep(strong) {
+  font-weight: 600;
+}
+.message-markdown :deep(em) {
+  font-style: italic;
+}
+.message-markdown :deep(a) {
+  color: inherit;
+  text-decoration: underline;
 }
 
 /* =========================================
