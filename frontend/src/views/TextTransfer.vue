@@ -71,79 +71,84 @@
     </div>
 
     <!-- ===== Chat View (fixed full-screen overlay, slides in from right) ===== -->
-    <transition name="tg-slide">
-      <div v-if="mobileView === 'chat'" class="im-chat-overlay">
-        <!-- Chat app bar -->
-        <div class="tg-chat-bar">
-          <button class="tg-back-btn" @click="mobileView = 'list'">
-            <span class="material-symbols-rounded">arrow_back</span>
-          </button>
-          <template v-if="activePeer">
-            <img class="tg-bar-avatar" :src="generateIdenticon(activePeer.nodeId)" />
-            <div class="tg-bar-info">
-              <span class="tg-bar-name">{{ activePeer.name }}</span>
-              <span v-if="activeTyping" class="tg-bar-status tg-bar-status--typing">{{ t('tools.im.typing') }}</span>
-              <span v-else-if="p2pStatus[activePeer.nodeId] === 'ready'" class="tg-bar-status tg-bar-status--p2p">{{ t('tools.im.p2pDirect') }}</span>
-              <span v-else class="tg-bar-status">{{ t('tools.im.online') }}</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="tg-bar-avatar tg-bar-avatar--group"><span class="material-symbols-rounded">groups</span></div>
-            <div class="tg-bar-info">
-              <span class="tg-bar-name">{{ t('tools.im.groupChat') }}</span>
-              <span class="tg-bar-status">{{ t('tools.im.memberCount', { count: peers.length + 1 }) }}</span>
-            </div>
-          </template>
-        </div>
-
-        <!-- Messages -->
-        <div class="tg-messages" ref="messagesContainer" @scroll="onMessagesScroll">
-          <div v-if="activeMessages.length === 0" class="tg-empty-chat">
-            <span class="material-symbols-rounded tg-empty-chat-icon">forum</span>
-            <p class="tg-empty-chat-title">{{ t('tools.im.noMessages') }}</p>
-            <p class="tg-empty-chat-hint">{{ activePeer ? t('tools.im.hintPeer') : t('tools.im.hintGroup') }}</p>
+    <!-- Teleport to body to escape grid stacking context on iOS Safari,
+         so the overlay's top bar and bottom input aren't clipped by
+         app-header / app-bottom-nav. -->
+    <Teleport to="body">
+      <transition name="tg-slide">
+        <div v-if="mobileView === 'chat'" class="im-chat-overlay">
+          <!-- Chat app bar -->
+          <div class="tg-chat-bar">
+            <button class="tg-back-btn" @click="mobileView = 'list'">
+              <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <template v-if="activePeer">
+              <img class="tg-bar-avatar" :src="generateIdenticon(activePeer.nodeId)" />
+              <div class="tg-bar-info">
+                <span class="tg-bar-name">{{ activePeer.name }}</span>
+                <span v-if="activeTyping" class="tg-bar-status tg-bar-status--typing">{{ t('tools.im.typing') }}</span>
+                <span v-else-if="p2pStatus[activePeer.nodeId] === 'ready'" class="tg-bar-status tg-bar-status--p2p">{{ t('tools.im.p2pDirect') }}</span>
+                <span v-else class="tg-bar-status">{{ t('tools.im.online') }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="tg-bar-avatar tg-bar-avatar--group"><span class="material-symbols-rounded">groups</span></div>
+              <div class="tg-bar-info">
+                <span class="tg-bar-name">{{ t('tools.im.groupChat') }}</span>
+                <span class="tg-bar-status">{{ t('tools.im.memberCount', { count: peers.length + 1 }) }}</span>
+              </div>
+            </template>
           </div>
 
-          <template v-for="(msg, idx) in activeMessages" :key="msg.id">
-            <div v-if="shouldShowTimeSeparator(activeMessages, idx)" class="tg-time-sep">
-              <span>{{ formatTimeSeparator(msg.timestamp) }}</span>
+          <!-- Messages -->
+          <div class="tg-messages" ref="messagesContainer" @scroll="onMessagesScroll">
+            <div v-if="activeMessages.length === 0" class="tg-empty-chat">
+              <span class="material-symbols-rounded tg-empty-chat-icon">forum</span>
+              <p class="tg-empty-chat-title">{{ t('tools.im.noMessages') }}</p>
+              <p class="tg-empty-chat-hint">{{ activePeer ? t('tools.im.hintPeer') : t('tools.im.hintGroup') }}</p>
             </div>
-            <ImMessage
-              :msg="msg"
-              :is-group="!activePeer"
-              @preview-image="openLightboxForImage"
-              @copy="onCopy"
-              @delete="onDeleteMessage"
-              @forward="onForwardMessage"
-              @long-press="onMessageLongPress"
-              @preview-file="onPreviewFile"
-            />
-          </template>
+
+            <template v-for="(msg, idx) in activeMessages" :key="msg.id">
+              <div v-if="shouldShowTimeSeparator(activeMessages, idx)" class="tg-time-sep">
+                <span>{{ formatTimeSeparator(msg.timestamp) }}</span>
+              </div>
+              <ImMessage
+                :msg="msg"
+                :is-group="!activePeer"
+                @preview-image="openLightboxForImage"
+                @copy="onCopy"
+                @delete="onDeleteMessage"
+                @forward="onForwardMessage"
+                @long-press="onMessageLongPress"
+                @preview-file="onPreviewFile"
+              />
+            </template>
+          </div>
+
+          <!-- Scroll-to-bottom floating button -->
+          <transition name="scroll-btn-fade">
+            <button
+              v-if="!isAtBottom"
+              class="scroll-to-bottom-btn"
+              @click="scrollToBottom"
+            >
+              <span class="material-symbols-rounded">keyboard_arrow_down</span>
+              <span v-if="unreadScrollCount > 0" class="scroll-btn-badge">
+                {{ unreadScrollCount > 99 ? '99+' : unreadScrollCount }}
+              </span>
+            </button>
+          </transition>
+
+          <!-- Fixed bottom input -->
+          <ImChatInput
+            :disabled="!connected"
+            @send="onSend"
+            @upload-file="onUploadFile"
+            @upload-image="onUploadImage"
+          />
         </div>
-
-        <!-- Scroll-to-bottom floating button -->
-        <transition name="scroll-btn-fade">
-          <button
-            v-if="!isAtBottom"
-            class="scroll-to-bottom-btn"
-            @click="scrollToBottom"
-          >
-            <span class="material-symbols-rounded">keyboard_arrow_down</span>
-            <span v-if="unreadScrollCount > 0" class="scroll-btn-badge">
-              {{ unreadScrollCount > 99 ? '99+' : unreadScrollCount }}
-            </span>
-          </button>
-        </transition>
-
-        <!-- Fixed bottom input -->
-        <ImChatInput
-          :disabled="!connected"
-          @send="onSend"
-          @upload-file="onUploadFile"
-          @upload-image="onUploadImage"
-        />
-      </div>
-    </transition>
+      </transition>
+    </Teleport>
 
     <!-- Rename dialog -->
     <el-dialog
@@ -774,10 +779,11 @@ watch(activeMessages, (newVal, oldVal) => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 150;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   background: var(--dt-bg-page);
+  box-sizing: border-box;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
