@@ -339,6 +339,7 @@ watch(currentPath, (path) => {
 #app {
   display: grid;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background-color: var(--dt-bg-page);
