@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { io } from 'socket.io-client'
 import { usePeerConnection } from './usePeerConnection.js'
+import { saveBlob, deleteBlob, deleteBlobs, restoreBlobUrls } from './useImStorage.js'
 
 const IDENTITY_KEY = 'im_identity'
 const MESSAGES_KEY = 'im_messages'
@@ -28,6 +29,10 @@ function getLimit(convKey) {
 function trimMessages(arr, convKey) {
   const limit = getLimit(convKey)
   if (arr.length <= limit) return arr
+  // Clean up IndexedDB blobs for trimmed messages
+  const trimmed = arr.slice(0, arr.length - limit)
+  const trimmedBlobIds = trimmed.filter(m => m.attachment?._blobUrl).map(m => m.id)
+  if (trimmedBlobIds.length) deleteBlobs(trimmedBlobIds).catch(() => {})
   return arr.slice(arr.length - limit)
 }
 
@@ -96,6 +101,15 @@ p2p.setOnFileReceived((fromId, transferId, attachment) => {
   if (!messages.value[fromId]) messages.value[fromId] = []
   messages.value[fromId].push(m)
   persistMessage(fromId)
+
+  // Persist received blob to IndexedDB so it survives page refresh
+  if (attachment.url?.startsWith('blob:') && attachment._blobUrl) {
+    // Fetch the blob from the blob: URL, then store it
+    fetch(attachment.url)
+      .then(r => r.blob())
+      .then(blob => saveBlob(transferId, blob, { filename: attachment.filename, mime: attachment.mime, size: attachment.size }))
+      .catch(() => {})
+  }
 })
 
 p2p.setOnTyping((fromId) => {
@@ -191,6 +205,9 @@ function connect() {
   logToBackend('info', `[IM] connect() called — myId=${myId.value}, origin=${window.location.origin}`)
 
   messages.value = loadMessagesFromStorage()
+
+  // Restore blob: URLs from IndexedDB for P2P attachments that survived page refresh
+  restoreBlobUrls(messages.value).catch(() => {})
 
   socket = io({
     transports: ['polling'],
@@ -358,7 +375,7 @@ function disconnect() {
 // ---------------------------------------------------------------------------
 
 function sendMsg(content, msgType = 'text', targetPeer = null, attachment = null) {
-  if (!socket?.connected) return
+  if (!socket?.connected) return null
 
   const peerId = targetPeer?.nodeId || 'group'
   const peerName = targetPeer?.name || ''
@@ -409,7 +426,7 @@ function sendMsg(content, msgType = 'text', targetPeer = null, attachment = null
         targetId: null,
       })
     }
-    return
+    return msg
   }
 
   // Private message: if not sent via P2P, use Socket.IO relay
@@ -422,6 +439,7 @@ function sendMsg(content, msgType = 'text', targetPeer = null, attachment = null
       targetId: targetPeer?.nodeId || null,
     })
   }
+  return msg
 }
 
 // ---------------------------------------------------------------------------
@@ -470,7 +488,9 @@ async function sendImage(file, targetPeer = null) {
         url: localUrl,
         _blobUrl: true,
       }
-      sendMsg('', 'image', targetPeer, localAttachment)
+      const msg = sendMsg('', 'image', targetPeer, localAttachment)
+      // Persist original blob to IndexedDB so it survives page refresh
+      saveBlob(msg.id, file, { filename: file.name, mime: file.type, size: file.size }).catch(() => {})
       return
     } catch {
       // Fall through to HTTP upload
@@ -497,7 +517,9 @@ async function sendFile(file, targetPeer = null) {
         url: localUrl,
         _blobUrl: true,
       }
-      sendMsg(isVideo ? '' : file.name, isVideo ? 'video' : 'file', targetPeer, localAttachment)
+      const msg = sendMsg(isVideo ? '' : file.name, isVideo ? 'video' : 'file', targetPeer, localAttachment)
+      // Persist original blob to IndexedDB so it survives page refresh
+      saveBlob(msg.id, file, { filename: file.name, mime: file.type, size: file.size }).catch(() => {})
       return
     } catch {
       // Fall through to HTTP upload
@@ -609,6 +631,8 @@ function deleteMessage(msgId, peerId) {
     if (msg.attachment?._blobUrl && msg.attachment.url?.startsWith('blob:')) {
       URL.revokeObjectURL(msg.attachment.url)
     }
+    // Clean up IndexedDB blob
+    deleteBlob(msgId).catch(() => {})
     arr.splice(idx, 1)
     saveMessagesToStorage()
   }
