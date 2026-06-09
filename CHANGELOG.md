@@ -2,41 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.2.0] - 2026-06-08
+## [2.2.0] - 2026-06-09
 
 ### Added
 
 - IM 即时通讯：替代原文本传输，支持文本、代码、图片、文件、链接等多种消息类型
-- 消息持久化：SQLite 存储，支持离线消息、历史记录、消息搜索
-- 图片缩略图：Pillow 自动生成 200x200 WebP 缩略图
+- P2P（WebRTC）直连通信：局域网设备间加密消息与文件传输，无需服务器中转
+- 消息持久化：客户端 localStorage 存储，支持离线消息、历史记录、消息搜索
+- P2P 图片/文件 Blob 持久化到 IndexedDB，页面刷新后附件不丢失
+- 图片缩略图：Pillow 自动生成 200x200 WebP 缩略图，丢失时自动从原图重新生成
 - 代码消息高亮：highlight.js 支持 18 种常见语言语法高亮
-- 文件传输：支持任意格式文件上传，全局限制 20GB
+- 文件传输：支持任意格式文件上传，P2P 分块传输 + HTTP 上传回退，全局限制 20GB
+- 文件预览：支持 Markdown、HTML、代码等文本类文件在线预览
 - 图片灯箱：全屏预览、左右切换、缩略图条、键盘导航
 - 移动端 Telegram 风格 IM 布局：会话列表（正常文档流）+ 聊天视图（全屏沉浸式滑入）
 - 移动端会话列表：当前用户头像/名称 + "本设备"标签 + 在线人数 + 连接状态
 - 移动端聊天视图：对方头像+名称+在线状态顶部栏，右滑返回会话列表
-- 消息气泡：发送/接收区分样式，群聊显示发送者名称
+- 移动端文件网格"查看更多"卡片，超量文件导航至分类页
+- 消息气泡：发送/接收区分样式，群聊显示发送者名称，渐变+阴影视觉效果
 - 拖拽/粘贴上传：聊天输入区支持拖拽文件和 Ctrl+V 粘贴图片
-- 消息类型自动识别：输入内容自动检测为文本/代码/链接
+- 消息类型自动识别：输入内容自动检测为文本/代码/链接/Markdown
 - 消息操作：复制、删除、转发
 - 输入状态提示：实时显示 "正在输入..."
 
 ### Changed
 
 - IM 设备身份持久化改为 localStorage，token 变更或新标签页不会丢失身份
-
 - SocketIO 传输改为 polling-only，避免 threading 模式下 WebSocket 升级兼容性问题
 - 移动端传输页面布局重构：会话列表回归正常文档流，保留 App header 和底部导航
+- 聊天覆盖层改为 `<Teleport to="body">` 渲染，脱离 grid 堆叠上下文，兼容 iOS Safari
+- 全局布局改用 `100dvh` 动态视口高度，修复 Android 地址栏遮挡底部导航
 - 群聊头像从 `#` 文字改为 Material Symbols `groups` 图标
 - 在线状态指示从头像 absolute 定位改为名称后 inline 圆点
 - i18n 修复：`disconnecting` key 统一为 `disconnected`
+- 文件分类图片列表页重构：网格布局 + 灯箱预览
 
 ### Fixed
 
+- iOS Safari 聊天覆盖层顶部名称栏和底部输入区被 App header/bottom nav 遮挡
+- P2P 群组消息 `isGroup` 字段在 `handleControlMessage` 中丢失，导致群组消息错误路由到私聊会话
+- Android Chrome 底部导航栏被推出可视区域（100vh vs 100dvh）
+- HTTP 环境下密码/UUID 复制失败（添加 `execCommand('copy')` fallback）
+- 图片灯箱 z-index 低于聊天覆盖层导致预览不可见
+- iOS safe-area 安全区适配：聊天栏 padding-top 和覆盖层 padding-bottom
 - 移动端 IM 页面 z-index 过低导致 App header 遮挡聊天内容
 - 移动端会话列表负边距导致 "在线设备" 文字溢出屏幕
 - 移动端聊天页顶部显示 "DevToolBox" 而非对方信息
 - SocketIO WebSocket 升级失败 "Invalid frame header" 错误
+- 长文本消息折叠后滚动问题
+- 长字符串溢出容器问题（overflow-wrap: anywhere）
+- 缩略图丢失时自动从原图重新生成
 
 ## [2.1.0] - 2026-06-08
 
