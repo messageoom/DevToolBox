@@ -196,10 +196,11 @@
         </div>
 
         <div class="group-chat-entry" :class="{ active: !activePeer }" @click="selectGroupChat()">
-          <div class="avatar-circle avatar-group">#</div>
+          <div class="avatar-circle avatar-group"><span class="material-symbols-rounded">groups</span></div>
           <div class="peer-info">
             <div class="peer-name">{{ t('tools.im.groupChat') }}</div>
             <div class="peer-ip">{{ t('tools.im.memberCount', { count: peers.length + 1 }) }}</div>
+          </div>
           </div>
         </div>
       </div>
@@ -213,7 +214,7 @@
             <span v-if="activeTyping" class="typing-hint">{{ t('tools.im.typing') }}</span>
           </template>
           <template v-else>
-            <div class="avatar-circle small avatar-group">#</div>
+            <div class="avatar-circle small avatar-group"><span class="material-symbols-rounded">groups</span></div>
             <span class="chat-target-name">{{ t('tools.im.groupChat') }}</span>
           </template>
         </div>
@@ -985,7 +986,8 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 /* Shared avatar/peer-info */
 .avatar-identicon { width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; image-rendering: pixelated; }
 .avatar-identicon.small { width: 28px; height: 28px; }
-.avatar-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.avatar-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; flex-shrink: 0; }
+.avatar-circle .material-symbols-rounded { font-size: 20px; }
 .avatar-group { background: linear-gradient(135deg, var(--dt-primary), #a855f7) !important; }
 .peer-info { flex: 1; min-width: 0; }
 .peer-name { font-size: var(--dt-font-size-sm); font-weight: 500; color: var(--dt-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
