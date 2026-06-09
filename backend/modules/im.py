@@ -182,9 +182,28 @@ def serve_thumb(filename):
     upload_dir = _get_upload_dir()
     thumb_name = f"thumb_{filename}.webp"
     safe_path = safe_join(upload_dir, thumb_name)
-    if safe_path is None or not os.path.isfile(safe_path):
-        return jsonify({'success': False, 'error': 'Thumbnail not found'}), 404
-    return send_file(safe_path, mimetype='image/webp')
+
+    # Thumbnail exists — serve directly
+    if safe_path and os.path.isfile(safe_path):
+        return send_file(safe_path, mimetype='image/webp')
+
+    # Thumbnail missing — try to regenerate from original file
+    original_path = safe_join(upload_dir, filename)
+    if original_path and os.path.isfile(original_path):
+        try:
+            from PIL import Image
+            with Image.open(original_path) as img:
+                img.thumbnail(THUMB_MAX_SIZE)
+                img.save(safe_path, 'WEBP', quality=80)
+            return send_file(safe_path, mimetype='image/webp')
+        except Exception:
+            logger.warning('Failed to regenerate thumbnail for %s', filename, exc_info=True)
+
+    # No thumbnail and no original — return the original file as fallback
+    if original_path and os.path.isfile(original_path):
+        return send_file(original_path)
+
+    return jsonify({'success': False, 'error': 'Thumbnail not found'}), 404
 
 
 # ---------------------------------------------------------------------------
