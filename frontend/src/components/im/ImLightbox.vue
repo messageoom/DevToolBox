@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
 .im-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
