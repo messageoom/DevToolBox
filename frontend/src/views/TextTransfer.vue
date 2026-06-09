@@ -33,10 +33,11 @@
         <div class="tg-conv-body">
           <div class="tg-conv-row">
             <span class="tg-conv-name">{{ t('tools.im.groupChat') }}</span>
-            <span class="tg-conv-time">{{ formatConvTime(lastMsgTime('group')) }}</span>
+            <span v-if="unreadCount('group') > 0" class="tg-badge">{{ unreadCount('group') > 99 ? '99+' : unreadCount('group') }}</span>
+            <span v-else class="tg-conv-time">{{ formatConvTime(lastMsgTime('group')) }}</span>
           </div>
           <div class="tg-conv-row">
-            <conv-preview peer-id="group" :unread="unreadCount('group')" :messages="messages" />
+            <conv-preview peer-id="group" :messages="messages" />
           </div>
         </div>
       </div>
@@ -53,10 +54,11 @@
           <div class="tg-conv-row">
             <span class="tg-conv-name">{{ peer.name }}</span>
             <span class="tg-online-dot-inline" :class="p2pDotClass(peer.nodeId)" :title="p2pDotTitle(peer.nodeId)"></span>
-            <span class="tg-conv-time">{{ formatConvTime(lastMsgTime(peer.nodeId)) }}</span>
+            <span v-if="unreadCount(peer.nodeId) > 0" class="tg-badge">{{ unreadCount(peer.nodeId) }}</span>
+            <span v-else class="tg-conv-time">{{ formatConvTime(lastMsgTime(peer.nodeId)) }}</span>
           </div>
           <div class="tg-conv-row">
-            <conv-preview :peer-id="peer.nodeId" :unread="unreadCount(peer.nodeId)" :messages="messages" />
+            <conv-preview :peer-id="peer.nodeId" :messages="messages" />
           </div>
         </div>
       </div>
@@ -294,7 +296,6 @@ import { h } from 'vue'
 const ConvPreview = {
   props: {
     peerId: String,
-    unread: { type: Number, default: 0 },
     messages: { type: Object, required: true },
   },
   setup(props) {
@@ -306,54 +307,23 @@ const ConvPreview = {
 
       const name = last.direction === 'sent' ? t('tools.im.you') : (last.peerName || '')
       const prefix = name ? `${name}: ` : ''
-      const badge = props.unread > 0 ? h('span', { class: 'tg-badge' }, props.unread) : null
 
-      // Image: name text first, then thumbnail
+      // Media types → text label only
       if (last.msgType === 'image') {
-        const src = last.attachment?.thumbnail || last.attachment?.url
-        const children = []
-        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.uploadImage') + ']'}`))
-        if (src) {
-          children.push(h('div', { class: 'tg-conv-thumb-wrap' }, [
-            h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
-          ]))
-        }
-        if (badge) children.push(badge)
-        return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
+        return h('span', { class: 'tg-conv-preview' }, `${prefix}[${t('tools.im.image')}]`)
       }
-
-      // Video: name text first, then thumbnail
       if (last.msgType === 'video') {
-        const src = last.attachment?.thumbnail
-        const children = []
-        children.push(h('span', { class: 'tg-conv-preview' }, `${prefix}${src ? '' : '[' + t('tools.im.video', '视频') + ']'}`))
-        if (src) {
-          children.push(h('div', { class: 'tg-conv-thumb-wrap tg-conv-thumb-wrap--video' }, [
-            h('img', { class: 'tg-conv-thumb', src, loading: 'lazy' }),
-            h('span', { class: 'tg-conv-play-icon material-symbols-rounded' }, 'play_arrow'),
-          ]))
-        }
-        if (badge) children.push(badge)
-        return h('div', { class: 'tg-conv-preview-wrap tg-conv-preview-wrap--media' }, children)
+        return h('span', { class: 'tg-conv-preview' }, `${prefix}[${t('tools.im.video')}]`)
       }
-
-      // File: icon + filename
       if (last.msgType === 'file') {
-        const fname = last.attachment?.filename || t('tools.im.uploadFile')
-        const children = [
-          h('span', { class: 'tg-conv-file-icon material-symbols-rounded' }, 'description'),
-          h('span', { class: 'tg-conv-preview' }, `${prefix}${fname}`),
-        ]
-        if (badge) children.push(badge)
-        return h('div', { class: 'tg-conv-preview-wrap' }, children)
+        const fname = last.attachment?.filename || t('tools.im.file')
+        return h('span', { class: 'tg-conv-preview' }, `${prefix}[${t('tools.im.file')}] ${fname}`)
       }
 
-      // Text / code / link
+      // Text / code / link — emoji displays naturally
       const text = last.content || ''
       const preview = prefix + (text.length > 30 ? text.slice(0, 30) + '...' : text)
-      const children = [h('span', { class: 'tg-conv-preview' }, preview)]
-      if (badge) children.push(badge)
-      return h('div', { class: 'tg-conv-preview-wrap' }, children)
+      return h('span', { class: 'tg-conv-preview' }, preview)
     }
   }
 }
@@ -492,8 +462,8 @@ function getLastMsgPreview(peerId) {
   const last = msgs[msgs.length - 1]
   const name = last.direction === 'sent' ? t('tools.im.you') : (last.peerName || '')
   const prefix = name ? `${name}: ` : ''
-  if (last.msgType === 'image') return `${prefix}[${t('tools.im.uploadImage')}]`
-  if (last.msgType === 'file') return `${prefix}[${last.attachment?.filename || t('tools.im.uploadFile')}]`
+  if (last.msgType === 'image') return `${prefix}[${t('tools.im.image')}]`
+  if (last.msgType === 'file') return `${prefix}[${last.attachment?.filename || t('tools.im.file')}]`
   const text = last.content || ''
   return prefix + (text.length > 30 ? text.slice(0, 30) + '...' : text)
 }
@@ -753,18 +723,19 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
   flex-shrink: 0;
 }
 .tg-badge {
-  min-width: 20px;
-  height: 20px;
-  display: flex;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--dt-primary);
   color: #fff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  border-radius: 10px;
-  padding: 0 6px;
+  border-radius: 9px;
+  padding: 0 5px;
   flex-shrink: 0;
+  line-height: 1;
 }
 .tg-online-dot-inline {
   width: 8px;
@@ -1044,59 +1015,12 @@ watch(activeMessages, () => nextTick(scrollToBottom), { deep: true })
 
 <!-- ConvPreview uses render function — scoped styles don't apply, so these must be unscoped -->
 <style>
-.tg-conv-preview-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-}
-.tg-conv-preview-wrap .tg-conv-preview {
+.tg-conv-preview {
   font-size: 14px;
   color: var(--dt-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
   line-height: 1.4;
-}
-/* Media overrides — MUST be after the general rule above */
-.tg-conv-preview-wrap--media { gap: 4px; }
-.tg-conv-preview-wrap--media .tg-conv-preview { flex: 0 0 auto; }
-.tg-conv-thumb-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.tg-conv-thumb-wrap .tg-conv-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  object-fit: cover;
-  display: block;
-  background: var(--dt-bg-hover, #f0f0f0);
-}
-.tg-conv-thumb-wrap--video::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  background: rgba(0,0,0,0.25);
-  pointer-events: none;
-}
-.tg-conv-thumb-wrap .tg-conv-play-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20px;
-  color: #fff;
-  pointer-events: none;
-  z-index: 1;
-}
-.tg-conv-preview-wrap .tg-conv-file-icon {
-  font-size: 18px;
-  color: var(--dt-text-secondary);
-  flex-shrink: 0;
 }
 </style>

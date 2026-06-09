@@ -1408,6 +1408,9 @@
       "dropFiles": "拖放文件以上传",
       "uploadFile": "上传文件",
       "uploadImage": "上传图片",
+      "image": "图片",
+      "video": "视频",
+      "file": "文件",
       "download": "下载图片",
       "imageOf": "{current}/{total}",
       "onlineDevices": "在线设备",
@@ -1433,7 +1436,9 @@
       "yesterday": "昨天",
       "p2pReady": "P2P 直连 (E2E加密)",
       "p2pConnecting": "正在建立P2P连接...",
-      "p2pRelay": "服务器中转"
+      "p2pRelay": "服务器中转",
+      "online": "在线",
+      "video": "视频"
     }
   }
 }

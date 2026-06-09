@@ -1408,6 +1408,9 @@
       "dropFiles": "Drop files to upload",
       "uploadFile": "Upload file",
       "uploadImage": "Upload image",
+      "image": "Image",
+      "video": "Video",
+      "file": "File",
       "download": "Download image",
       "imageOf": "{current}/{total}",
       "onlineDevices": "Online Devices",
@@ -1433,7 +1436,9 @@
       "yesterday": "Yesterday",
       "p2pReady": "P2P Direct (E2E Encrypted)",
       "p2pConnecting": "Establishing P2P connection...",
-      "p2pRelay": "Server Relay"
+      "p2pRelay": "Server Relay",
+      "online": "Online",
+      "video": "Video"
     }
   }
 }
