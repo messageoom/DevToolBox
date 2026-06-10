@@ -49,6 +49,10 @@ htmlcov/
 # Built frontend assets (generated during build)
 backend/static/frontend/
 
+# Tooling artifacts
+.playwright-mcp/
+.superpowers/
+
 # GitHub Releases files
 Releases/
 create_all_releases.py

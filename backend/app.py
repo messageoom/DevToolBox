@@ -4,7 +4,7 @@ import hmac
 import os
 import logging
 
-__version__ = '2.2.0'
+__version__ = '2.2.1'
 
 frontend_logger = logging.getLogger('frontend')
 

@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1] - 2026-06-10
+
+### Added
+
+- Markdown 编辑器沉浸式模式：进入编辑器时隐藏 App 顶栏、侧边栏、底部导航
+- Auto-save：编辑内容每 800ms 自动保存到 localStorage，刷新/崩溃不丢失
+- 行号栏：编辑器左侧显示行号，当前行高亮（行号着色 + 编辑区背景条）
+- 同步滚动：编辑器和预览面板按比例双向同步滚动位置
+- 键盘快捷键：Ctrl/Cmd+B 粗体、I 斜体、K 链接、S 导出；Tab 缩进、Shift+Tab 反缩进
+- 代码语法高亮：接入 highlight.js（11 种语言），通过 marked-highlight 扩展实现真正的 token 级着色
+- 暗色模式下 hljs VS Code 风格代码主题覆盖
+
+### Changed
+
+- marked.js 改用 `new Marked()` 隔离实例 + `marked-highlight` 扩展，配置 `breaks: true, GFM`
+- Markdown 编辑器工具栏：布局按钮改为 50/50 分屏（flex basis），移除移动端 fixed 定位
+- Markdown 预览面板：全部硬编码颜色（#fff, #333 等）替换为 CSS 变量，暗色模式可用
+- Socket.IO CORS 收紧为与 Flask-CORS 相同的 `allowed_origins`，不再使用 `*`
+- Socket.IO 新增 connect 鉴权：校验主 token 和临时 token（`hmac.compare_digest`）
+
+### Fixed
+
+- 认证：HTTP API 创建的临时 token `expires_at` 用 ISO 字符串但中间件校验 `isinstance(int,float)`，导致临时 token 永远无法使用
+- 认证：`config_manager.cleanup_expired_tokens` 用 ISO 字符串比较，GUI 创建的 Unix 时间戳 token 被误删
+- 认证：主 token 和临时 token 比较用 `==`（时序攻击），统一改为 `hmac.compare_digest`
+- 认证：移除 `/socket.io/` HTTP 中间件豁免后导致 Socket.IO polling 被 403 拦截
+- Markdown 编辑器分屏按钮 emit `'split'` 但 handler 匹配 `'split-view'`，按钮无效
+- Markdown 编辑器 `showPreview`（v-show）和 `layoutMode`（CSS flex）双状态冲突导致分屏抖动
+- Markdown 编辑器移动端行号栏 font-size 与 textarea 不匹配导致行号偏移
+- Markdown 编辑器 `renderedHtml` watcher 每次按键做 querySelectorAll 造成性能浪费
+- Markdown 编辑器工具栏 Emoji/主题面板无法用 Escape 键关闭
+- Markdown 编辑器块级格式（标题/列表/引用）可能在行中插入而非行首
+- Markdown 编辑器行高亮条滚动后漂移到错误位置
+- Markdown 编辑器主题应用逻辑在 Container 和 PreviewPanel 中重复（已去重）
+- Markdown 编辑器 PreviewPanel `v-if` 导致 CSS transition 无法动画（改为 flex 控制）
+
 ## [2.2.0] - 2026-06-09
 
 ### Added
