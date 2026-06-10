@@ -86,7 +86,20 @@ def create_app(access_token=None):
     app.config['ACCESS_TOKEN'] = access_token
 
     # CORS 配置
-    allowed_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
+    # Build allowed origins: env override takes priority, otherwise compute dynamically
+    frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')
+    _env_origins = os.environ.get('CORS_ORIGINS')
+    if _env_origins:
+        allowed_origins = _env_origins.split(',')
+    elif os.path.isdir(frontend_dist):
+        # Production: frontend is served by Flask on the same port.
+        # The browser origin will be whatever host:port the user accessed,
+        # so accept all origins — auth is handled by token middleware.
+        allowed_origins = '*'
+    else:
+        # Dev mode: Vite dev server on 5173
+        allowed_origins = 'http://localhost:5173,http://127.0.0.1:5173'.split(',')
+
     CORS(app, resources={
         r"/api/*": {
             "origins": allowed_origins,
@@ -266,8 +279,7 @@ def create_app(access_token=None):
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
     app.register_blueprint(im_bp, url_prefix='/api/im')
 
-    # 前端静态文件服务（打包模式）
-    frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'frontend')
+    # 前端静态文件服务（打包模式）— reuse frontend_dist computed earlier for CORS detection
     if os.path.isdir(frontend_dist):
         @app.route('/', defaults={'path': ''})
         @app.route('/<path:path>')
