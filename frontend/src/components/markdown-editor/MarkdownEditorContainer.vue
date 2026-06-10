@@ -201,16 +201,11 @@ export default {
 
 <style scoped>
 .markdown-editor-container {
-  position: fixed;
-  top: 0; /* 从顶部开始 */
-  left: 0;
-  right: 0;
-  bottom: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--dt-bg-page);
-  overflow: hidden; /* 防止内容溢出 */
-  z-index: 1; /* 降低容器z-index，让工具栏可以更高 */
+  overflow: hidden;
 }
 
 .editor-body {
@@ -270,10 +265,6 @@ export default {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .markdown-editor-container {
-    top: 120px; /* 移动端工具栏高度 */
-  }
-
   .editor-body {
     flex-direction: column;
   }
@@ -309,12 +300,6 @@ export default {
 
   .preview-fullscreen .editor-panel-wrapper {
     height: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .markdown-editor-container {
-    top: 140px; /* 小屏幕设备工具栏高度 */
   }
 }
 

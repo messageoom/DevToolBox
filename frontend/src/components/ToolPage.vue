@@ -43,4 +43,10 @@ const deviceStore = useDeviceStore()
   color: var(--dt-text-primary);
   margin: 0 0 var(--dt-spacing-sm) 0;
 }
+
+/* Override global .tool-page--mobile { padding: 0 } —
+   tool pages need horizontal breathing room on mobile */
+.tool-page--mobile {
+  padding: 0 var(--dt-spacing-md, 16px);
+}
 </style>

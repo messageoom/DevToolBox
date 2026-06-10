@@ -1,7 +1,7 @@
 <template>
   <div id="app" :class="layoutClasses">
-    <!-- Header -->
-    <header class="app-header">
+    <!-- Header (hidden in immersive editor mode) -->
+    <header v-if="!isMarkdownEditor" class="app-header">
       <div class="header-left">
         <h1 class="app-title">DevToolBox</h1>
       </div>
@@ -26,9 +26,9 @@
       </div>
     </header>
 
-    <!-- Sidebar (desktop only) -->
+    <!-- Sidebar (desktop only, hidden in immersive editor mode) -->
     <aside
-      v-if="!deviceStore.isMobile"
+      v-if="!deviceStore.isMobile && !isMarkdownEditor"
       class="app-sidebar"
       :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     >
@@ -101,8 +101,8 @@
       </div>
     </main>
 
-    <!-- Mobile bottom navigation -->
-    <nav v-if="deviceStore.isMobile" ref="bottomNavRef" class="app-bottom-nav">
+    <!-- Mobile bottom navigation (hidden in immersive editor mode) -->
+    <nav v-if="deviceStore.isMobile && !isMarkdownEditor" ref="bottomNavRef" class="app-bottom-nav">
       <router-link
         v-for="tab in mobileNavTabs"
         :key="tab.route"
@@ -146,10 +146,15 @@ const currentPath = computed(() => route.path)
 
 const isMarkdownEditor = computed(() => route.path === '/markdown-editor')
 
-const layoutClasses = computed(() => ({
-  'layout-desktop': !deviceStore.isMobile,
-  'layout-mobile': deviceStore.isMobile,
-}))
+const layoutClasses = computed(() => {
+  if (isMarkdownEditor.value) {
+    return { 'layout-immersive': true }
+  }
+  return {
+    'layout-desktop': !deviceStore.isMobile,
+    'layout-mobile': deviceStore.isMobile,
+  }
+})
 
 /**
  * Build sidebar menu structure from toolCategories.
@@ -226,10 +231,8 @@ function isTabActive(tab) {
   return tab.matchPrefix.split(',').some((prefix) => route.path.startsWith(prefix))
 }
 
-function onMenuSelect(index) {
-  if (index === '/markdown-editor') {
-    isSidebarCollapsed.value = true
-  }
+function onMenuSelect() {
+  /* no-op: sidebar items use router mode */
 }
 
 // Route-to-tool-meta mapping for recent tools tracking
@@ -363,6 +366,17 @@ watch(currentPath, (path) => {
     "header"
     "content"
     "bottomnav";
+}
+
+/* Immersive: content fills entire viewport (no header/sidebar/bottomnav) */
+.layout-immersive {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "content";
+}
+
+.layout-immersive .app-content {
+  overflow: hidden;
 }
 
 /* =========================================
