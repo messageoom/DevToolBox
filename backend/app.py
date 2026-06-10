@@ -101,7 +101,7 @@ def create_app(access_token=None):
     if SocketIO is not None:
         socketio = SocketIO(
             app,
-            cors_allowed_origins='*',
+            cors_allowed_origins=allowed_origins,
             async_mode='threading',
             manage_session=False,
         )
@@ -111,7 +111,44 @@ def create_app(access_token=None):
         @socketio.on('connect')
         def _on_si_connect():
             from flask import request as _r
-            logging.info('Socket.IO: 🔌 CLIENT CONNECTED sid=%s', _r.sid)
+            token = app.config.get('ACCESS_TOKEN')
+            # No token configured — allow all
+            if not token:
+                logging.info('Socket.IO: client CONNECTED sid=%s (no token required)', _r.sid)
+                return
+            # Check if token auth is enabled
+            try:
+                from utils.config_manager import load_config as _lc
+            except ImportError:
+                try:
+                    from backend.utils.config_manager import load_config as _lc
+                except ImportError:
+                    _lc = None
+            if _lc:
+                cfg = _lc()
+                if not cfg.get('security', {}).get('token_enabled', True):
+                    logging.info('Socket.IO: client CONNECTED sid=%s (token disabled)', _r.sid)
+                    return
+            # Validate token from query or cookie
+            from datetime import datetime as _dt
+            provided = (
+                (_r.args.get('token') or '')
+                or _r.cookies.get('devtoolbox_token', '')
+            )
+            if hmac.compare_digest(provided, token):
+                logging.info('Socket.IO: client CONNECTED sid=%s (authenticated)', _r.sid)
+                return
+            # Check temp tokens
+            temp_tokens = cfg.get('security', {}).get('temp_tokens', []) if _lc else []
+            now_ts = _dt.utcnow().timestamp()
+            for t in temp_tokens:
+                exp = t.get('expires_at', 0)
+                if hmac.compare_digest(t.get('token', ''), provided) and isinstance(exp, (int, float)) and exp > now_ts:
+                    logging.info('Socket.IO: client CONNECTED sid=%s (temp token)', _r.sid)
+                    return
+            # Reject
+            logging.warning('Socket.IO: REJECTED sid=%s (invalid token)', _r.sid)
+            return False
 
         @socketio.on('disconnect')
         def _on_si_disconnect():
@@ -157,9 +194,8 @@ def create_app(access_token=None):
         if not config.get('security', {}).get('token_enabled', True):
             return None
 
-        # Exempt paths — static assets, SocketIO, etc.
+        # Exempt paths — static assets, etc.
         if (request.path in ('/favicon.ico', '/robots.txt', '/api/frontend-log')
-                or request.path.startswith('/socket.io/')
                 or request.path.startswith('/assets/')):
             return None
 

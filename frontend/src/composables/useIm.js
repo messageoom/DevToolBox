@@ -209,6 +209,13 @@ function connect() {
   // Restore blob: URLs from IndexedDB for P2P attachments that survived page refresh
   restoreBlobUrls(messages.value).catch(() => {})
 
+  // Pass token via query so the Socket.IO connect handler can validate it
+  const token = document.cookie
+    .split('; ')
+    .map(c => c.split('='))
+    .find(([k]) => k === 'devtoolbox_token')
+    ?.[1]
+
   socket = io({
     transports: ['polling'],
     upgrade: false,
@@ -216,6 +223,7 @@ function connect() {
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
+    query: token ? { token } : {},
   })
 
   logToBackend('info', `[IM] socket.io client created — attempting connection to ${window.location.origin}/socket.io`)
