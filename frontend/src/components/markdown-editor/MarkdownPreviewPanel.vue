@@ -85,6 +85,13 @@ export default {
         this.applyCodeTheme(newTheme)
       },
       immediate: true
+    },
+    // Re-apply themes when content changes so new elements get styled
+    renderedHtml() {
+      this.$nextTick(() => {
+        this.applyTypographyTheme(this.currentTypographyTheme)
+        this.applyCodeTheme(this.currentCodeTheme)
+      })
     }
   },
   methods: {
@@ -142,7 +149,7 @@ export default {
   bottom: 0;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--dt-bg-card);
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -153,10 +160,10 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-section);
+  border-bottom: 1px solid var(--dt-border-light);
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .header-left {
@@ -166,7 +173,7 @@ export default {
 }
 
 .preview-icon {
-  color: #67c23a;
+  color: var(--dt-primary);
 }
 
 .header-right {
@@ -198,18 +205,18 @@ export default {
 .preview-content :deep(h6) {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .preview-content :deep(h1) {
   font-size: 2em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--dt-border-light);
   padding-bottom: 0.3em;
 }
 
 .preview-content :deep(h2) {
   font-size: 1.5em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--dt-border-light);
   padding-bottom: 0.3em;
 }
 
@@ -218,7 +225,7 @@ export default {
 }
 
 .preview-content :deep(code) {
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
@@ -226,7 +233,7 @@ export default {
 }
 
 .preview-content :deep(pre) {
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   padding: 16px;
   border-radius: 6px;
   overflow-x: auto;
@@ -239,10 +246,10 @@ export default {
 }
 
 .preview-content :deep(blockquote) {
-  border-left: 4px solid #ddd;
+  border-left: 4px solid var(--dt-border-base);
   padding-left: 16px;
   margin: 1em 0;
-  color: #666;
+  color: var(--dt-text-secondary);
 }
 
 .preview-content :deep(table) {
@@ -253,14 +260,15 @@ export default {
 
 .preview-content :deep(th),
 .preview-content :deep(td) {
-  border: 1px solid #ddd;
+  border: 1px solid var(--dt-border-light);
   padding: 8px 12px;
   text-align: left;
 }
 
 .preview-content :deep(th) {
-  background-color: #f8f9fa;
+  background-color: var(--dt-bg-section);
   font-weight: bold;
+  color: var(--dt-text-primary);
 }
 
 .preview-content :deep(ul),
@@ -274,7 +282,7 @@ export default {
 }
 
 .preview-content :deep(a) {
-  color: #409eff;
+  color: var(--dt-primary);
   text-decoration: none;
 }
 
@@ -290,7 +298,7 @@ export default {
 
 .empty-preview {
   text-align: center;
-  color: #999;
+  color: var(--dt-text-placeholder);
   font-style: italic;
   margin-top: 2em;
 }
@@ -301,8 +309,8 @@ export default {
 }
 
 .theme-dark {
-  background-color: #1e1e1e;
-  color: #d4d4d4;
+  background-color: var(--dt-bg-section);
+  color: var(--dt-text-regular);
 }
 
 .theme-dark :deep(h1),
@@ -311,59 +319,49 @@ export default {
 .theme-dark :deep(h4),
 .theme-dark :deep(h5),
 .theme-dark :deep(h6) {
-  color: #ffffff;
+  color: var(--dt-text-primary);
 }
 
 .theme-dark :deep(code) {
-  background-color: #2d2d2d;
-  color: #d4d4d4;
+  background-color: var(--dt-bg-page);
+  color: var(--dt-text-regular);
 }
 
 .theme-dark :deep(pre) {
-  background-color: #2d2d2d;
+  background-color: var(--dt-bg-page);
 }
 
 .theme-dark :deep(blockquote) {
-  border-left-color: #555;
-  color: #cccccc;
+  border-left-color: var(--dt-border-base);
+  color: var(--dt-text-secondary);
 }
 
 .theme-dark :deep(th),
 .theme-dark :deep(td) {
-  border-color: #555;
-  color: #d4d4d4;
+  border-color: var(--dt-border-base);
+  color: var(--dt-text-regular);
 }
 
 .theme-dark :deep(th) {
-  background-color: #2d2d2d;
+  background-color: var(--dt-bg-page);
 }
 
 .theme-simple {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .theme-simple :deep(h1),
 .theme-simple :deep(h2),
 .theme-simple :deep(h3) {
   font-weight: 300;
-  color: #222;
-}
-
-.theme-simple :deep(code) {
-  background-color: #f0f0f0;
-  color: #c7254e;
-}
-
-.theme-simple :deep(pre) {
-  background-color: #f8f8f8;
-  border: 1px solid #e7e7e7;
+  color: var(--dt-text-primary);
 }
 
 .theme-simple :deep(blockquote) {
-  border-left-color: #ccc;
+  border-left-color: var(--dt-border-base);
   font-style: italic;
-  color: #666;
+  color: var(--dt-text-secondary);
 }
 
 /* 滚动条样式 */
@@ -372,17 +370,17 @@ export default {
 }
 
 .preview-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
   border-radius: 4px;
 }
 
 .preview-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--dt-border-light);
   border-radius: 4px;
 }
 
 .preview-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--dt-text-secondary);
 }
 
 /* 响应式设计 */

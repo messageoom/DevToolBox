@@ -1,10 +1,58 @@
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { marked } from 'marked'
+import hljs from 'highlight.js/lib/core'
+import javascript from 'highlight.js/lib/languages/javascript'
+import python from 'highlight.js/lib/languages/python'
+import java from 'highlight.js/lib/languages/java'
+import css from 'highlight.js/lib/languages/css'
+import xml from 'highlight.js/lib/languages/xml'
+import json from 'highlight.js/lib/languages/json'
+import bash from 'highlight.js/lib/languages/bash'
+import sql from 'highlight.js/lib/languages/sql'
+import typescript from 'highlight.js/lib/languages/typescript'
+import yaml from 'highlight.js/lib/languages/yaml'
+import markdown from 'highlight.js/lib/languages/markdown'
 
-export function useMarkdownEditor() {
-  // 状态管理
-  const content = ref(`# Markdown 沉浸式编辑器
+// --- highlight.js 注册常用语言 ---
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('js', javascript)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('py', python)
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('html', xml)
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('sh', bash)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('ts', typescript)
+hljs.registerLanguage('yaml', yaml)
+hljs.registerLanguage('yml', yaml)
+hljs.registerLanguage('markdown', markdown)
+
+// --- marked 配置 ---
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  highlight(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value
+      } catch { /* fall through */ }
+    }
+    try {
+      return hljs.highlightAuto(code).value
+    } catch {
+      return code
+    }
+  },
+})
+
+const STORAGE_KEY = 'devtoolbox_md_content'
+const DEFAULT_CONTENT = `# Markdown 沉浸式编辑器
 
 欢迎使用 Markdown 沉浸式编辑器！
 
@@ -64,11 +112,34 @@ console.log('Hello, World!');
 > 这是一个引用块
 > 可以包含多行内容
 
-开始编辑你的 Markdown 文档吧！`)
+开始编辑你的 Markdown 文档吧！`
 
+function loadSavedContent() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved !== null ? saved : DEFAULT_CONTENT
+  } catch {
+    return DEFAULT_CONTENT
+  }
+}
+
+export function useMarkdownEditor() {
+  // 状态管理 — 从 localStorage 恢复内容
+  const content = ref(loadSavedContent())
   const showPreview = ref(true)
   const previewTheme = ref('default')
   const editorTextarea = ref(null)
+
+  // Auto-save: 防抖写入 localStorage
+  let saveTimer = null
+  watch(content, (val) => {
+    clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, val)
+      } catch { /* quota exceeded — silently ignore */ }
+    }, 800)
+  })
 
   // 计算属性
   const renderedHtml = computed(() => {
