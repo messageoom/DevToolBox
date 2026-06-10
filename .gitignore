@@ -52,6 +52,7 @@ backend/static/frontend/
 # Tooling artifacts
 .playwright-mcp/
 .superpowers/
+docs/superpowers/
 
 # GitHub Releases files
 Releases/
