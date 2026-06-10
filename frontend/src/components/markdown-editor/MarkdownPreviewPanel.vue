@@ -56,12 +56,15 @@ export default {
       default: 'github'
     }
   },
-  emits: ['theme-change'],
+  emits: ['theme-change', 'preview-ready'],
   data() {
     return {
       typographyThemes: typographyThemes,
       codeThemes: codeThemes
     }
+  },
+  mounted() {
+    this.$emit('preview-ready', this.$refs.previewContent)
   },
   computed: {
     currentTypographyThemeName() {

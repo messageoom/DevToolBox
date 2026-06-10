@@ -23,6 +23,7 @@
           :placeholder="$t('tools.markdownEditor.placeholder')"
           @input="$emit('update:content', $event.target.value)"
           @select="$emit('selection-change', $event)"
+          @keydown="onKeydown"
         ></textarea>
     </div>
   </div>
@@ -53,10 +54,16 @@ export default {
       })
     }
   },
-  emits: ['update:content', 'selection-change'],
+  emits: ['update:content', 'selection-change', 'keydown'],
   mounted() {
     // 将 textarea 引用传递给父组件
     this.$emit('textarea-ready', this.$refs.editorTextarea)
+  },
+  methods: {
+    onKeydown(event) {
+      // Let the parent's handleKeydown decide if this is a shortcut
+      this.$emit('keydown', event)
+    }
   }
 }
 </script>

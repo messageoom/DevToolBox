@@ -23,6 +23,7 @@
           :stats="stats"
           @update:content="handleContentUpdate"
           @textarea-ready="handleTextareaReady"
+          @keydown="handleKeydown"
         />
       </div>
 
@@ -35,6 +36,7 @@
           :current-typography-theme="currentTypographyTheme"
           :current-code-theme="currentCodeTheme"
           @theme-change="handleThemeChange"
+          @preview-ready="handlePreviewReady"
         />
       </div>
     </div>
@@ -68,7 +70,8 @@ export default {
       clearContent,
       exportMarkdown,
       togglePreview,
-      setPreviewTheme
+      setPreviewTheme,
+      handleKeydown
     } = useMarkdownEditor()
 
     return {
@@ -83,15 +86,22 @@ export default {
       clearContent,
       exportMarkdown,
       togglePreview,
-      setPreviewTheme
+      setPreviewTheme,
+      handleKeydown
     }
   },
   data() {
     return {
       layoutMode: 'split-view', // 'split-view', 'editor-fullscreen', 'preview-fullscreen'
       currentTypographyTheme: 'classic',
-      currentCodeTheme: 'github'
+      currentCodeTheme: 'github',
+      // Sync scroll refs
+      previewContentEl: null,
+      isSyncingScroll: false
     }
+  },
+  beforeUnmount() {
+    this.removeScrollListeners()
   },
   computed: {
     getLayoutClass() {
@@ -130,6 +140,41 @@ export default {
     },
     handleTextareaReady(textarea) {
       this.editorTextarea = textarea
+      this.setupSyncScroll()
+    },
+    handlePreviewReady(el) {
+      this.previewContentEl = el
+      this.setupSyncScroll()
+    },
+    setupSyncScroll() {
+      const ta = this.editorTextarea
+      const pv = this.previewContentEl
+      if (!ta || !pv) return // wait until both are ready
+
+      this._onEditorScroll = () => {
+        if (this.isSyncingScroll) return
+        this.isSyncingScroll = true
+        const pct = ta.scrollTop / (ta.scrollHeight - ta.clientHeight || 1)
+        pv.scrollTop = pct * (pv.scrollHeight - pv.clientHeight)
+        this.isSyncingScroll = false
+      }
+      this._onPreviewScroll = () => {
+        if (this.isSyncingScroll) return
+        this.isSyncingScroll = true
+        const pct = pv.scrollTop / (pv.scrollHeight - pv.clientHeight || 1)
+        ta.scrollTop = pct * (ta.scrollHeight - ta.clientHeight)
+        this.isSyncingScroll = false
+      }
+      ta.addEventListener('scroll', this._onEditorScroll, { passive: true })
+      pv.addEventListener('scroll', this._onPreviewScroll, { passive: true })
+    },
+    removeScrollListeners() {
+      if (this.editorTextarea && this._onEditorScroll) {
+        this.editorTextarea.removeEventListener('scroll', this._onEditorScroll)
+      }
+      if (this.previewContentEl && this._onPreviewScroll) {
+        this.previewContentEl.removeEventListener('scroll', this._onPreviewScroll)
+      }
     },
     handleThemeChange(theme) {
       this.setPreviewTheme(theme)

@@ -163,8 +163,17 @@ export function useMarkdownEditor() {
     if (!editorTextarea.value) return
 
     const textarea = editorTextarea.value
-    const start = textarea.selectionStart
+    let start = textarea.selectionStart
     const end = textarea.selectionEnd
+
+    // Block-level types that must start at line beginning
+    const blockTypes = new Set(['h1', 'h2', 'h3', 'unorderedlist', 'orderedlist', 'blockquote'])
+    if (blockTypes.has(type)) {
+      // Snap start to the beginning of the current line
+      const lineStart = content.value.lastIndexOf('\n', start - 1) + 1
+      start = lineStart
+    }
+
     const selectedText = content.value.substring(start, end)
     let replacement = ''
     let newCursorPos = start
@@ -184,15 +193,15 @@ export function useMarkdownEditor() {
         break
       case 'h1':
         replacement = `# ${selectedText || '一级标题'}`
-        newCursorPos = selectedText ? end + 2 : start + 2
+        newCursorPos = start + replacement.length
         break
       case 'h2':
         replacement = `## ${selectedText || '二级标题'}`
-        newCursorPos = selectedText ? end + 3 : start + 3
+        newCursorPos = start + replacement.length
         break
       case 'h3':
         replacement = `### ${selectedText || '三级标题'}`
-        newCursorPos = selectedText ? end + 4 : start + 4
+        newCursorPos = start + replacement.length
         break
       case 'link':
         replacement = `[${selectedText || '链接文本'}](https://example.com)`
@@ -204,19 +213,19 @@ export function useMarkdownEditor() {
         break
       case 'codeblock':
         replacement = `\`\`\`javascript\n${selectedText || 'console.log(\'Hello, World!\');'}\n\`\`\``
-        newCursorPos = selectedText ? end + 14 : start + 14
+        newCursorPos = start + 14
         break
       case 'unorderedlist':
         replacement = `- ${selectedText || '列表项'}`
-        newCursorPos = selectedText ? end + 2 : start + 2
+        newCursorPos = start + replacement.length
         break
       case 'orderedlist':
         replacement = `1. ${selectedText || '列表项'}`
-        newCursorPos = selectedText ? end + 3 : start + 3
+        newCursorPos = start + replacement.length
         break
       case 'blockquote':
         replacement = `> ${selectedText || '引用内容'}`
-        newCursorPos = selectedText ? end + 2 : start + 2
+        newCursorPos = start + replacement.length
         break
       case 'table':
         replacement = `| 列1 | 列2 | 列3 |\n|-----|-----|-----|\n| 数据1 | 数据2 | 数据3 |\n| 数据4 | 数据5 | 数据6 |`
@@ -289,6 +298,44 @@ export function useMarkdownEditor() {
     previewTheme.value = theme
   }
 
+  /**
+   * Keyboard shortcuts handler — call from textarea @keydown.
+   * Returns true if the event was handled (caller should preventDefault).
+   */
+  const handleKeydown = (event) => {
+    const { ctrlKey, metaKey, shiftKey, key } = event
+    const mod = ctrlKey || metaKey // Cmd on Mac, Ctrl elsewhere
+
+    if (!mod && key === 'Tab') {
+      // Tab → insert 2 spaces (or outdent with Shift)
+      if (!editorTextarea.value) return false
+      const ta = editorTextarea.value
+      const start = ta.selectionStart
+      const end = ta.selectionEnd
+      if (shiftKey) {
+        // Outdent: remove up to 2 leading spaces on current line
+        const lineStart = content.value.lastIndexOf('\n', start - 1) + 1
+        const lineText = content.value.substring(lineStart, start)
+        const removed = lineText.length - lineText.replace(/^ {1,2}/, '').length
+        if (removed > 0) {
+          content.value = content.value.substring(0, lineStart) + content.value.substring(lineStart + removed)
+          nextTick(() => ta.setSelectionRange(Math.max(lineStart, start - removed), Math.max(lineStart, end - removed)))
+        }
+      } else {
+        content.value = content.value.substring(0, start) + '  ' + content.value.substring(end)
+        nextTick(() => ta.setSelectionRange(start + 2, start + 2))
+      }
+      return true
+    }
+
+    if (mod && key === 'b') { event.preventDefault(); insertFormat('bold'); return true }
+    if (mod && key === 'i') { event.preventDefault(); insertFormat('italic'); return true }
+    if (mod && key === 'k') { event.preventDefault(); insertFormat('link'); return true }
+    if (mod && key === 's') { event.preventDefault(); exportMarkdown(); return true }
+
+    return false
+  }
+
   return {
     // 状态
     content,
@@ -306,6 +353,7 @@ export function useMarkdownEditor() {
     clearContent,
     exportMarkdown,
     togglePreview,
-    setPreviewTheme
+    setPreviewTheme,
+    handleKeydown
   }
 }
