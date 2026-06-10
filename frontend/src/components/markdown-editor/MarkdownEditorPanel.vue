@@ -14,17 +14,34 @@
       </div>
     </div>
 
-    <!-- 编辑器主体 -->
+    <!-- 编辑器主体：行号栏 + textarea -->
     <div class="editor-body">
+      <div class="editor-scroll-area" ref="scrollArea">
+        <!-- 行号栏 -->
+        <div
+          class="line-numbers"
+          ref="lineNumbersEl"
+          @click="focusTextarea"
+        >
+          <div
+            v-for="n in lineCount"
+            :key="n"
+            class="line-number"
+            :class="{ 'line-active': n === currentLine }"
+          >{{ n }}</div>
+        </div>
+        <!-- 编辑区 -->
         <textarea
           ref="editorTextarea"
           :value="content"
           class="editor-textarea"
           :placeholder="$t('tools.markdownEditor.placeholder')"
-          @input="$emit('update:content', $event.target.value)"
-          @select="$emit('selection-change', $event)"
+          @input="onInput"
+          @select="onSelect"
           @keydown="onKeydown"
+          @scroll="syncScroll"
         ></textarea>
+      </div>
     </div>
   </div>
 </template>
@@ -54,15 +71,52 @@ export default {
       })
     }
   },
-  emits: ['update:content', 'selection-change', 'keydown'],
+  emits: ['update:content', 'selection-change', 'keydown', 'textarea-ready'],
+  data() {
+    return {
+      currentLine: 1
+    }
+  },
+  computed: {
+    lineCount() {
+      if (!this.content) return 1
+      return this.content.split('\n').length
+    }
+  },
   mounted() {
-    // 将 textarea 引用传递给父组件
     this.$emit('textarea-ready', this.$refs.editorTextarea)
   },
   methods: {
+    onInput(event) {
+      this.$emit('update:content', event.target.value)
+    },
+    onSelect() {
+      this.updateCurrentLine()
+      this.$emit('selection-change', event)
+    },
     onKeydown(event) {
-      // Let the parent's handleKeydown decide if this is a shortcut
       this.$emit('keydown', event)
+    },
+    focusTextarea() {
+      this.$refs.editorTextarea?.focus()
+    },
+    updateCurrentLine() {
+      const ta = this.$refs.editorTextarea
+      if (!ta) return
+      const textBeforeCursor = this.content.substring(0, ta.selectionStart)
+      this.currentLine = textBeforeCursor.split('\n').length
+    },
+    syncScroll() {
+      const ta = this.$refs.editorTextarea
+      const ln = this.$refs.lineNumbersEl
+      if (ta && ln) {
+        ln.scrollTop = ta.scrollTop
+      }
+    }
+  },
+  watch: {
+    content() {
+      this.updateCurrentLine()
     }
   }
 }
@@ -128,6 +182,40 @@ export default {
   overflow: hidden;
 }
 
+.editor-scroll-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* 行号栏 */
+.line-numbers {
+  width: 48px;
+  flex-shrink: 0;
+  padding: 16px 8px 16px 0;
+  text-align: right;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--dt-text-placeholder);
+  background-color: var(--dt-bg-section);
+  border-right: 1px solid var(--dt-border-light);
+  overflow: hidden;
+  user-select: none;
+  cursor: text;
+}
+
+.line-number {
+  height: calc(14px * 1.6); /* match font-size * line-height */
+  transition: color 0.15s;
+}
+
+.line-number.line-active {
+  color: var(--dt-primary);
+  font-weight: 600;
+}
+
+/* 编辑区 */
 .editor-textarea {
   flex: 1;
   padding: 16px;
@@ -140,6 +228,8 @@ export default {
   color: var(--dt-text-primary);
   background-color: var(--dt-bg-page);
   transition: background-color 0.2s ease;
+  white-space: pre;
+  overflow-wrap: normal;
 }
 
 .editor-textarea:focus {
@@ -188,6 +278,12 @@ export default {
     gap: 12px;
   }
 
+  .line-numbers {
+    width: 36px;
+    font-size: 11px;
+    padding: 12px 6px 12px 0;
+  }
+
   .editor-textarea {
     font-size: 16px; /* 防止iOS缩放 */
     padding: 12px;
@@ -203,6 +299,12 @@ export default {
     flex-direction: column;
     gap: 4px;
     align-items: flex-end;
+  }
+
+  .line-numbers {
+    width: 28px;
+    font-size: 10px;
+    padding: 8px 4px 8px 0;
   }
 
   .editor-textarea {
