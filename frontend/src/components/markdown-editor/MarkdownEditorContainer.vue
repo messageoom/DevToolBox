@@ -208,7 +208,7 @@ export default {
   bottom: 0;
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa;
+  background-color: var(--dt-bg-page);
   overflow: hidden; /* 防止内容溢出 */
   z-index: 1; /* 降低容器z-index，让工具栏可以更高 */
 }
@@ -225,8 +225,8 @@ export default {
   flex: 1;
   height: 100%;
   position: relative;
-  background-color: #fff;
-  border-right: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-card);
+  border-right: 1px solid var(--dt-border-light);
   transition: all 0.3s ease;
 }
 
@@ -235,7 +235,7 @@ export default {
   flex: 1;
   height: 100%;
   position: relative;
-  background-color: #fff;
+  background-color: var(--dt-bg-card);
   transition: all 0.3s ease;
 }
 
@@ -281,13 +281,13 @@ export default {
   .editor-panel-wrapper,
   .preview-panel-wrapper {
     border-right: none;
-    border-bottom: 1px solid #e6e6e6;
+    border-bottom: 1px solid var(--dt-border-light);
   }
 
   /* 移动端默认垂直布局 */
   .editor-panel-wrapper {
     height: 50%;
-    border-bottom: 1px solid #e6e6e6;
+    border-bottom: 1px solid var(--dt-border-light);
   }
 
   .preview-panel-wrapper {
@@ -321,10 +321,10 @@ export default {
 /* 主题样式支持 */
 .current-theme-info {
   font-size: 12px;
-  color: #666;
-  background-color: #f8f9fa;
+  color: var(--dt-text-secondary);
+  background-color: var(--dt-bg-page);
   padding: 4px 8px;
   border-radius: 4px;
-  border: 1px solid #e6e6e6;
+  border: 1px solid var(--dt-border-light);
 }
 </style>

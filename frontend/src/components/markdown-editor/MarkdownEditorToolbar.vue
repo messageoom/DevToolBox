@@ -573,9 +573,9 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #e6e6e6;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background-color: var(--dt-bg-card);
+  border-bottom: 1px solid var(--dt-border-light);
+  box-shadow: var(--dt-shadow-sm);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   flex-shrink: 0; /* 防止工具栏被压缩 */
@@ -592,7 +592,7 @@ export default {
 .editor-title {
   font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .toolbar-center {
@@ -717,13 +717,13 @@ export default {
 
 /* 毛玻璃效果增强 */
 .markdown-editor-toolbar {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: color-mix(in srgb, var(--dt-bg-card) 95%, transparent);
 }
 
 /* 支持 Safari 的毛玻璃效果 */
 @supports (backdrop-filter: blur(10px)) {
   .markdown-editor-toolbar {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: color-mix(in srgb, var(--dt-bg-card) 80%, transparent);
   }
 }
 
@@ -757,10 +757,10 @@ export default {
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
-  background-color: #fff;
-  border: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-card);
+  border: 1px solid var(--dt-border-light);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--dt-shadow-md);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   width: 352px; /* 精确计算：10*28 + 9*4 + 2*8 = 280 + 36 + 16 = 332px，留8px余量 */
@@ -776,11 +776,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-section);
+  border-bottom: 1px solid var(--dt-border-light);
   font-size: 12px;
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .emoji-grid {
@@ -792,7 +792,7 @@ export default {
   max-height: 272px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--dt-border-light) transparent;
 }
 
 .emoji-grid::-webkit-scrollbar {
@@ -804,12 +804,12 @@ export default {
 }
 
 .emoji-grid::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--dt-border-light);
   border-radius: 2px;
 }
 
 .emoji-grid::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--dt-text-secondary);
 }
 
 .emoji-button {
@@ -828,12 +828,12 @@ export default {
 }
 
 .emoji-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--dt-bg-hover);
   transform: scale(1.1);
 }
 
 .emoji-button:active {
-  background-color: #e6e6e6;
+  background-color: var(--dt-border-light);
   transform: scale(0.95);
 }
 
@@ -901,37 +901,6 @@ export default {
   z-index: -1;
 }
 
-/* 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-  .markdown-editor-toolbar {
-    background-color: rgba(24, 24, 24, 0.95);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .editor-title {
-    color: #e0e0e0;
-  }
-
-  .emoji-picker {
-    background-color: rgba(24, 24, 24, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .emoji-header {
-    background-color: rgba(32, 32, 32, 0.95);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    color: #e0e0e0;
-  }
-
-  .emoji-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .emoji-button:active {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
 /* 主题选择器样式 */
 .theme-selector {
   display: flex;
@@ -957,7 +926,7 @@ export default {
 
 .theme-option span:last-child {
   font-size: 14px;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 /* 响应式主题选择器 */
@@ -1010,10 +979,10 @@ export default {
 }
 
 .theme-panel {
-  background-color: #fff;
-  border: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-card);
+  border: 1px solid var(--dt-border-light);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--dt-shadow-md);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   width: 400px;
@@ -1028,11 +997,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-section);
+  border-bottom: 1px solid var(--dt-border-light);
   font-size: 14px;
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .theme-panel-title {
@@ -1049,7 +1018,7 @@ export default {
   max-height: calc(70vh - 60px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--dt-border-light) transparent;
 }
 
 .theme-grid::-webkit-scrollbar {
@@ -1061,18 +1030,18 @@ export default {
 }
 
 .theme-grid::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--dt-border-light);
   border-radius: 2px;
 }
 
 .theme-grid::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--dt-text-secondary);
 }
 
 .theme-item {
   display: flex;
   flex-direction: column;
-  border: 2px solid #e6e6e6;
+  border: 2px solid var(--dt-border-light);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1080,20 +1049,20 @@ export default {
 }
 
 .theme-item:hover {
-  border-color: #409eff;
+  border-color: var(--dt-primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
 }
 
 .theme-item.active {
-  border-color: #67c23a;
+  border-color: var(--dt-success, #67c23a);
   background-color: rgba(103, 194, 58, 0.05);
 }
 
 .theme-preview {
   padding: 12px;
-  background-color: #fafafa;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-page);
+  border-bottom: 1px solid var(--dt-border-light);
   min-height: 100px;
   display: flex;
   align-items: center;
@@ -1111,23 +1080,23 @@ export default {
   margin: 0 0 8px 0;
   font-size: 14px;
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .theme-preview .preview-content p {
   margin: 4px 0;
-  color: #666;
+  color: var(--dt-text-secondary);
 }
 
 .theme-preview .preview-content em {
-  color: #999;
+  color: var(--dt-text-placeholder);
   font-style: italic;
 }
 
 .theme-preview .preview-content pre {
   margin: 8px 0;
   padding: 8px;
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   border-radius: 4px;
   font-size: 11px;
   line-height: 1.3;
@@ -1137,28 +1106,28 @@ export default {
 }
 
 .theme-preview .preview-content code {
-  background-color: #f6f8fa;
+  background-color: var(--dt-bg-section);
   padding: 2px 4px;
   border-radius: 3px;
   font-size: 11px;
-  color: #d73a49;
+  color: var(--dt-danger, #f56c6c);
 }
 
 .theme-info {
   padding: 12px;
-  background-color: #fff;
+  background-color: var(--dt-bg-card);
 }
 
 .theme-name {
   font-size: 14px;
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
   margin-bottom: 4px;
 }
 
 .theme-desc {
   font-size: 12px;
-  color: #666;
+  color: var(--dt-text-secondary);
   line-height: 1.4;
 }
 
@@ -1195,7 +1164,7 @@ export default {
     flex: 1;
     min-height: auto;
     border-bottom: none;
-    border-right: 1px solid #e6e6e6;
+    border-right: 1px solid var(--dt-border-light);
   }
 
   .theme-info {
@@ -1227,72 +1196,6 @@ export default {
 
   .theme-desc {
     font-size: 11px;
-  }
-}
-
-/* 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-  .theme-panel {
-    background-color: rgba(24, 24, 24, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .theme-panel-header {
-    background-color: rgba(32, 32, 32, 0.95);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    color: #e0e0e0;
-  }
-
-  .theme-item {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .theme-item:hover {
-    border-color: #409eff;
-  }
-
-  .theme-item.active {
-    border-color: #67c23a;
-    background-color: rgba(103, 194, 58, 0.1);
-  }
-
-  .theme-preview {
-    background-color: rgba(32, 32, 32, 0.95);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .theme-preview .preview-content h3 {
-    color: #e0e0e0;
-  }
-
-  .theme-preview .preview-content p {
-    color: #cccccc;
-  }
-
-  .theme-preview .preview-content em {
-    color: #999;
-  }
-
-  .theme-preview .preview-content pre {
-    background-color: rgba(32, 32, 32, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .theme-preview .preview-content code {
-    background-color: rgba(32, 32, 32, 0.95);
-    color: #ff7b72;
-  }
-
-  .theme-info {
-    background-color: rgba(24, 24, 24, 0.95);
-  }
-
-  .theme-name {
-    color: #e0e0e0;
-  }
-
-  .theme-desc {
-    color: #cccccc;
   }
 }
 

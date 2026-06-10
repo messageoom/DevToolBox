@@ -70,7 +70,7 @@ export default {
   bottom: 0;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--dt-bg-card);
   height: 100%;
   width: 100%;
 }
@@ -85,10 +85,10 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--dt-bg-section);
+  border-bottom: 1px solid var(--dt-border-light);
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .header-left {
@@ -98,7 +98,7 @@ export default {
 }
 
 .editor-icon {
-  color: #409eff;
+  color: var(--dt-primary);
 }
 
 .header-right {
@@ -108,7 +108,7 @@ export default {
 
 .editor-stats {
   font-size: 12px;
-  color: #666;
+  color: var(--dt-text-secondary);
   display: flex;
   gap: 16px;
   font-weight: normal;
@@ -130,17 +130,18 @@ export default {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.6;
-  background-color: #fafafa;
+  color: var(--dt-text-primary);
+  background-color: var(--dt-bg-page);
   transition: background-color 0.2s ease;
 }
 
 .editor-textarea:focus {
-  background-color: #fff;
-  box-shadow: inset 0 0 0 1px #409eff;
+  background-color: var(--dt-bg-card);
+  box-shadow: inset 0 0 0 1px var(--dt-primary);
 }
 
 .editor-textarea::placeholder {
-  color: #999;
+  color: var(--dt-text-placeholder);
   font-style: italic;
 }
 
@@ -150,24 +151,24 @@ export default {
 }
 
 .editor-textarea::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
   border-radius: 4px;
 }
 
 .editor-textarea::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--dt-border-light);
   border-radius: 4px;
 }
 
 .editor-textarea::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--dt-text-secondary);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .markdown-editor-panel {
     border-right: none;
-    border-bottom: 1px solid #e6e6e6;
+    border-bottom: 1px solid var(--dt-border-light);
     max-height: 50vh;
   }
 
