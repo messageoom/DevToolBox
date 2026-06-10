@@ -1,5 +1,6 @@
 from flask import Flask, Blueprint, send_from_directory, request, jsonify, g
 from flask_cors import CORS
+import hmac
 import os
 import logging
 
@@ -168,7 +169,7 @@ def create_app(access_token=None):
             request.headers.get('X-Access-Token')
         )
 
-        if provided == token:
+        if hmac.compare_digest(provided or '', token):
             g.token_valid = True
             return None
 
@@ -178,7 +179,7 @@ def create_app(access_token=None):
         now_ts = datetime.utcnow().timestamp()
         for t in temp_tokens:
             exp = t.get('expires_at', 0)
-            if t.get('token') == provided and isinstance(exp, (int, float)) and exp > now_ts:
+            if hmac.compare_digest(t.get('token', ''), provided or '') and isinstance(exp, (int, float)) and exp > now_ts:
                 g.token_valid = True
                 return None
 

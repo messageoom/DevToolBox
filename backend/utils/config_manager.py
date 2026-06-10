@@ -93,9 +93,10 @@ def get_upload_dir(config):
 
 def cleanup_expired_tokens(config):
     """Remove expired temp tokens from config."""
-    now = datetime.utcnow().isoformat()
+    now = datetime.utcnow().timestamp()
     tokens = config.get('security', {}).get('temp_tokens', [])
     config['security']['temp_tokens'] = [
-        t for t in tokens if t.get('expires_at', '') > now
+        t for t in tokens
+        if isinstance(t.get('expires_at'), (int, float)) and t['expires_at'] > now
     ]
     return config

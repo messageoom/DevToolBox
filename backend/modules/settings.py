@@ -119,7 +119,7 @@ def create_temp_token():
         return jsonify({'success': False, 'error': 'Expiration must be at least 1 minute'}), 400
 
     token = uuid.uuid4().hex[:16]
-    expires_at = (datetime.utcnow() + timedelta(minutes=expires_minutes)).isoformat()
+    expires_at = (datetime.utcnow() + timedelta(minutes=expires_minutes)).timestamp()
 
     config = load_config()
     config = cleanup_expired_tokens(config)
