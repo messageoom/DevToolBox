@@ -16,6 +16,7 @@
     "element-plus": "^2.4.4",
     "highlight.js": "^11.11.1",
     "marked": "^16.2.1",
+    "marked-highlight": "^2.2.4",
     "pinia": "^2.3.1",
     "socket.io-client": "^4.7.5",
     "vue": "^3.4.0",

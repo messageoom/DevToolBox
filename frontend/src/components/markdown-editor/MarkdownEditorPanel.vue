@@ -35,7 +35,7 @@
           <!-- 当前行的背景高亮条 -->
           <div
             class="line-highlight"
-            :style="{ top: (currentLine - 1) * lineHeightPx + 'px' }"
+            :style="{ top: (currentLine - 1) * lineHeightPx + 'px', height: lineHeightPx + 'px' }"
           ></div>
           <textarea
             ref="editorTextarea"
@@ -56,8 +56,6 @@
 
 <script>
 import { Edit } from '@element-plus/icons-vue'
-
-const LINE_HEIGHT = 22.4 // 14px font-size * 1.6 line-height
 
 export default {
   name: 'MarkdownEditorPanel',
@@ -85,7 +83,7 @@ export default {
   data() {
     return {
       currentLine: 1,
-      lineHeightPx: LINE_HEIGHT
+      lineHeightPx: 22.4
     }
   },
   computed: {
@@ -97,6 +95,11 @@ export default {
   mounted() {
     this.$emit('textarea-ready', this.$refs.editorTextarea)
     this.updateCurrentLine()
+    this.measureLineHeight()
+    window.addEventListener('resize', this.measureLineHeight)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.measureLineHeight)
   },
   methods: {
     onInput(event) {
@@ -127,6 +130,13 @@ export default {
       if (ta && ln) {
         ln.scrollTop = ta.scrollTop
       }
+    },
+    measureLineHeight() {
+      // Read the actual computed line-height from the textarea
+      const ta = this.$refs.editorTextarea
+      if (!ta) return
+      const style = window.getComputedStyle(ta)
+      this.lineHeightPx = parseFloat(style.lineHeight) || 22.4
     }
   },
   watch: {
@@ -210,7 +220,7 @@ export default {
   padding: 16px 8px 16px 0;
   text-align: right;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--dt-text-placeholder);
   background-color: var(--dt-bg-section);
@@ -221,7 +231,7 @@ export default {
 }
 
 .line-number {
-  height: 22.4px; /* 14px * 1.6 — matches textarea line-height */
+  /* No hardcoded height — inherits line-height from .line-numbers */
   transition: color 0.1s;
 }
 
@@ -242,10 +252,10 @@ export default {
   position: absolute;
   left: 0;
   right: 0;
-  height: 22.4px;
+  height: 22.4px; /* default desktop; JS updates dynamically */
   background-color: color-mix(in srgb, var(--dt-primary) 6%, transparent);
   pointer-events: none;
-  transition: top 0.08s ease;
+  transition: top 0.08s ease, height 0.08s ease;
   z-index: 0;
 }
 
@@ -316,16 +326,8 @@ export default {
 
   .line-numbers {
     width: 36px;
-    font-size: 11px;
+    font-size: 16px;
     padding: 12px 6px 12px 0;
-  }
-
-  .line-number {
-    height: 25.6px; /* 16px * 1.6 */
-  }
-
-  .line-highlight {
-    height: 25.6px;
   }
 
   .editor-textarea {
@@ -347,7 +349,7 @@ export default {
 
   .line-numbers {
     width: 28px;
-    font-size: 10px;
+    font-size: 16px;
     padding: 8px 4px 8px 0;
   }
 

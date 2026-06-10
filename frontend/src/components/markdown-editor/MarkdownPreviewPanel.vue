@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showPreview" class="markdown-preview-panel">
+  <div v-show="showPreview" class="markdown-preview-panel">
     <!-- 预览头部 -->
     <div class="preview-header">
       <div class="header-left">

@@ -165,7 +165,7 @@
       <!-- 布局切换按钮 -->
       <el-button-group size="small">
         <el-tooltip :content="$t('tools.markdownEditor.toolbar.splitView')" placement="bottom">
-          <el-button @click.stop="$emit('switch-layout', 'split')" @mousedown.prevent type="default" tabindex="-1">
+          <el-button @click.stop="$emit('switch-layout', 'split-view')" @mousedown.prevent type="default" tabindex="-1">
             <el-icon><Grid /></el-icon>
           </el-button>
         </el-tooltip>
@@ -354,11 +354,14 @@ export default {
     window.addEventListener('resize', this.recalculatePanelPositions)
     // 监听滚动事件，重新计算面板位置
     window.addEventListener('scroll', this.recalculatePanelPositions)
+    // Escape 键关闭弹出面板
+    document.addEventListener('keydown', this.handleEscapeKey)
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside)
     window.removeEventListener('resize', this.recalculatePanelPositions)
     window.removeEventListener('scroll', this.recalculatePanelPositions)
+    document.removeEventListener('keydown', this.handleEscapeKey)
   },
   methods: {
     handleEmojiButtonClick(event) {
@@ -406,6 +409,13 @@ export default {
             !emojiButton.contains(event.target)) {
           this.showEmojiPicker = false
         }
+      }
+    },
+    handleEscapeKey(event) {
+      if (event.key === 'Escape') {
+        this.showEmojiPicker = false
+        this.showTypographyThemes = false
+        this.showCodeThemes = false
       }
     },
     handleThemeChange(theme) {
@@ -630,15 +640,11 @@ export default {
 
 @media (max-width: 768px) {
   .markdown-editor-toolbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
     padding: 8px 12px;
     flex-direction: column;
     gap: 8px;
     height: auto;
-    min-height: 120px;
+    min-height: auto;
   }
 
   .toolbar-center {
@@ -670,7 +676,7 @@ export default {
 
 @media (max-width: 480px) {
   .markdown-editor-toolbar {
-    min-height: 140px;
+    min-height: auto;
   }
 
   .toolbar-center {

@@ -191,54 +191,12 @@ export default {
       }
     },
     handleTypographyThemeChange(theme) {
-      // 更新当前排版主题状态
       this.currentTypographyTheme = theme.id
-      // 处理排版主题切换
-      this.applyTypographyTheme(theme)
+      // PreviewPanel's watcher will apply the theme
     },
     handleCodeThemeChange(theme) {
-      // 更新当前代码主题状态
       this.currentCodeTheme = theme.id
-      // 处理代码主题切换
-      this.applyCodeTheme(theme)
-    },
-    applyTypographyTheme(theme) {
-      // 应用排版主题到预览区域
-      const previewContent = document.querySelector('.preview-content')
-      if (previewContent && theme.styles) {
-        Object.assign(previewContent.style, theme.styles)
-
-        // 应用标题样式
-        const headings = previewContent.querySelectorAll('h1, h2, h3, h4, h5, h6')
-        headings.forEach(heading => {
-          if (theme.headingStyles) {
-            Object.assign(heading.style, theme.headingStyles)
-          }
-        })
-      }
-    },
-    applyCodeTheme(theme) {
-      // 应用代码主题到预览区域
-      const previewContent = document.querySelector('.preview-content')
-      if (previewContent && theme.styles) {
-        const codeBlocks = previewContent.querySelectorAll('pre')
-        codeBlocks.forEach(block => {
-          Object.assign(block.style, theme.styles)
-        })
-
-        const inlineCodes = previewContent.querySelectorAll('code')
-        inlineCodes.forEach(code => {
-          if (!code.closest('pre')) {
-            Object.assign(code.style, {
-              backgroundColor: theme.styles.backgroundColor,
-              color: theme.keywordColor,
-              padding: '2px 4px',
-              borderRadius: '3px',
-              fontSize: '0.9em'
-            })
-          }
-        })
-      }
+      // PreviewPanel's watcher will apply the theme
     }
   }
 }

@@ -1,6 +1,7 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { marked } from 'marked'
+import { Marked } from 'marked'
+import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import python from 'highlight.js/lib/languages/python'
@@ -33,23 +34,21 @@ hljs.registerLanguage('yaml', yaml)
 hljs.registerLanguage('yml', yaml)
 hljs.registerLanguage('markdown', markdown)
 
-// --- marked 配置 ---
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  highlight(code, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value
-      } catch { /* fall through */ }
-    }
-    try {
-      return hljs.highlightAuto(code).value
-    } catch {
-      return code
-    }
-  },
-})
+// --- marked 实例（隔离，不污染全局） ---
+const markedInstance = new Marked(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try { return hljs.highlight(code, { language: lang }).value }
+        catch { /* fall through */ }
+      }
+      try { return hljs.highlightAuto(code).value }
+      catch { return code }
+    },
+  }),
+  { breaks: true, gfm: true },
+)
 
 const STORAGE_KEY = 'devtoolbox_md_content'
 const DEFAULT_CONTENT = `# Markdown 沉浸式编辑器
@@ -144,7 +143,7 @@ export function useMarkdownEditor() {
   // 计算属性
   const renderedHtml = computed(() => {
     if (content.value) {
-      return marked.parse(content.value)
+      return markedInstance.parse(content.value)
     }
     return '<p class="empty-preview">暂无内容，请在左侧编辑器中输入 Markdown 内容</p>'
   })
