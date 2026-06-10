@@ -31,16 +31,24 @@
           >{{ n }}</div>
         </div>
         <!-- 编辑区 -->
-        <textarea
-          ref="editorTextarea"
-          :value="content"
-          class="editor-textarea"
-          :placeholder="$t('tools.markdownEditor.placeholder')"
-          @input="onInput"
-          @select="onSelect"
-          @keydown="onKeydown"
-          @scroll="syncScroll"
-        ></textarea>
+        <div class="textarea-wrapper">
+          <!-- 当前行的背景高亮条 -->
+          <div
+            class="line-highlight"
+            :style="{ top: (currentLine - 1) * lineHeightPx + 'px' }"
+          ></div>
+          <textarea
+            ref="editorTextarea"
+            :value="content"
+            class="editor-textarea"
+            :placeholder="$t('tools.markdownEditor.placeholder')"
+            @input="onInput"
+            @click="updateCurrentLine"
+            @keyup="onKeyUp"
+            @keydown="onKeydown"
+            @scroll="syncScroll"
+          ></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -48,6 +56,8 @@
 
 <script>
 import { Edit } from '@element-plus/icons-vue'
+
+const LINE_HEIGHT = 22.4 // 14px font-size * 1.6 line-height
 
 export default {
   name: 'MarkdownEditorPanel',
@@ -74,7 +84,8 @@ export default {
   emits: ['update:content', 'selection-change', 'keydown', 'textarea-ready'],
   data() {
     return {
-      currentLine: 1
+      currentLine: 1,
+      lineHeightPx: LINE_HEIGHT
     }
   },
   computed: {
@@ -85,14 +96,18 @@ export default {
   },
   mounted() {
     this.$emit('textarea-ready', this.$refs.editorTextarea)
+    this.updateCurrentLine()
   },
   methods: {
     onInput(event) {
       this.$emit('update:content', event.target.value)
     },
-    onSelect() {
-      this.updateCurrentLine()
-      this.$emit('selection-change', event)
+    onKeyUp(event) {
+      // Update current line on arrow keys, Home, End, PageUp/Down
+      const navigationKeys = ['ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']
+      if (navigationKeys.includes(event.key)) {
+        this.updateCurrentLine()
+      }
     },
     onKeydown(event) {
       this.$emit('keydown', event)
@@ -116,7 +131,7 @@ export default {
   },
   watch: {
     content() {
-      this.updateCurrentLine()
+      this.$nextTick(() => this.updateCurrentLine())
     }
   }
 }
@@ -206,8 +221,8 @@ export default {
 }
 
 .line-number {
-  height: calc(14px * 1.6); /* match font-size * line-height */
-  transition: color 0.15s;
+  height: 22.4px; /* 14px * 1.6 — matches textarea line-height */
+  transition: color 0.1s;
 }
 
 .line-number.line-active {
@@ -215,9 +230,31 @@ export default {
   font-weight: 600;
 }
 
+/* 编辑区容器 */
+.textarea-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 当前行的背景高亮条 */
+.line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 22.4px;
+  background-color: color-mix(in srgb, var(--dt-primary) 6%, transparent);
+  pointer-events: none;
+  transition: top 0.08s ease;
+  z-index: 0;
+}
+
 /* 编辑区 */
 .editor-textarea {
-  flex: 1;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
   padding: 16px;
   border: none;
   outline: none;
@@ -226,15 +263,14 @@ export default {
   font-size: 14px;
   line-height: 1.6;
   color: var(--dt-text-primary);
-  background-color: var(--dt-bg-page);
-  transition: background-color 0.2s ease;
+  background-color: transparent;
   white-space: pre;
   overflow-wrap: normal;
 }
 
 .editor-textarea:focus {
-  background-color: var(--dt-bg-card);
-  box-shadow: inset 0 0 0 1px var(--dt-primary);
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .editor-textarea::placeholder {
@@ -282,6 +318,14 @@ export default {
     width: 36px;
     font-size: 11px;
     padding: 12px 6px 12px 0;
+  }
+
+  .line-number {
+    height: 25.6px; /* 16px * 1.6 */
+  }
+
+  .line-highlight {
+    height: 25.6px;
   }
 
   .editor-textarea {
