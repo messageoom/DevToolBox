@@ -194,8 +194,9 @@ def create_app(access_token=None):
         if not config.get('security', {}).get('token_enabled', True):
             return None
 
-        # Exempt paths — static assets, etc.
+        # Exempt paths — static assets, Socket.IO (auth handled at Socket.IO layer)
         if (request.path in ('/favicon.ico', '/robots.txt', '/api/frontend-log')
+                or request.path.startswith('/socket.io/')
                 or request.path.startswith('/assets/')):
             return None
 
