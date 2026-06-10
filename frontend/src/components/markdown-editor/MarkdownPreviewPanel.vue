@@ -1,5 +1,5 @@
 <template>
-  <div v-show="showPreview" class="markdown-preview-panel">
+  <div class="markdown-preview-panel">
     <!-- 预览头部 -->
     <div class="preview-header">
       <div class="header-left">
@@ -35,10 +35,6 @@ export default {
     View
   },
   props: {
-    showPreview: {
-      type: Boolean,
-      default: true
-    },
     renderedHtml: {
       type: String,
       default: ''
@@ -56,7 +52,7 @@ export default {
       default: 'github'
     }
   },
-  emits: ['theme-change', 'preview-ready'],
+  emits: ['theme-change', 'preview-ready', 'show-preview-changed'],
   data() {
     return {
       typographyThemes: typographyThemes,
@@ -88,13 +84,6 @@ export default {
         this.applyCodeTheme(newTheme)
       },
       immediate: true
-    },
-    // Re-apply themes when content changes so new elements get styled
-    renderedHtml() {
-      this.$nextTick(() => {
-        this.applyTypographyTheme(this.currentTypographyTheme)
-        this.applyCodeTheme(this.currentCodeTheme)
-      })
     }
   },
   methods: {
@@ -388,10 +377,6 @@ export default {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .markdown-preview-panel {
-    max-height: 50vh;
-  }
-
   .preview-header {
     padding: 8px 12px;
   }

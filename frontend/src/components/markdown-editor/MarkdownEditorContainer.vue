@@ -30,7 +30,6 @@
       <!-- 预览面板 -->
       <div class="preview-panel-wrapper">
         <MarkdownPreviewPanel
-          :show-preview="showPreview"
           :rendered-html="renderedHtml"
           :preview-theme="previewTheme"
           :current-typography-theme="currentTypographyTheme"
@@ -57,7 +56,6 @@ export default {
     MarkdownPreviewPanel
   },
   setup() {
-    // 使用 composable
     const {
       content,
       showPreview,
@@ -65,7 +63,6 @@ export default {
       editorTextarea,
       renderedHtml,
       stats,
-      updatePreview,
       insertFormat,
       clearContent,
       exportMarkdown,
@@ -81,7 +78,6 @@ export default {
       editorTextarea,
       renderedHtml,
       stats,
-      updatePreview,
       insertFormat,
       clearContent,
       exportMarkdown,
@@ -92,21 +88,15 @@ export default {
   },
   data() {
     return {
-      layoutMode: 'split-view', // 'split-view', 'editor-fullscreen', 'preview-fullscreen'
+      layoutMode: 'split-view',
       currentTypographyTheme: 'classic',
       currentCodeTheme: 'github',
-      // Sync scroll refs
       previewContentEl: null,
       isSyncingScroll: false
     }
   },
   beforeUnmount() {
     this.removeScrollListeners()
-  },
-  computed: {
-    getLayoutClass() {
-      return this.layoutMode
-    }
   },
   methods: {
     handleBack() {
@@ -121,12 +111,7 @@ export default {
     },
     handleTogglePreview() {
       this.togglePreview()
-      // 根据预览状态调整布局模式
-      if (!this.showPreview) {
-        this.layoutMode = 'editor-fullscreen'
-      } else {
-        this.layoutMode = 'split-view'
-      }
+      this.layoutMode = this.showPreview ? 'split-view' : 'editor-fullscreen'
     },
     handleClearContent() {
       this.clearContent()
@@ -136,7 +121,6 @@ export default {
     },
     handleContentUpdate(newContent) {
       this.content = newContent
-      this.updatePreview()
     },
     handleTextareaReady(textarea) {
       this.editorTextarea = textarea
@@ -149,7 +133,7 @@ export default {
     setupSyncScroll() {
       const ta = this.editorTextarea
       const pv = this.previewContentEl
-      if (!ta || !pv) return // wait until both are ready
+      if (!ta || !pv) return
 
       this._onEditorScroll = () => {
         if (this.isSyncingScroll) return
@@ -181,22 +165,13 @@ export default {
     },
     handleSwitchLayout(mode) {
       this.layoutMode = mode
-      // 根据布局模式调整预览显示状态
-      if (mode === 'editor-fullscreen') {
-        this.showPreview = false
-      } else if (mode === 'preview-fullscreen') {
-        this.showPreview = true
-      } else if (mode === 'split-view') {
-        this.showPreview = true
-      }
+      this.showPreview = mode !== 'editor-fullscreen'
     },
     handleTypographyThemeChange(theme) {
       this.currentTypographyTheme = theme.id
-      // PreviewPanel's watcher will apply the theme
     },
     handleCodeThemeChange(theme) {
       this.currentCodeTheme = theme.id
-      // PreviewPanel's watcher will apply the theme
     }
   }
 }
@@ -218,52 +193,52 @@ export default {
   position: relative;
 }
 
-/* 编辑器面板 - 铺满左侧 */
+/* 两侧面板各占一半 */
 .editor-panel-wrapper {
-  flex: 1;
+  flex: 1 1 50%;
   height: 100%;
   position: relative;
-  background-color: var(--dt-bg-card);
+  overflow: hidden;
   border-right: 1px solid var(--dt-border-light);
-  transition: all 0.3s ease;
 }
 
-/* 预览面板 - 铺满右侧 */
 .preview-panel-wrapper {
-  flex: 1;
+  flex: 1 1 50%;
   height: 100%;
   position: relative;
-  background-color: var(--dt-bg-card);
-  transition: all 0.3s ease;
+  overflow: hidden;
+  transition: flex 0.3s ease;
+}
+
+.editor-panel-wrapper {
+  transition: flex 0.3s ease;
 }
 
 /* 全屏模式 - 编辑器独占 */
 .editor-fullscreen .editor-panel-wrapper {
-  flex: 1;
+  flex: 1 1 100%;
   border-right: none;
 }
 
 .editor-fullscreen .preview-panel-wrapper {
-  flex: 0;
-  width: 0;
+  flex: 0 0 0px;
   overflow: hidden;
 }
 
 /* 全屏模式 - 预览独占 */
 .preview-fullscreen .preview-panel-wrapper {
-  flex: 1;
+  flex: 1 1 100%;
 }
 
 .preview-fullscreen .editor-panel-wrapper {
-  flex: 0;
-  width: 0;
+  flex: 0 0 0px;
   overflow: hidden;
 }
 
-/* 分栏模式 */
+/* 分栏模式（默认，两面板各 50%） */
 .split-view .editor-panel-wrapper,
 .split-view .preview-panel-wrapper {
-  flex: 1;
+  flex: 1 1 50%;
 }
 
 /* 响应式设计 */
@@ -278,35 +253,28 @@ export default {
     border-bottom: 1px solid var(--dt-border-light);
   }
 
-  /* 移动端默认垂直布局 */
-  .editor-panel-wrapper {
-    height: 50%;
-    border-bottom: 1px solid var(--dt-border-light);
+  .split-view .editor-panel-wrapper,
+  .split-view .preview-panel-wrapper {
+    flex: 1 1 50%;
   }
 
-  .preview-panel-wrapper {
-    height: 50%;
-  }
-
-  /* 移动端全屏模式 */
   .editor-fullscreen .editor-panel-wrapper {
-    height: 100%;
+    flex: 1 1 100%;
   }
 
   .editor-fullscreen .preview-panel-wrapper {
-    height: 0;
+    flex: 0 0 0px;
   }
 
   .preview-fullscreen .preview-panel-wrapper {
-    height: 100%;
+    flex: 1 1 100%;
   }
 
   .preview-fullscreen .editor-panel-wrapper {
-    height: 0;
+    flex: 0 0 0px;
   }
 }
 
-/* 主题样式支持 */
 .current-theme-info {
   font-size: 12px;
   color: var(--dt-text-secondary);

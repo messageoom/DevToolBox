@@ -154,10 +154,6 @@ export function useMarkdownEditor() {
   }))
 
   // 方法
-  const updatePreview = () => {
-    // 预览会通过 computed 自动更新
-  }
-
   const insertFormat = (type, data) => {
     if (!editorTextarea.value) return
 
@@ -250,9 +246,6 @@ export function useMarkdownEditor() {
       textarea.focus()
       textarea.setSelectionRange(newCursorPos, newCursorPos)
     })
-
-    // 更新预览
-    updatePreview()
   }
 
   const clearContent = async () => {
@@ -263,7 +256,6 @@ export function useMarkdownEditor() {
         type: 'warning'
       })
       content.value = ''
-      updatePreview()
       ElMessage.success('内容已清空')
     } catch {
       // 用户取消操作
@@ -347,7 +339,6 @@ export function useMarkdownEditor() {
     stats,
 
     // 方法
-    updatePreview,
     insertFormat,
     clearContent,
     exportMarkdown,

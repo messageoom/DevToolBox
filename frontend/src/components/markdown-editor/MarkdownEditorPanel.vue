@@ -31,11 +31,11 @@
           >{{ n }}</div>
         </div>
         <!-- 编辑区 -->
-        <div class="textarea-wrapper">
+        <div class="textarea-wrapper" ref="textareaWrapper">
           <!-- 当前行的背景高亮条 -->
           <div
             class="line-highlight"
-            :style="{ top: (currentLine - 1) * lineHeightPx + 'px', height: lineHeightPx + 'px' }"
+            :style="lineHighlightStyle"
           ></div>
           <textarea
             ref="editorTextarea"
@@ -83,13 +83,22 @@ export default {
   data() {
     return {
       currentLine: 1,
-      lineHeightPx: 22.4
+      lineHeightPx: 22.4,
+      scrollTop: 0
     }
   },
   computed: {
     lineCount() {
       if (!this.content) return 1
       return this.content.split('\n').length
+    },
+    lineHighlightStyle() {
+      const top = (this.currentLine - 1) * this.lineHeightPx - this.scrollTop
+      return {
+        top: top + 'px',
+        height: this.lineHeightPx + 'px',
+        display: top < -this.lineHeightPx || top > (this.$refs.textareaWrapper?.clientHeight || 9999) ? 'none' : 'block'
+      }
     }
   },
   mounted() {
@@ -127,8 +136,9 @@ export default {
     syncScroll() {
       const ta = this.$refs.editorTextarea
       const ln = this.$refs.lineNumbersEl
-      if (ta && ln) {
-        ln.scrollTop = ta.scrollTop
+      if (ta) {
+        this.scrollTop = ta.scrollTop
+        if (ln) ln.scrollTop = ta.scrollTop
       }
     },
     measureLineHeight() {
@@ -312,7 +322,6 @@ export default {
   .markdown-editor-panel {
     border-right: none;
     border-bottom: 1px solid var(--dt-border-light);
-    max-height: 50vh;
   }
 
   .editor-header {
