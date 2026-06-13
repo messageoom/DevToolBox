@@ -57,23 +57,6 @@
           <template #title>{{ t('app.home') }}</template>
         </el-menu-item>
 
-        <!-- 最近使用 (only when expanded + has items) -->
-        <el-menu-item-group
-          v-if="!isSidebarCollapsed && recentTools.length"
-          :title="t('tools.home.recentlyUsed')"
-          class="recent-group"
-        >
-          <el-menu-item
-            v-for="tool in recentTools"
-            :key="'recent-' + tool.route"
-            :index="tool.route"
-            class="recent-item"
-          >
-            <span class="material-symbols-rounded sidebar-icon">{{ tool.icon }}</span>
-            <template #title>{{ tool.label }}</template>
-          </el-menu-item>
-        </el-menu-item-group>
-
         <!-- Dynamic categories from toolCategories data -->
         <template v-for="category in sidebarCategories" :key="category.id">
           <!-- Single-item category: render as direct menu item (no sub-menu) -->
@@ -142,7 +125,7 @@ import { useI18n } from 'vue-i18n'
 import { useDeviceStore } from '@/stores/device.js'
 import { useThemeStore } from '@/stores/theme.js'
 import { toolCategories } from '@/data/toolCategories.js'
-import { addRecentTool, getRecentTools } from '@/composables/useRecentTools.js'
+import { addRecentTool } from '@/composables/useRecentTools.js'
 import {
   Expand,
   Fold,
@@ -158,11 +141,6 @@ const router = useRouter()
 // --- Reactive state ---
 const isSidebarCollapsed = ref(false)
 const bottomNavRef = ref(null)
-const recentTools = ref([])
-
-function refreshRecents() {
-  recentTools.value = getRecentTools()
-}
 
 // --- Computed ---
 const currentPath = computed(() => route.path)
@@ -325,7 +303,6 @@ function getRouteMeta(path) {
 onMounted(() => {
   themeStore.initTheme()
   deviceStore.initListener()
-  refreshRecents()
 })
 
 onBeforeUnmount(() => {
@@ -346,7 +323,6 @@ watch(currentPath, (path) => {
     const entry = getRouteMeta(path)
     if (entry) {
       addRecentTool({ route: path, label: entry.label, icon: entry.icon, color: entry.color })
-      refreshRecents()
     }
   }
 })
@@ -516,19 +492,6 @@ watch(currentPath, (path) => {
 
 .app-sidebar:not(.sidebar-collapsed) .sidebar-menu {
   width: var(--dt-sidebar-width);
-}
-
-/* 最近使用分组 */
-.recent-group :deep(.el-menu-item-group__title) {
-  font-size: 11px;
-  color: var(--dt-text-placeholder);
-  padding: 8px 0 4px 16px;
-  letter-spacing: 0.3px;
-}
-
-.recent-item {
-  height: 40px !important;
-  line-height: 40px !important;
 }
 
 .sidebar-collapse-btn {
