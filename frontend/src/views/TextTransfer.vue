@@ -362,6 +362,7 @@ import { useIm } from '@/composables/useIm.js'
 import { useLightbox } from '@/composables/useLightbox.js'
 import { copyToClipboard } from '@/utils/format.js'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import python from 'highlight.js/lib/languages/python'
@@ -711,9 +712,9 @@ async function onPreviewFile({ url, filename, mime }) {
     const text = await resp.text()
     if (isMd) {
       marked.setOptions({ breaks: true, gfm: true })
-      filePreviewContent.value = marked.parse(text)
+      filePreviewContent.value = DOMPurify.sanitize(marked.parse(text))
     } else if (isHtml) {
-      filePreviewContent.value = text
+      filePreviewContent.value = DOMPurify.sanitize(text)
     } else {
       // Code preview: use highlight.js for syntax highlighting
       const ext = name.includes('.') ? name.split('.').pop() : ''

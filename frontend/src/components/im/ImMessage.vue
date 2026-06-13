@@ -110,6 +110,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDeviceStore } from '@/stores/device.js'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { copyToClipboard } from '@/utils/format.js'
 import ImCodeBlock from './ImCodeBlock.vue'
 import ImImageMessage from './ImImageMessage.vue'
@@ -158,7 +159,7 @@ const detectedLanguage = computed(() => {
 const renderedMarkdown = computed(() => {
   if (props.msg.msgType !== 'markdown' || !props.msg.content) return ''
   marked.setOptions({ breaks: true, gfm: true })
-  return marked.parse(props.msg.content)
+  return DOMPurify.sanitize(marked.parse(props.msg.content))
 })
 
 function linkify(text) {

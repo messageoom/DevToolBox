@@ -3,6 +3,7 @@ from flask_cors import CORS
 import hmac
 import os
 import logging
+from pathlib import Path
 
 __version__ = '2.2.1'
 
@@ -80,8 +81,28 @@ except ImportError:
 def create_app(access_token=None):
     app = Flask(__name__)
 
-    # 安全配置
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+    # 安全配置 — SECRET_KEY 持久化，重启后保持一致
+    def _load_or_create_secret_key():
+        env_key = os.environ.get('SECRET_KEY')
+        if env_key:
+            return env_key
+        # Persist to a .secret file next to the config so it survives restarts
+        try:
+            from utils.config_manager import get_config_path as _gcp
+            secret_file = _gcp().parent / '.devtoolbox_secret'
+        except Exception:
+            import tempfile
+            secret_file = Path(tempfile.gettempdir()) / '.devtoolbox_secret'
+        try:
+            if secret_file.exists():
+                return secret_file.read_text(encoding='utf-8').strip()
+            new_key = os.urandom(24).hex()
+            secret_file.write_text(new_key, encoding='utf-8')
+            return new_key
+        except (IOError, OSError):
+            return os.urandom(24).hex()
+
+    app.config['SECRET_KEY'] = _load_or_create_secret_key()
     app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 * 1024  # 20GB
     app.config['ACCESS_TOKEN'] = access_token
 
@@ -152,8 +173,9 @@ def create_app(access_token=None):
                 logging.info('Socket.IO: client CONNECTED sid=%s (authenticated)', _r.sid)
                 return
             # Check temp tokens
+            import time as _time
             temp_tokens = cfg.get('security', {}).get('temp_tokens', []) if _lc else []
-            now_ts = _dt.utcnow().timestamp()
+            now_ts = _time.time()
             for t in temp_tokens:
                 exp = t.get('expires_at', 0)
                 if hmac.compare_digest(t.get('token', ''), provided) and isinstance(exp, (int, float)) and exp > now_ts:
@@ -225,20 +247,22 @@ def create_app(access_token=None):
 
         # Check temp tokens (expires_at is a Unix timestamp float)
         temp_tokens = config.get('security', {}).get('temp_tokens', [])
-        from datetime import datetime
-        now_ts = datetime.utcnow().timestamp()
+        import time as _time
+        now_ts = _time.time()
         for t in temp_tokens:
             exp = t.get('expires_at', 0)
             if hmac.compare_digest(t.get('token', ''), provided or '') and isinstance(exp, (int, float)) and exp > now_ts:
                 g.token_valid = True
                 return None
 
-        # Debug: log mismatch for troubleshooting
+        # Log rejection without leaking token value — fingerprint only
+        import hashlib as _hashlib
+        token_fp = _hashlib.sha256(token.encode()).hexdigest()[:8] if token else None
         logging.warning(
-            'Auth rejected: path=%s provided=%s token=%s',
+            'Auth rejected: path=%s provided=%s token_fp=%s',
             request.path,
-            repr(provided[:8] + '...') if provided else None,
-            repr(token[:8] + '...') if token else None,
+            bool(provided),
+            token_fp,
         )
 
         # Unauthorized

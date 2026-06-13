@@ -4,7 +4,7 @@ Provides config CRUD, token management, and runtime status.
 """
 
 from flask import Blueprint, request, jsonify
-from datetime import datetime, timedelta
+from datetime import datetime
 import uuid
 import os
 import sys
@@ -119,7 +119,7 @@ def create_temp_token():
         return jsonify({'success': False, 'error': 'Expiration must be at least 1 minute'}), 400
 
     token = uuid.uuid4().hex[:16]
-    expires_at = (datetime.utcnow() + timedelta(minutes=expires_minutes)).timestamp()
+    expires_at = time.time() + expires_minutes * 60
 
     config = load_config()
     config = cleanup_expired_tokens(config)

@@ -40,6 +40,10 @@ Thumbs.db
 # Database files
 *.db
 
+# Secrets (generated at runtime)
+.devtoolbox_secret
+devtoolbox_config.json
+
 # Test artifacts
 test-results/
 coverage/

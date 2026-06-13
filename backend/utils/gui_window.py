@@ -329,7 +329,7 @@ class Api:
         import uuid as _uuid
         config = _cm.load_config()
         token = _uuid.uuid4().hex[:16]
-        expires_at = datetime.utcnow().timestamp() + minutes * 60
+        expires_at = time.time() + minutes * 60
         config.setdefault('security', {}).setdefault('temp_tokens', []).append({
             'token': token,
             'label': label,

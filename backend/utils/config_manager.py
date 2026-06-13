@@ -7,8 +7,8 @@ import os
 import sys
 import json
 import copy
+import time
 from pathlib import Path
-from datetime import datetime
 
 CONFIG_FILENAME = 'devtoolbox_config.json'
 
@@ -69,13 +69,21 @@ def load_config():
 
 
 def save_config(config):
-    """Save config to disk."""
+    """Save config to disk atomically (temp file + os.replace)."""
     config_path = get_config_path()
+    tmp_path = config_path.with_suffix(config_path.suffix + '.tmp')
     try:
-        with open(config_path, 'w', encoding='utf-8') as f:
+        with open(tmp_path, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_path, config_path)
         return True
-    except IOError:
+    except (IOError, OSError):
+        # Clean up temp file on failure
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
         return False
 
 
@@ -93,7 +101,7 @@ def get_upload_dir(config):
 
 def cleanup_expired_tokens(config):
     """Remove expired temp tokens from config."""
-    now = datetime.utcnow().timestamp()
+    now = time.time()
     tokens = config.get('security', {}).get('temp_tokens', [])
     config['security']['temp_tokens'] = [
         t for t in tokens

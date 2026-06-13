@@ -14,7 +14,7 @@ import logging
 
 from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
-from werkzeug.security import safe_join
+from utils.path_safety import safe_join
 from flask_socketio import emit
 
 logger = logging.getLogger(__name__)
@@ -180,7 +180,7 @@ def serve_file(filename):
 @im_bp.route('/thumbs/<path:filename>')
 def serve_thumb(filename):
     upload_dir = _get_upload_dir()
-    thumb_name = f"thumb_{filename}.webp"
+    thumb_name = f"thumb_{secure_filename(filename)}.webp"
     safe_path = safe_join(upload_dir, thumb_name)
 
     # Thumbnail exists — serve directly
@@ -198,10 +198,6 @@ def serve_thumb(filename):
             return send_file(safe_path, mimetype='image/webp')
         except Exception:
             logger.warning('Failed to regenerate thumbnail for %s', filename, exc_info=True)
-
-    # No thumbnail and no original — return the original file as fallback
-    if original_path and os.path.isfile(original_path):
-        return send_file(original_path)
 
     return jsonify({'success': False, 'error': 'Thumbnail not found'}), 404
 
