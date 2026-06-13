@@ -540,21 +540,25 @@ watch(currentPath, (path) => {
 }
 
 /* =========================================
-   Page Transition
+   Page Transition — cross-fade + subtle slide, emphasized ease-out
    ========================================= */
-.page-slide-enter-active,
+.page-slide-enter-active {
+  transition: opacity var(--dt-duration-base) var(--dt-ease-decelerate),
+              transform var(--dt-duration-base) var(--dt-ease-decelerate);
+}
+
 .page-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity var(--dt-duration-fast) var(--dt-ease-standard);
 }
 
 .page-slide-enter-from {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(6px);
 }
 
 .page-slide-leave-to {
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 /* =========================================

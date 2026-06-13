@@ -75,9 +75,18 @@ html, body {
   --dt-header-height: 56px;
   --dt-content-max-width: 1200px;
 
-  /* Transition */
-  --dt-transition-fast: 0.15s ease;
-  --dt-transition-base: 0.3s ease;
+  /* Transition — unified motion system */
+  /* Easing curves (Material-style): standard for most UI, emphasized for entrances, decelerate for things moving toward user */
+  --dt-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --dt-ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --dt-ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --dt-duration-fast: 0.15s;   /* hover/focus/color feedback */
+  --dt-duration-base: 0.2s;    /* standard UI transitions */
+  --dt-duration-slow: 0.3s;    /* entrances, panels */
+  /* Composite shortcuts (use these in components) */
+  --dt-transition-fast: var(--dt-duration-fast) var(--dt-ease-standard);
+  --dt-transition-base: var(--dt-duration-base) var(--dt-ease-standard);
+  --dt-transition-slow: var(--dt-duration-slow) var(--dt-ease-emphasized);
 }
 
 html.dark {
