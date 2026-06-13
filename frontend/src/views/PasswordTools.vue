@@ -278,6 +278,7 @@ import { ElMessage } from 'element-plus'
 import { Lock, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'PasswordTools',
@@ -442,34 +443,15 @@ export default {
       this.copyText(this.passphraseResult.passphrase, this.$t('tools.password.messages.copiedToClipboard'))
     },
 
-    copyText(text, successMsg) {
+    async copyText(text, successMsg) {
       if (!text) return
       const msg = successMsg || this.$t('common.copySuccess')
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(msg)
-        }).catch(() => {
-          this._fallbackCopy(text, msg)
-        })
-      } else {
-        this._fallbackCopy(text, msg)
-      }
-    },
-
-    _fallbackCopy(text, successMsg) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
       try {
-        document.execCommand('copy')
-        ElMessage.success(successMsg || this.$t('common.copySuccess'))
+        await copyToClipboard(text)
+        ElMessage.success(msg)
       } catch {
-        ElMessage.error(this.$t('tools.password.messages.copyFail'))
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     }
   }
 }

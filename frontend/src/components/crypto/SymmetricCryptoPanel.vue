@@ -127,6 +127,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { copyToClipboard } from '@/utils/format.js'
 
 const { t } = useI18n()
 
@@ -212,12 +213,13 @@ function handleDecrypt() {
   emit('decrypt', { ...decryptForm })
 }
 
-function handleCopy(text) {
-  navigator.clipboard.writeText(text).then(() => {
+async function handleCopy(text) {
+  try {
+    await copyToClipboard(text)
     ElMessage.success(t('common.copySuccess'))
-  }).catch(() => {
+  } catch {
     ElMessage.error(t('common.copyFail'))
-  })
+  }
 }
 </script>
 

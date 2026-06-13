@@ -707,6 +707,7 @@ import { Link, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import ToolSection from '@/components/ToolSection.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'UrlTools',
@@ -795,18 +796,10 @@ export default {
   methods: {
     async copyText(text) {
       try {
-        await navigator.clipboard.writeText(text)
+        await copyToClipboard(text)
         ElMessage.success('Copied to clipboard')
       } catch {
-        const ta = document.createElement('textarea')
-        ta.value = text
-        ta.style.position = 'fixed'
-        ta.style.opacity = '0'
-        document.body.appendChild(ta)
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-        ElMessage.success('Copied to clipboard')
+        ElMessage.error(this.$t('common.copyFail'))
       }
     },
 

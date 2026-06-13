@@ -10,6 +10,7 @@
               v-model="oldText"
               type="textarea"
               :rows="10"
+              :aria-label="$t('tools.diff.originalText')"
               :placeholder="$t('tools.diff.placeholder')"
               clearable
             />
@@ -20,6 +21,7 @@
               v-model="newText"
               type="textarea"
               :rows="10"
+              :aria-label="$t('tools.diff.modifiedText')"
               :placeholder="$t('tools.diff.placeholder')"
               clearable
             />
@@ -115,6 +117,7 @@
 import { DocumentCopy, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 function computeLCS(a, b) {
   const dp = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(0))
@@ -321,30 +324,12 @@ export default {
       })
       this.copyText(lines.join('\n'))
     },
-    copyText(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
-        }).catch(() => {
-          this._fallbackCopy(text)
-        })
-      } else {
-        this._fallbackCopy(text)
-      }
-    },
-    _fallbackCopy(text) {
+    async copyText(text) {
       try {
-        const textarea = document.createElement('textarea')
-        textarea.value = text
-        textarea.style.position = 'fixed'
-        textarea.style.left = '-9999px'
-        document.body.appendChild(textarea)
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
+        await copyToClipboard(text)
         ElMessage.success(this.$t('common.copySuccess'))
       } catch {
-        ElMessage.error(this.$t('tools.diff.copyFail'))
+        ElMessage.error(this.$t('common.copyFail'))
       }
     }
   }

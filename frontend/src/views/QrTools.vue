@@ -15,6 +15,7 @@
                   v-model="generateContent"
                   type="textarea"
                   :rows="6"
+                  :aria-label="$t('tools.qr.label.inputContent')"
                   :placeholder="$t('tools.qr.label.qrPlaceholder')"
                 ></el-input>
                 <div class="config-section">
@@ -183,6 +184,7 @@ import { UploadFilled, Crop, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'QrTools',
@@ -332,35 +334,16 @@ export default {
       link.click()
     },
 
-    copyText(text) {
+    async copyText(text) {
       if (!text) {
         return
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
-        }).catch(() => {
-          this.fallbackCopyText(text)
-        })
-      } else {
-        this.fallbackCopyText(text)
-      }
-    },
-
-    fallbackCopyText(text) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
       try {
-        document.execCommand('copy')
+        await copyToClipboard(text)
         ElMessage.success(this.$t('common.copySuccess'))
-      } catch (e) {
-        ElMessage.error('Copy failed')
+      } catch {
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     }
   }
 }

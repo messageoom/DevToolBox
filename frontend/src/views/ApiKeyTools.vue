@@ -90,6 +90,7 @@
               v-model="valKey"
               type="textarea"
               :rows="3"
+              :aria-label="$t('tools.apikey.label.validateKey')"
               :placeholder="$t('tools.apikey.label.validateKey')"
               clearable
             />
@@ -172,6 +173,7 @@
               v-model="hashKeyInput"
               type="textarea"
               :rows="3"
+              :aria-label="$t('tools.apikey.label.keyHash')"
               :placeholder="$t('tools.apikey.label.inputKeyHash')"
               clearable
             />
@@ -242,6 +244,7 @@ import { ElMessage } from 'element-plus'
 import { Key, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'ApiKeyTools',
@@ -392,33 +395,13 @@ export default {
       }
     },
 
-    copyText(text) {
-      if (!text) return
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
-        }).catch(() => {
-          this._fallbackCopy(text)
-        })
-      } else {
-        this._fallbackCopy(text)
-      }
-    },
-
-    _fallbackCopy(text) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
+    async copyText(text) {
       try {
-        document.execCommand('copy')
+        await copyToClipboard(text)
         ElMessage.success(this.$t('common.copySuccess'))
       } catch {
-        ElMessage.error(this.$t('tools.apikey.message.copyFail'))
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     },
   },
 }

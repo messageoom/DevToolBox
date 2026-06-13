@@ -83,6 +83,7 @@
               <el-col :xs="24" :sm="12" :md="12">
                 <el-input
                   v-model="startTime"
+                  :aria-label="$t('tools.timeCalc.label.startTime')"
                   :placeholder="$t('tools.timeCalc.label.startTime')"
                   style="width: 100%;"
                 />
@@ -90,6 +91,7 @@
               <el-col :xs="24" :sm="12" :md="12">
                 <el-input
                   v-model="endTime"
+                  :aria-label="$t('tools.timeCalc.label.endTime')"
                   :placeholder="$t('tools.timeCalc.label.endTime')"
                   style="width: 100%;"
                 />
@@ -220,6 +222,7 @@ import { Calendar, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useDeviceStore } from '@/stores/device.js'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'TimeCalculator',
@@ -342,32 +345,13 @@ export default {
       }
     },
 
-    copyText(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
-        }).catch(() => {
-          this._fallbackCopy(text)
-        })
-      } else {
-        this._fallbackCopy(text)
-      }
-    },
-
-    _fallbackCopy(text) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
+    async copyText(text) {
       try {
-        document.execCommand('copy')
+        await copyToClipboard(text)
         ElMessage.success(this.$t('common.copySuccess'))
-      } catch (e) {
-        ElMessage.error('Copy failed')
+      } catch {
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     }
   }
 }

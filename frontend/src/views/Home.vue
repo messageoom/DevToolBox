@@ -23,7 +23,11 @@
           v-for="tool in quickTools"
           :key="tool.id"
           class="quick-card"
+          role="button"
+          tabindex="0"
+          :aria-label="t('categories.' + tool.id + '.name')"
           @click="$router.push(tool.route)"
+          @keydown="onCardKeydown($event, tool.route)"
         >
           <div class="quick-icon" :style="{ background: tool.color + '15', color: tool.color }">
             <span class="material-symbols-rounded">{{ tool.icon }}</span>
@@ -47,7 +51,11 @@
         v-for="category in multiToolCategories"
         :key="category.id"
         class="category-card"
+        role="button"
+        tabindex="0"
+        :aria-label="t('categories.' + category.id + '.name')"
         @click="$router.push(category.route)"
+        @keydown="onCardKeydown($event, category.route)"
       >
         <div class="card-icon" :style="{ color: category.color }">
           <span class="material-symbols-rounded">{{ category.icon }}</span>
@@ -93,7 +101,11 @@
             v-for="tool in recentTools"
             :key="'recent-' + tool.route"
             class="recent-chip"
+            role="button"
+            tabindex="0"
+            :aria-label="tool.label"
             @click="$router.push(tool.route)"
+            @keydown="onCardKeydown($event, tool.route)"
           >
             <div class="recent-chip-icon" :style="{ background: tool.color + '15', color: tool.color }">
               <span class="material-symbols-rounded">{{ tool.icon }}</span>
@@ -110,7 +122,11 @@
           :key="tool.route"
           class="matrix-item"
           :style="{ '--item-color': tool.color }"
+          role="button"
+          tabindex="0"
+          :aria-label="tool.label"
           @click="$router.push(tool.route)"
+          @keydown="onCardKeydown($event, tool.route)"
         >
           <div class="matrix-icon" :style="{ background: tool.color + '15', color: tool.color }">
             <span class="material-symbols-rounded">{{ tool.icon }}</span>
@@ -131,12 +147,22 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useDeviceStore } from '@/stores/device.js'
 import { toolCategories } from '../data/toolCategories'
 import { getRecentTools } from '@/composables/useRecentTools'
 
 const { t } = useI18n()
 const deviceStore = useDeviceStore()
+const router = useRouter()
+
+// Keyboard navigation for cards: Enter / Space activate, like a native button
+function onCardKeydown(event, route) {
+  if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+    event.preventDefault()
+    router.push(route)
+  }
+}
 
 const searchQuery = ref('')
 
@@ -356,6 +382,11 @@ const visibleTools = computed(() => {
   transform: translateY(-1px);
 }
 
+.quick-card:focus-visible {
+  outline: 2px solid var(--dt-primary);
+  outline-offset: 2px;
+}
+
 .quick-icon {
   width: 44px;
   height: 44px;
@@ -423,6 +454,11 @@ const visibleTools = computed(() => {
   border-color: var(--dt-primary);
   box-shadow: var(--dt-shadow-md);
   transform: translateY(-2px);
+}
+
+.category-card:focus-visible {
+  outline: 2px solid var(--dt-primary);
+  outline-offset: 2px;
 }
 
 .card-icon {
@@ -644,6 +680,12 @@ const visibleTools = computed(() => {
 .matrix-item:active {
   background: var(--dt-bg-hover);
   transform: scale(0.97);
+}
+
+.matrix-item:focus-visible,
+.recent-chip:focus-visible {
+  outline: 2px solid var(--dt-primary);
+  outline-offset: 2px;
 }
 
 .matrix-icon {

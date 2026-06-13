@@ -1,6 +1,6 @@
 <template>
   <div class="tool-section">
-    <div class="input-section">
+    <div class="input-section" role="group" :aria-label="inputLabel">
       <h4 class="section-title">{{ inputLabel }}</h4>
       <slot name="input" />
     </div>
@@ -11,7 +11,7 @@
         </el-button>
       </slot>
     </div>
-    <div v-if="hasOutput" class="output-section" :aria-busy="loading">
+    <div v-if="hasOutput" class="output-section" role="group" :aria-label="outputLabel" :aria-busy="loading">
       <h4 class="section-title">{{ outputLabel }}</h4>
       <slot name="output" />
     </div>

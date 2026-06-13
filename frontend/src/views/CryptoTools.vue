@@ -244,6 +244,7 @@
               v-model="hashInputText"
               type="textarea"
               :rows="6"
+              :aria-label="t('tools.crypto.hash.inputText')"
               :placeholder="t('tools.crypto.hash.inputPlaceholder')"
               clearable
             />
@@ -309,22 +310,15 @@ import KeyPairDisplay from '@/components/crypto/KeyPairDisplay.vue'
 import SymmetricCryptoPanel from '@/components/crypto/SymmetricCryptoPanel.vue'
 import SignVerifyPanel from '@/components/crypto/SignVerifyPanel.vue'
 import PublicKeyCryptoPanel from '@/components/crypto/PublicKeyCryptoPanel.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 // ---- Copy helper ----
 async function copyText(text) {
   try {
-    await navigator.clipboard.writeText(text)
+    await copyToClipboard(text)
     ElMessage.success(t('common.copySuccess'))
   } catch {
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-    ElMessage.success(t('common.copySuccess'))
+    ElMessage.error(t('common.copyFail'))
   }
 }
 

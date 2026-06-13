@@ -324,6 +324,7 @@ import PdfErrorDialog from '@/components/PdfErrorDialog.vue'
 import { useRouter } from 'vue-router'
 import ToolPage from '@/components/ToolPage.vue'
 import { useDeviceStore } from '@/stores/device.js'
+import { copyToClipboard } from '@/utils/format.js'
 
 const SAMPLES = {
   markdown: `# DevToolBox 使用指南
@@ -436,18 +437,10 @@ export default {
 
     async copyText(text) {
       try {
-        await navigator.clipboard.writeText(text)
+        await copyToClipboard(text)
         ElMessage.success(this.$t('tools.dataConversion.message.copied'))
       } catch {
-        const ta = document.createElement('textarea')
-        ta.value = text
-        ta.style.position = 'fixed'
-        ta.style.opacity = '0'
-        document.body.appendChild(ta)
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-        ElMessage.success(this.$t('tools.dataConversion.message.copied'))
+        ElMessage.error(this.$t('common.copyFail'))
       }
     },
 

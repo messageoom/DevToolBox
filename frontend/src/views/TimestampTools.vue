@@ -136,6 +136,7 @@
             <h4 class="section-title">{{ $t('tools.timestamp.label.inputDatetime') }}</h4>
             <el-input
               v-model="datetimeString"
+              :aria-label="$t('tools.timestamp.label.inputDatetime')"
               :placeholder="$t('tools.timestamp.label.inputDatetime') + '...'"
               style="width: 100%; margin-bottom: 10px;"
             />
@@ -205,6 +206,7 @@
             <h4 class="section-title">{{ $t('tools.timestamp.label.baseTime') }}</h4>
             <el-input
               v-model="addTimeBaseTime"
+              :aria-label="$t('tools.timestamp.label.baseTime')"
               :placeholder="$t('tools.timestamp.label.baseTime') + '...'"
               style="width: 100%; margin-bottom: 10px;"
             />
@@ -296,6 +298,7 @@
               v-model="batchBaseTimes"
               type="textarea"
               :rows="6"
+              :aria-label="$t('tools.timestamp.label.batchTimeInput')"
               :placeholder="$t('tools.timestamp.label.batchTimeInput') + '...'"
               style="width: 100%; margin-bottom: 15px;"
             />
@@ -389,6 +392,7 @@ import { Clock, CopyDocument, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
 import { useDeviceStore } from '@/stores/device.js'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'TimestampTools',
@@ -613,33 +617,14 @@ export default {
     },
 
     // 复制文本到剪贴板
-    copyText(text) {
+    async copyText(text) {
       const value = String(text)
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(value).then(() => {
-          ElMessage.success(this.$t('common.copySuccess'))
-        }).catch(() => {
-          this._fallbackCopy(value)
-        })
-      } else {
-        this._fallbackCopy(value)
-      }
-    },
-
-    _fallbackCopy(text) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
       try {
-        document.execCommand('copy')
+        await copyToClipboard(value)
         ElMessage.success(this.$t('common.copySuccess'))
-      } catch (e) {
-        ElMessage.error('Copy failed')
+      } catch {
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     }
   }
 }

@@ -83,6 +83,7 @@
             <h4 class="section-title">{{ $t('tools.uuid.labels.uuidString') }}</h4>
             <el-input
               v-model="validateInput"
+              :aria-label="$t('tools.uuid.labels.uuidString')"
               :placeholder="$t('tools.uuid.placeholders.uuidInput')"
               clearable
               @keyup.enter="validateUUID"
@@ -133,6 +134,7 @@
             <h4 class="section-title">{{ $t('tools.uuid.labels.uuidString') }}</h4>
             <el-input
               v-model="parseInput"
+              :aria-label="$t('tools.uuid.labels.uuidString')"
               :placeholder="$t('tools.uuid.placeholders.uuidInput')"
               clearable
               @keyup.enter="parseUUID"
@@ -212,6 +214,7 @@ import { ElMessage } from 'element-plus'
 import { Key, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ToolPage from '@/components/ToolPage.vue'
+import { copyToClipboard } from '@/utils/format.js'
 
 export default {
   name: 'UuidTools',
@@ -297,34 +300,15 @@ export default {
       this.copyText(text, this.$t('tools.uuid.messages.copiedAllUuids'))
     },
 
-    copyText(text, successMsg) {
+    async copyText(text, successMsg) {
       if (!text) return
       const msg = successMsg || this.$t('common.copySuccess')
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(msg)
-        }).catch(() => {
-          this._fallbackCopy(text, msg)
-        })
-      } else {
-        this._fallbackCopy(text, msg)
-      }
-    },
-
-    _fallbackCopy(text, successMsg) {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
       try {
-        document.execCommand('copy')
-        ElMessage.success(successMsg || this.$t('common.copySuccess'))
+        await copyToClipboard(text)
+        ElMessage.success(msg)
       } catch {
-        ElMessage.error('Copy failed')
+        ElMessage.error(this.$t('common.copyFail'))
       }
-      document.body.removeChild(textarea)
     },
 
     async validateUUID() {
