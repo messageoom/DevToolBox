@@ -158,8 +158,9 @@ const detectedLanguage = computed(() => {
 
 const renderedMarkdown = computed(() => {
   if (props.msg.msgType !== 'markdown' || !props.msg.content) return ''
-  marked.setOptions({ breaks: true, gfm: true })
-  return DOMPurify.sanitize(marked.parse(props.msg.content))
+  marked.setOptions({ breaks: true, gfm: true, async: false })
+  const html = marked.parse(props.msg.content)
+  return DOMPurify.sanitize(typeof html === 'string' ? html : '')
 })
 
 function linkify(text) {

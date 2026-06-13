@@ -508,7 +508,7 @@ export default {
     copyText(text) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
-          ElMessage.success(this.$t('common.copied'))
+          ElMessage.success(this.$t('common.copySuccess'))
         }).catch(() => {
           this._fallbackCopy(text)
         })
@@ -526,9 +526,9 @@ export default {
       textarea.select()
       try {
         document.execCommand('copy')
-        ElMessage.success(this.$t('common.copied'))
+        ElMessage.success(this.$t('common.copySuccess'))
       } catch (e) {
-        ElMessage.error(this.$t('common.copyFail') || 'Copy failed')
+        ElMessage.error(this.$t('common.copyFail'))
       }
       document.body.removeChild(textarea)
     },

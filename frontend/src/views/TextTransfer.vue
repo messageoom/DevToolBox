@@ -711,8 +711,9 @@ async function onPreviewFile({ url, filename, mime }) {
     const resp = await fetch(url)
     const text = await resp.text()
     if (isMd) {
-      marked.setOptions({ breaks: true, gfm: true })
-      filePreviewContent.value = DOMPurify.sanitize(marked.parse(text))
+      marked.setOptions({ breaks: true, gfm: true, async: false })
+      const html = marked.parse(text)
+      filePreviewContent.value = DOMPurify.sanitize(typeof html === 'string' ? html : '')
     } else if (isHtml) {
       filePreviewContent.value = DOMPurify.sanitize(text)
     } else {

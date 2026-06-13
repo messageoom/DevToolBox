@@ -235,8 +235,8 @@ function onMenuSelect() {
   /* no-op: sidebar items use router mode */
 }
 
-// Route-to-tool-meta mapping for recent tools tracking
-const routeMeta = {}
+// Route-to-tool-meta mapping (icon/color static; label resolved lazily so it
+// tracks the active language instead of freezing at first mount)
 const _routeIconMap = {
   '/file-upload': 'upload_file', '/text-transfer': 'chat',
   '/json-tools': 'data_object', '/yaml-tools': 'code_blocks',
@@ -253,6 +253,20 @@ const _catIconMap = {
   file: 'upload_file', transfer: 'chat', data: 'database', encoding: 'code',
   crypto: 'shield', time: 'schedule', generator: 'auto_awesome', other: 'qr_code_2',
 }
+const _routeLabelKey = {
+  '/file-upload': 'sidebar.fileUpload', '/text-transfer': 'sidebar.textTransfer',
+  '/json-tools': 'sidebar.jsonTools', '/yaml-tools': 'sidebar.yamlTools',
+  '/markdown-tools': 'sidebar.markdownTools', '/data-conversion': 'sidebar.dataConversion',
+  '/markdown-editor': 'sidebar.markdownEditor', '/base64-tools': 'sidebar.base64Tools',
+  '/url-tools': 'sidebar.urlTools', '/hash-tools': 'sidebar.hashTools',
+  '/crypto-tools': 'sidebar.cryptoTools', '/timestamp-tools': 'sidebar.timestampTools',
+  '/time-calculator': 'sidebar.timeCalculator', '/uuid-tools': 'sidebar.uuidTools',
+  '/password-tools': 'sidebar.passwordTools', '/apikey-tools': 'sidebar.apikeyTools',
+  '/jwt-debugger': 'sidebar.jwtDebugger', '/diff-tool': 'sidebar.diffTool',
+  '/qr-tools': 'sidebar.qrTools',
+}
+// Build icon/color lookup once (language-independent)
+const routeIconColor = {}
 toolCategories.forEach(cat => {
   const routes = {
     file: ['/file-upload'],
@@ -264,22 +278,18 @@ toolCategories.forEach(cat => {
     generator: ['/uuid-tools', '/password-tools', '/apikey-tools', '/jwt-debugger', '/diff-tool'],
     other: ['/qr-tools'],
   }
-  const labelKeys = {
-    '/file-upload': 'sidebar.fileUpload', '/text-transfer': 'sidebar.textTransfer',
-    '/json-tools': 'sidebar.jsonTools', '/yaml-tools': 'sidebar.yamlTools',
-    '/markdown-tools': 'sidebar.markdownTools', '/data-conversion': 'sidebar.dataConversion',
-    '/markdown-editor': 'sidebar.markdownEditor', '/base64-tools': 'sidebar.base64Tools',
-    '/url-tools': 'sidebar.urlTools', '/hash-tools': 'sidebar.hashTools',
-    '/crypto-tools': 'sidebar.cryptoTools', '/timestamp-tools': 'sidebar.timestampTools',
-    '/time-calculator': 'sidebar.timeCalculator', '/uuid-tools': 'sidebar.uuidTools',
-    '/password-tools': 'sidebar.passwordTools', '/apikey-tools': 'sidebar.apikeyTools',
-    '/jwt-debugger': 'sidebar.jwtDebugger', '/diff-tool': 'sidebar.diffTool',
-    '/qr-tools': 'sidebar.qrTools',
-  }
   ;(routes[cat.id] || []).forEach(r => {
-    routeMeta[r] = { label: t(labelKeys[r]), icon: _routeIconMap[r] || _catIconMap[cat.id] || cat.icon, color: cat.color }
+    routeIconColor[r] = { icon: _routeIconMap[r] || _catIconMap[cat.id] || cat.icon, color: cat.color }
   })
 })
+
+// Resolve label + icon/color for a route at call time (reactive to locale)
+function getRouteMeta(path) {
+  const ic = routeIconColor[path]
+  if (!ic) return null
+  const labelKey = _routeLabelKey[path]
+  return { label: labelKey ? t(labelKey) : path, icon: ic.icon, color: ic.color }
+}
 
 // --- Lifecycle ---
 onMounted(() => {
@@ -302,7 +312,7 @@ watch(currentPath, (path) => {
 
   // Record recent tool visit
   if (path !== '/') {
-    const entry = routeMeta[path]
+    const entry = getRouteMeta(path)
     if (entry) {
       addRecentTool({ route: path, label: entry.label, icon: entry.icon, color: entry.color })
     }

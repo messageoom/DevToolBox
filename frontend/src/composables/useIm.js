@@ -199,7 +199,15 @@ function saveIdentity() {
 // ---------------------------------------------------------------------------
 
 function connect() {
-  if (socket?.connected) return
+  // Tear down any existing socket (connected or still connecting) so we never
+  // orphan a socket and its event listeners when connect() is called twice.
+  if (socket) {
+    try {
+      socket.removeAllListeners()
+      socket.disconnect()
+    } catch { /* ignore */ }
+    socket = null
+  }
   loadIdentity()
 
   logToBackend('info', `[IM] connect() called — myId=${myId.value}, origin=${window.location.origin}`)

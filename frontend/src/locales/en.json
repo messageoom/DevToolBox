@@ -1135,7 +1135,6 @@
       "fileCount": "{count} file(s)",
       "noFiles": "No uploaded files",
       "emptyHint": "Drag files above or click to browse and start uploading",
-      "searchPlaceholder": "Search files...",
       "selectFileFirst": "Please select files first",
       "uploadFail": "Upload failed",
       "fileSizeExceeded": "File size cannot exceed 20GB!",

@@ -1135,7 +1135,6 @@
       "fileCount": "{count}个文件",
       "noFiles": "暂无上传的文件",
       "emptyHint": "拖拽文件到上方区域或点击选择文件开始上传",
-      "searchPlaceholder": "搜索文件...",
       "selectFileFirst": "请先选择文件",
       "uploadFail": "上传失败",
       "fileSizeExceeded": "上传文件大小不能超过 20GB!",

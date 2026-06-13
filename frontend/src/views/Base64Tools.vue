@@ -443,7 +443,7 @@ export default {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error(this.$t('tools.base64.message.encodeFail') + ': ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.base64.message.encodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.encoding = false
       }
@@ -468,7 +468,7 @@ export default {
           ElMessage.error(response.data.error)
         }
       } catch (error) {
-        ElMessage.error(this.$t('tools.base64.message.urlSafeDecodeFail') + ': ' + error.response?.data?.error || error.message)
+        ElMessage.error(this.$t('tools.base64.message.urlSafeDecodeFail') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.decoding = false
       }

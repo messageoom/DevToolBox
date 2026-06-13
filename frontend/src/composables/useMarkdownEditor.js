@@ -47,7 +47,7 @@ const markedInstance = new Marked(
       catch { return code }
     },
   }),
-  { breaks: true, gfm: true },
+  { breaks: true, gfm: true, async: false },
 )
 
 const STORAGE_KEY = 'devtoolbox_md_content'
