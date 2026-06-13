@@ -414,12 +414,12 @@ export default {
 }
 
 .diff-line.add {
-  background: #e6ffed;
+  background: var(--dt-success-light);
   border-left: 3px solid var(--dt-success);
 }
 
 .diff-line.remove {
-  background: #ffe6e6;
+  background: var(--dt-danger-light);
   border-left: 3px solid var(--dt-danger);
 }
 
@@ -500,11 +500,11 @@ export default {
 }
 
 .column-body .diff-line.add {
-  background: #e6ffed;
+  background: var(--dt-success-light);
 }
 
 .column-body .diff-line.remove {
-  background: #ffe6e6;
+  background: var(--dt-danger-light);
 }
 
 .column-body .diff-line.empty {

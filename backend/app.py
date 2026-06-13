@@ -103,7 +103,7 @@ def create_app(access_token=None):
             return os.urandom(24).hex()
 
     app.config['SECRET_KEY'] = _load_or_create_secret_key()
-    app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024 * 1024  # 20GB
+    app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB — bounds memory use per request
     app.config['ACCESS_TOKEN'] = access_token
 
     # CORS 配置

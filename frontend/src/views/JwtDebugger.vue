@@ -333,7 +333,7 @@ export default {
 .input-section {
   background-color: var(--dt-bg-section);
   border: 1px solid var(--dt-border-light);
-  border-radius: var(--dt-border-radius-base);
+  border-radius: var(--dt-radius-md);
   padding: var(--dt-spacing-lg);
 }
 
@@ -362,7 +362,7 @@ export default {
 }
 
 .jwt-card {
-  border-radius: var(--dt-border-radius-base);
+  border-radius: var(--dt-radius-md);
 }
 
 .jwt-card :deep(.el-card__header) {
@@ -381,7 +381,7 @@ export default {
 }
 
 .header-card :deep(.el-card__header) {
-  background-color: rgba(var(--dt-primary-rgb, 64, 158, 255), 0.08);
+  background-color: color-mix(in srgb, var(--dt-primary) 8%, transparent);
   color: var(--dt-primary);
 }
 
@@ -390,7 +390,7 @@ export default {
 }
 
 .payload-card :deep(.el-card__header) {
-  background-color: rgba(var(--dt-success-rgb, 103, 194, 58), 0.08);
+  background-color: color-mix(in srgb, var(--dt-success) 8%, transparent);
   color: var(--dt-success);
 }
 
@@ -399,7 +399,7 @@ export default {
 }
 
 .signature-card :deep(.el-card__header) {
-  background-color: rgba(var(--dt-danger-rgb, 245, 108, 108), 0.08);
+  background-color: color-mix(in srgb, var(--dt-danger) 8%, transparent);
   color: var(--dt-danger);
 }
 
@@ -415,7 +415,7 @@ export default {
 .signature-content {
   background-color: var(--dt-bg-section);
   border: 1px solid var(--dt-border-light);
-  border-radius: var(--dt-border-radius-base);
+  border-radius: var(--dt-radius-md);
   padding: var(--dt-spacing-md);
   word-break: break-all;
 }

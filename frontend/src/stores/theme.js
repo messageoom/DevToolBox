@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia'
 
 export const useThemeStore = defineStore('theme', {
-  state: () => ({
-    isDark: localStorage.getItem('devtoolbox-theme') === 'dark'
-  }),
+  state: () => {
+    const saved = localStorage.getItem('devtoolbox-theme')
+    return {
+      isDark: saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+  },
   actions: {
     toggleTheme() {
       this.isDark = !this.isDark

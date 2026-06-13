@@ -238,13 +238,21 @@ export default {
       // Parse
       parseInput: '',
       parsing: false,
-      parseResult: null
+      parseResult: null,
+      isMobile: typeof window !== 'undefined' && window.innerWidth <= 768
     }
   },
   computed: {
     descColumn() {
-      return window.innerWidth <= 768 ? 1 : 2
+      return this.isMobile ? 1 : 2
     }
+  },
+  mounted() {
+    this._onResize = () => { this.isMobile = window.innerWidth <= 768 }
+    window.addEventListener('resize', this._onResize)
+  },
+  beforeUnmount() {
+    if (this._onResize) window.removeEventListener('resize', this._onResize)
   },
   methods: {
     async generateUUIDs() {

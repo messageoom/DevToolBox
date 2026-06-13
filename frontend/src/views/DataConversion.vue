@@ -850,7 +850,7 @@ export default {
 
 .field-stats {
   font-size: 12px;
-  color: var(--dt-text-tertiary, #909399);
+  color: var(--dt-text-secondary);
   line-height: 24px;
 }
 

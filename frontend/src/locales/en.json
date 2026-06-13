@@ -1118,7 +1118,7 @@
     "fileUpload": {
       "title": "File Upload",
       "dropzone": "Drop files here, or click to upload",
-      "hint": "Supports multiple file formats, max 20GB per file, up to 9 files",
+      "hint": "Supports multiple file formats, max 500MB per file, up to 9 files",
       "clearList": "Clear List",
       "startUpload": "Start Upload",
       "uploadedFiles": "Uploaded Files",
@@ -1137,7 +1137,7 @@
       "emptyHint": "Drag files above or click to browse and start uploading",
       "selectFileFirst": "Please select files first",
       "uploadFail": "Upload failed",
-      "fileSizeExceeded": "File size cannot exceed 20GB!",
+      "fileSizeExceeded": "File size cannot exceed 500MB!",
       "confirmDelete": "Are you sure you want to delete file {name}?",
       "confirmDeleteTitle": "Confirm Delete",
       "confirmBtn": "OK",
