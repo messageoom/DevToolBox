@@ -173,6 +173,7 @@ const sidebarCategories = computed(() => {
   const categoryToolMap = {
     file: [
       { label: t('sidebar.fileUpload'), route: '/file-upload' },
+      { label: t('sidebar.imageTools'), route: '/image-tools' },
     ],
     data: [
       { label: t('sidebar.jsonTools'), route: '/json-tools' },
@@ -180,10 +181,16 @@ const sidebarCategories = computed(() => {
       { label: t('sidebar.markdownTools'), route: '/markdown-tools' },
       { label: t('sidebar.dataConversion'), route: '/data-conversion' },
       { label: t('sidebar.markdownEditor'), route: '/markdown-editor' },
+      { label: t('sidebar.jsonToTs'), route: '/json-to-ts' },
+    ],
+    text: [
+      { label: t('sidebar.caseConverter'), route: '/case-converter' },
+      { label: t('sidebar.sqlFormatter'), route: '/sql-formatter' },
     ],
     encoding: [
       { label: t('sidebar.base64Tools'), route: '/base64-tools' },
       { label: t('sidebar.urlTools'), route: '/url-tools' },
+      { label: t('sidebar.baseConverter'), route: '/base-converter' },
     ],
     crypto: [
       { label: t('sidebar.hashTools'), route: '/hash-tools' },
@@ -192,9 +199,11 @@ const sidebarCategories = computed(() => {
     time: [
       { label: t('sidebar.timestampTools'), route: '/timestamp-tools' },
       { label: t('sidebar.timeCalculator'), route: '/time-calculator' },
+      { label: t('sidebar.cronParser'), route: '/cron-parser' },
     ],
     other: [
       { label: t('sidebar.qrTools'), route: '/qr-tools' },
+      { label: t('sidebar.colorTools'), route: '/color-tools' },
     ],
     generator: [
       { label: t('sidebar.uuidTools'), route: '/uuid-tools' },
@@ -202,6 +211,8 @@ const sidebarCategories = computed(() => {
       { label: t('sidebar.apikeyTools'), route: '/apikey-tools' },
       { label: t('sidebar.jwtDebugger'), route: '/jwt-debugger' },
       { label: t('sidebar.diffTool'), route: '/diff-tool' },
+      { label: t('sidebar.dummyData'), route: '/dummy-data' },
+      { label: t('sidebar.regexTester'), route: '/regex-tester' },
     ],
     transfer: [
       { label: t('sidebar.textTransfer'), route: '/text-transfer' },
@@ -256,10 +267,16 @@ const _routeIconMap = {
   '/password-tools': 'password', '/apikey-tools': 'key',
   '/jwt-debugger': 'encrypted', '/diff-tool': 'difference',
   '/qr-tools': 'qr_code_2',
+  '/case-converter': 'text_fields', '/sql-formatter': 'storage',
+  '/base-converter': 'pin', '/dummy-data': 'dataset',
+  '/regex-tester': 'find_in_page', '/cron-parser': 'event_repeat',
+  '/json-to-ts': 'data_array', '/image-tools': 'image',
+  '/color-tools': 'palette',
 }
 const _catIconMap = {
   file: 'upload_file', transfer: 'chat', data: 'database', encoding: 'code',
   crypto: 'shield', time: 'schedule', generator: 'auto_awesome', other: 'qr_code_2',
+  text: 'text_fields',
 }
 const _routeLabelKey = {
   '/file-upload': 'sidebar.fileUpload', '/text-transfer': 'sidebar.textTransfer',
@@ -272,19 +289,25 @@ const _routeLabelKey = {
   '/password-tools': 'sidebar.passwordTools', '/apikey-tools': 'sidebar.apikeyTools',
   '/jwt-debugger': 'sidebar.jwtDebugger', '/diff-tool': 'sidebar.diffTool',
   '/qr-tools': 'sidebar.qrTools',
+  '/case-converter': 'sidebar.caseConverter', '/sql-formatter': 'sidebar.sqlFormatter',
+  '/base-converter': 'sidebar.baseConverter', '/dummy-data': 'sidebar.dummyData',
+  '/regex-tester': 'sidebar.regexTester', '/cron-parser': 'sidebar.cronParser',
+  '/json-to-ts': 'sidebar.jsonToTs', '/image-tools': 'sidebar.imageTools',
+  '/color-tools': 'sidebar.colorTools',
 }
 // Build icon/color lookup once (language-independent)
 const routeIconColor = {}
 toolCategories.forEach(cat => {
   const routes = {
-    file: ['/file-upload'],
+    file: ['/file-upload', '/image-tools'],
     transfer: ['/text-transfer'],
-    data: ['/json-tools', '/yaml-tools', '/markdown-tools', '/data-conversion', '/markdown-editor'],
-    encoding: ['/base64-tools', '/url-tools'],
+    data: ['/json-tools', '/yaml-tools', '/markdown-tools', '/data-conversion', '/markdown-editor', '/json-to-ts'],
+    text: ['/case-converter', '/sql-formatter'],
+    encoding: ['/base64-tools', '/url-tools', '/base-converter'],
     crypto: ['/hash-tools', '/crypto-tools'],
-    time: ['/timestamp-tools', '/time-calculator'],
-    generator: ['/uuid-tools', '/password-tools', '/apikey-tools', '/jwt-debugger', '/diff-tool'],
-    other: ['/qr-tools'],
+    time: ['/timestamp-tools', '/time-calculator', '/cron-parser'],
+    generator: ['/uuid-tools', '/password-tools', '/apikey-tools', '/jwt-debugger', '/diff-tool', '/dummy-data', '/regex-tester'],
+    other: ['/qr-tools', '/color-tools'],
   }
   ;(routes[cat.id] || []).forEach(r => {
     routeIconColor[r] = { icon: _routeIconMap[r] || _catIconMap[cat.id] || cat.icon, color: cat.color }

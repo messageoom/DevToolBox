@@ -195,12 +195,24 @@ const routeIconMap = {
   '/jwt-debugger': 'encrypted',
   '/diff-tool': 'difference',
   '/qr-tools': 'qr_code_2',
+  '/case-converter': 'text_fields',
+  '/sql-formatter': 'storage',
+  '/base-converter': 'pin',
+  '/dummy-data': 'dataset',
+  '/regex-tester': 'find_in_page',
+  '/cron-parser': 'event_repeat',
+  '/json-to-ts': 'data_array',
+  '/image-tools': 'image',
+  '/color-tools': 'palette',
 }
 
 // Flat list of all tool entries for the mobile matrix
 const allTools = computed(() => {
   const routeMap = {
-    file: [{ route: '/file-upload', labelKey: 'sidebar.fileUpload' }],
+    file: [
+      { route: '/file-upload', labelKey: 'sidebar.fileUpload' },
+      { route: '/image-tools', labelKey: 'sidebar.imageTools' },
+    ],
     transfer: [{ route: '/text-transfer', labelKey: 'sidebar.textTransfer' }],
     data: [
       { route: '/json-tools', labelKey: 'sidebar.jsonTools' },
@@ -208,10 +220,16 @@ const allTools = computed(() => {
       { route: '/markdown-tools', labelKey: 'sidebar.markdownTools' },
       { route: '/data-conversion', labelKey: 'sidebar.dataConversion' },
       { route: '/markdown-editor', labelKey: 'sidebar.markdownEditor' },
+      { route: '/json-to-ts', labelKey: 'sidebar.jsonToTs' },
+    ],
+    text: [
+      { route: '/case-converter', labelKey: 'sidebar.caseConverter' },
+      { route: '/sql-formatter', labelKey: 'sidebar.sqlFormatter' },
     ],
     encoding: [
       { route: '/base64-tools', labelKey: 'sidebar.base64Tools' },
       { route: '/url-tools', labelKey: 'sidebar.urlTools' },
+      { route: '/base-converter', labelKey: 'sidebar.baseConverter' },
     ],
     crypto: [
       { route: '/hash-tools', labelKey: 'sidebar.hashTools' },
@@ -220,6 +238,7 @@ const allTools = computed(() => {
     time: [
       { route: '/timestamp-tools', labelKey: 'sidebar.timestampTools' },
       { route: '/time-calculator', labelKey: 'sidebar.timeCalculator' },
+      { route: '/cron-parser', labelKey: 'sidebar.cronParser' },
     ],
     generator: [
       { route: '/uuid-tools', labelKey: 'sidebar.uuidTools' },
@@ -227,8 +246,13 @@ const allTools = computed(() => {
       { route: '/apikey-tools', labelKey: 'sidebar.apikeyTools' },
       { route: '/jwt-debugger', labelKey: 'sidebar.jwtDebugger' },
       { route: '/diff-tool', labelKey: 'sidebar.diffTool' },
+      { route: '/dummy-data', labelKey: 'sidebar.dummyData' },
+      { route: '/regex-tester', labelKey: 'sidebar.regexTester' },
     ],
-    other: [{ route: '/qr-tools', labelKey: 'sidebar.qrTools' }],
+    other: [
+      { route: '/qr-tools', labelKey: 'sidebar.qrTools' },
+      { route: '/color-tools', labelKey: 'sidebar.colorTools' },
+    ],
   }
 
   const result = []

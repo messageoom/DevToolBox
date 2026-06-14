@@ -24,7 +24,16 @@
     "apikeyTools": "API Key生成器",
     "jwtDebugger": "JWT调试器",
     "diffTool": "文本对比",
-    "textTransfer": "文本传输"
+    "textTransfer": "文本传输",
+    "imageTools": "图片工具",
+    "jsonToTs": "JSON转TS类型",
+    "caseConverter": "大小写转换",
+    "sqlFormatter": "SQL格式化",
+    "baseConverter": "进制转换",
+    "dummyData": "假数据生成",
+    "regexTester": "正则测试器",
+    "cronParser": "Cron解析",
+    "colorTools": "颜色工具"
   },
   "mobileNav": {
     "home": "首页",
@@ -39,13 +48,14 @@
     "transfer": "传输"
   },
   "categories": {
-    "file": { "name": "文件工具", "description": "文件上传、管理与处理", "tools": { "fileUpload": "文件上传", "fileManage": "文件管理", "batchProcess": "批量处理" } },
+    "file": { "name": "文件工具", "description": "文件上传、管理与处理", "tools": { "fileUpload": "文件上传", "fileManage": "文件管理", "batchProcess": "批量处理", "imageTool": "图片工具" } },
     "crypto": { "name": "加密工具", "description": "哈希算法、对称与非对称加密", "tools": { "RSA": "RSA", "ECC": "ECC", "AES": "AES", "ChaCha20": "ChaCha20", "SM2": "SM2", "SM4": "SM4", "MD5": "MD5", "SHA256": "SHA256", "SM3": "SM3", "BLAKE3": "BLAKE3" } },
-    "data": { "name": "数据工具", "description": "数据格式转换与处理", "tools": { "JSON": "JSON", "YAML": "YAML", "Markdown": "Markdown", "Base64": "Base64" } },
-    "encoding": { "name": "编码工具", "description": "各种编码解码工具", "tools": { "base64": "Base64", "urlEncode": "URL编码", "timestamp": "时间戳" } },
-    "time": { "name": "时间工具", "description": "时间戳与日期时间处理", "tools": { "timestampConvert": "时间戳转换", "dateCalc": "日期计算" } },
-    "other": { "name": "其他工具", "description": "二维码生成等其他实用工具", "tools": { "qrGenerate": "二维码生成", "qrBeautify": "二维码美化" } },
-    "generator": { "name": "生成与调试", "description": "UUID、密码、API Key生成及开发调试工具", "tools": { "uuidGen": "UUID生成", "passwordGen": "密码生成", "apikeyGen": "API Key生成", "jwtDebug": "JWT调试", "textDiff": "文本对比" } },
+    "data": { "name": "数据工具", "description": "数据格式转换与处理", "tools": { "JSON": "JSON", "YAML": "YAML", "Markdown": "Markdown", "Base64": "Base64", "jsonTs": "JSON转TS" } },
+    "encoding": { "name": "编码工具", "description": "各种编码解码工具", "tools": { "base64": "Base64", "urlEncode": "URL编码", "timestamp": "时间戳", "baseConvert": "进制转换" } },
+    "time": { "name": "时间工具", "description": "时间戳与日期时间处理", "tools": { "timestampConvert": "时间戳转换", "dateCalc": "日期计算", "cronParse": "Cron解析" } },
+    "other": { "name": "其他工具", "description": "二维码生成等其他实用工具", "tools": { "qrGenerate": "二维码生成", "qrBeautify": "二维码美化", "colorTools": "颜色工具" } },
+    "generator": { "name": "生成与调试", "description": "UUID、密码、API Key生成及开发调试工具", "tools": { "uuidGen": "UUID生成", "passwordGen": "密码生成", "apikeyGen": "API Key生成", "jwtDebug": "JWT调试", "textDiff": "文本对比", "dummyGen": "假数据", "regexTest": "正则测试" } },
+    "text": { "name": "文本工具", "description": "文本处理与格式化", "tools": { "caseConverter": "大小写转换", "sqlFormatter": "SQL格式化" } },
     "transfer": { "name": "文本传输", "description": "局域网设备间文本传输与群聊", "tools": { "textTransfer": "文本传输" } }
   },
   "fileCategories": {
@@ -1445,6 +1455,171 @@
       "expandText": "展开全文",
       "collapseText": "收起",
       "preview": "预览"
+    },
+    "case": {
+      "title": "大小写转换",
+      "labels": {
+        "input": "输入文本",
+        "results": "转换结果",
+        "copyAll": "全部复制",
+        "clickToCopy": "点击复制",
+        "empty": "输入文本后将显示转换结果",
+        "detected": "检测到",
+        "unknownCase": "未知",
+        "camel": "camelCase",
+        "pascal": "PascalCase",
+        "snake": "snake_case",
+        "kebab": "kebab-case",
+        "constant": "CONSTANT_CASE",
+        "lower": "小写",
+        "title": "Title Case",
+        "sentence": "Sentence case"
+      },
+      "placeholders": { "input": "请输入要转换的文本..." },
+      "messages": { "nothingToCopy": "没有可复制的内容", "copiedAll": "已复制全部结果" }
+    },
+    "base": {
+      "title": "进制转换",
+      "labels": {
+        "value": "数值",
+        "fromBase": "源进制",
+        "binary": "二进制",
+        "octal": "八进制",
+        "decimal": "十进制",
+        "hex": "十六进制",
+        "custom": "自定义",
+        "customBase": "自定义进制 (2-36)",
+        "groupBits": "4位分组",
+        "results": "转换结果",
+        "binaryView": "二进制视图",
+        "emptyHint": "输入数值后将显示各进制结果"
+      },
+      "placeholders": { "input": "请输入数值..." },
+      "messages": {
+        "inputRequired": "请输入数值",
+        "invalidBase": "进制必须在 2 到 36 之间",
+        "invalidInput": "无效的输入：{error}",
+        "convertSuccess": "转换成功",
+        "nothingToCopy": "没有可复制的内容"
+      }
+    },
+    "dummy": {
+      "title": "假数据生成",
+      "labels": {
+        "fieldTypes": "字段类型",
+        "count": "数量",
+        "format": "输出格式",
+        "jsonArray": "JSON 数组",
+        "onePerLine": "每行一条",
+        "result": "生成结果",
+        "copyAll": "全部复制",
+        "emptyHint": "选择字段并生成数据"
+      },
+      "fields": {
+        "name": "姓名", "email": "邮箱", "phone": "电话", "uuid": "UUID",
+        "username": "用户名", "address": "地址", "city": "城市", "date": "日期", "lorem": "随机文本"
+      },
+      "messages": {
+        "selectField": "请至少选择一个字段类型",
+        "generateSuccess": "已生成 {count} 条数据",
+        "nothingToCopy": "没有可复制的内容"
+      }
+    },
+    "regex": {
+      "title": "正则测试器",
+      "labels": {
+        "pattern": "正则表达式",
+        "presets": "常用模板",
+        "flags": "标志位",
+        "testString": "测试文本",
+        "matchCount": "匹配 ({count})",
+        "noMatches": "无匹配",
+        "position": "位置：{start}-{end}",
+        "emptyMatch": "空匹配",
+        "undefined": "未定义",
+        "empty": "输入正则和测试文本"
+      },
+      "placeholders": {
+        "pattern": "输入正则表达式...",
+        "presets": "选择模板",
+        "testString": "输入要测试的文本..."
+      },
+      "presets": {
+        "email": "邮箱", "url": "URL", "ipv4": "IPv4 地址", "phone": "手机号", "date": "日期 YYYY-MM-DD"
+      },
+      "messages": { "invalidPattern": "无效的正则：{error}" }
+    },
+    "color": {
+      "title": "颜色工具",
+      "tab": { "converter": "颜色转换", "contrast": "对比度检查" },
+      "labels": {
+        "picker": "取色器", "hex": "HEX", "shades": "色阶",
+        "foreground": "前景色", "background": "背景色", "previewText": "预览文字",
+        "contrastRatio": "对比度",
+        "aaNormal": "AA 普通", "aaLarge": "AA 大号", "aaaNormal": "AAA 普通", "aaaLarge": "AAA 大号",
+        "pass": "通过", "fail": "不通过"
+      },
+      "messages": { "clickToCopy": "点击复制色值" }
+    },
+    "jsonTs": {
+      "title": "JSON 转 TypeScript",
+      "labels": { "rootName": "根接口名", "input": "输入 JSON", "convert": "转换", "output": "TypeScript 输出" },
+      "placeholders": { "rootName": "RootObject", "input": "请输入 JSON..." },
+      "messages": {
+        "inputRequired": "请输入 JSON",
+        "invalidJson": "无效的 JSON：{error}",
+        "convertSuccess": "转换成功"
+      }
+    },
+    "cron": {
+      "title": "Cron 表达式解析",
+      "labels": { "expression": "Cron 表达式", "presets": "常用预设", "description": "人类可读描述", "nextRuns": "下次运行时间" },
+      "placeholder": { "expression": "例如 */5 * * * *" },
+      "action": { "parse": "解析", "copyDescription": "复制描述" },
+      "fields": { "minute": "分", "hour": "时", "day": "日", "month": "月", "weekday": "周" },
+      "presets": {
+        "everyMinute": "每分钟", "hourly": "每小时", "dailyMidnight": "每天 0 点",
+        "weekdays": "工作日", "weeklySunday": "每周日", "monthlyFirst": "每月 1 号"
+      },
+      "messages": {
+        "expressionRequired": "请输入 Cron 表达式",
+        "invalidExpression": "无效的 Cron 表达式：{error}",
+        "parseSuccess": "解析成功"
+      }
+    },
+    "sql": {
+      "title": "SQL 格式化",
+      "labels": { "dialect": "方言", "keywordCase": "关键字大小写", "indent": "缩进", "minify": "压缩", "input": "输入 SQL", "output": "格式化结果" },
+      "placeholder": { "input": "请输入 SQL..." },
+      "action": { "sample": "示例", "copy": "复制" },
+      "options": { "upper": "大写", "lower": "小写", "preserve": "保留" },
+      "dialects": {
+        "standard": "标准", "mysql": "MySQL", "postgresql": "PostgreSQL", "sqlite": "SQLite", "tsql": "T-SQL", "mariadb": "MariaDB", "bigquery": "BigQuery"
+      },
+      "stats": { "chars": "字符" },
+      "messages": { "inputRequired": "请输入 SQL", "formatSuccess": "格式化成功", "formatFail": "格式化失败：{error}" }
+    },
+    "image": {
+      "title": "图片工具",
+      "labels": {
+        "dropHere": "拖拽图片到此处",
+        "dropHint": "或点击选择图片",
+        "quality": "质量",
+        "outputFormat": "输出格式",
+        "targetFormat": "目标格式",
+        "width": "宽度",
+        "height": "高度",
+        "lockAspect": "锁定比例",
+        "result": "处理结果"
+      },
+      "tab": { "compress": "压缩", "resize": "缩放", "convert": "转换" },
+      "action": { "changeImage": "更换图片", "compress": "压缩", "resize": "缩放", "convert": "转换", "download": "下载" },
+      "messages": {
+        "notAnImage": "请选择图片文件",
+        "loadFailed": "图片加载失败",
+        "processFailed": "处理失败：{error}",
+        "processSuccess": "处理成功"
+      }
     }
   }
 }

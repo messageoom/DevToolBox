@@ -9,7 +9,7 @@ export const toolCategories = [
     icon: 'upload_file',
     route: '/file-upload',
     color: '#3b82f6',
-    tools: ['fileUpload', 'fileManage', 'batchProcess']
+    tools: ['fileUpload', 'fileManage', 'batchProcess', 'imageTool']
   },
   {
     id: 'transfer',
@@ -23,14 +23,21 @@ export const toolCategories = [
     icon: 'database',
     route: '/json-tools',
     color: '#8b5cf6',
-    tools: ['JSON', 'YAML', 'Markdown', 'Base64']
+    tools: ['JSON', 'YAML', 'Markdown', 'Base64', 'jsonTs']
+  },
+  {
+    id: 'text',
+    icon: 'text_fields',
+    route: '/case-converter',
+    color: '#14b8a6',
+    tools: ['caseConverter', 'sqlFormatter']
   },
   {
     id: 'encoding',
     icon: 'code',
     route: '/base64-tools',
     color: '#f59e0b',
-    tools: ['base64', 'urlEncode', 'timestamp']
+    tools: ['base64', 'urlEncode', 'timestamp', 'baseConvert']
   },
   {
     id: 'crypto',
@@ -44,20 +51,20 @@ export const toolCategories = [
     icon: 'schedule',
     route: '/timestamp-tools',
     color: '#06b6d4',
-    tools: ['timestampConvert', 'dateCalc']
+    tools: ['timestampConvert', 'dateCalc', 'cronParse']
   },
   {
     id: 'generator',
     icon: 'auto_awesome',
     route: '/uuid-tools',
     color: '#ec4899',
-    tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff']
+    tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff', 'dummyGen', 'regexTest']
   },
   {
     id: 'other',
     icon: 'qr_code_2',
     route: '/qr-tools',
     color: '#64748b',
-    tools: ['qrGenerate', 'qrBeautify']
+    tools: ['qrGenerate', 'qrBeautify', 'colorTools']
   }
 ]

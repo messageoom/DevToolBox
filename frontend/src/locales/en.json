@@ -24,7 +24,16 @@
     "apikeyTools": "API Key Generator",
     "jwtDebugger": "JWT Debugger",
     "diffTool": "Text Diff",
-    "textTransfer": "Text Transfer"
+    "textTransfer": "Text Transfer",
+    "imageTools": "Image Tools",
+    "jsonToTs": "JSON to TS",
+    "caseConverter": "Case Converter",
+    "sqlFormatter": "SQL Formatter",
+    "baseConverter": "Base Converter",
+    "dummyData": "Dummy Data",
+    "regexTester": "Regex Tester",
+    "cronParser": "Cron Parser",
+    "colorTools": "Color Tools"
   },
   "mobileNav": {
     "home": "Home",
@@ -39,13 +48,14 @@
     "transfer": "Transfer"
   },
   "categories": {
-    "file": { "name": "File Tools", "description": "File upload, management and processing", "tools": { "fileUpload": "File Upload", "fileManage": "File Manage", "batchProcess": "Batch Process" } },
+    "file": { "name": "File Tools", "description": "File upload, management and processing", "tools": { "fileUpload": "File Upload", "fileManage": "File Manage", "batchProcess": "Batch Process", "imageTool": "Image Tools" } },
     "crypto": { "name": "Crypto Tools", "description": "Hash algorithms, symmetric and asymmetric encryption", "tools": { "RSA": "RSA", "ECC": "ECC", "AES": "AES", "ChaCha20": "ChaCha20", "SM2": "SM2", "SM4": "SM4", "MD5": "MD5", "SHA256": "SHA256", "SM3": "SM3", "BLAKE3": "BLAKE3" } },
-    "data": { "name": "Data Tools", "description": "Data format conversion and processing", "tools": { "JSON": "JSON", "YAML": "YAML", "Markdown": "Markdown", "Base64": "Base64" } },
-    "encoding": { "name": "Encoding Tools", "description": "Various encoding and decoding tools", "tools": { "base64": "Base64", "urlEncode": "URL Encode", "timestamp": "Timestamp" } },
-    "time": { "name": "Time Tools", "description": "Timestamp and date/time processing", "tools": { "timestampConvert": "Timestamp Convert", "dateCalc": "Date Calculator" } },
-    "other": { "name": "Other Tools", "description": "QR code generation and other utilities", "tools": { "qrGenerate": "QR Generate", "qrBeautify": "QR Beautify" } },
-    "generator": { "name": "Generators & Debug", "description": "UUID, password, API key generation and dev debug tools", "tools": { "uuidGen": "UUID Generator", "passwordGen": "Password Gen", "apikeyGen": "API Key Gen", "jwtDebug": "JWT Debug", "textDiff": "Text Diff" } },
+    "data": { "name": "Data Tools", "description": "Data format conversion and processing", "tools": { "JSON": "JSON", "YAML": "YAML", "Markdown": "Markdown", "Base64": "Base64", "jsonTs": "JSON to TS" } },
+    "encoding": { "name": "Encoding Tools", "description": "Various encoding and decoding tools", "tools": { "base64": "Base64", "urlEncode": "URL Encode", "timestamp": "Timestamp", "baseConvert": "Base Convert" } },
+    "time": { "name": "Time Tools", "description": "Timestamp and date/time processing", "tools": { "timestampConvert": "Timestamp Convert", "dateCalc": "Date Calculator", "cronParse": "Cron Parser" } },
+    "other": { "name": "Other Tools", "description": "QR code generation and other utilities", "tools": { "qrGenerate": "QR Generate", "qrBeautify": "QR Beautify", "colorTools": "Color Tools" } },
+    "generator": { "name": "Generators & Debug", "description": "UUID, password, API key generation and dev debug tools", "tools": { "uuidGen": "UUID Generator", "passwordGen": "Password Gen", "apikeyGen": "API Key Gen", "jwtDebug": "JWT Debug", "textDiff": "Text Diff", "dummyGen": "Dummy Data", "regexTest": "Regex Test" } },
+    "text": { "name": "Text Tools", "description": "Text processing and formatting", "tools": { "caseConverter": "Case Converter", "sqlFormatter": "SQL Formatter" } },
     "transfer": { "name": "Text Transfer", "description": "LAN text transfer and group chat", "tools": { "textTransfer": "Text Transfer" } }
   },
   "fileCategories": {
@@ -1445,6 +1455,171 @@
       "expandText": "Show more",
       "collapseText": "Show less",
       "preview": "Preview"
+    },
+    "case": {
+      "title": "Case Converter",
+      "labels": {
+        "input": "Input Text",
+        "results": "Results",
+        "copyAll": "Copy All",
+        "clickToCopy": "Click to copy",
+        "empty": "Results appear after you type",
+        "detected": "Detected",
+        "unknownCase": "Unknown",
+        "camel": "camelCase",
+        "pascal": "PascalCase",
+        "snake": "snake_case",
+        "kebab": "kebab-case",
+        "constant": "CONSTANT_CASE",
+        "lower": "lowercase",
+        "title": "Title Case",
+        "sentence": "Sentence case"
+      },
+      "placeholders": { "input": "Enter text to convert..." },
+      "messages": { "nothingToCopy": "Nothing to copy", "copiedAll": "All results copied" }
+    },
+    "base": {
+      "title": "Base Converter",
+      "labels": {
+        "value": "Value",
+        "fromBase": "From Base",
+        "binary": "Binary",
+        "octal": "Octal",
+        "decimal": "Decimal",
+        "hex": "Hexadecimal",
+        "custom": "Custom",
+        "customBase": "Custom base (2-36)",
+        "groupBits": "Group 4 bits",
+        "results": "Results",
+        "binaryView": "Binary View",
+        "emptyHint": "Enter a number to see all bases"
+      },
+      "placeholders": { "input": "Enter a number..." },
+      "messages": {
+        "inputRequired": "Please enter a number",
+        "invalidBase": "Base must be between 2 and 36",
+        "invalidInput": "Invalid input: {error}",
+        "convertSuccess": "Converted",
+        "nothingToCopy": "Nothing to copy"
+      }
+    },
+    "dummy": {
+      "title": "Dummy Data Generator",
+      "labels": {
+        "fieldTypes": "Field Types",
+        "count": "Count",
+        "format": "Output Format",
+        "jsonArray": "JSON Array",
+        "onePerLine": "One per line",
+        "result": "Result",
+        "copyAll": "Copy All",
+        "emptyHint": "Select fields and generate"
+      },
+      "fields": {
+        "name": "Name", "email": "Email", "phone": "Phone", "uuid": "UUID",
+        "username": "Username", "address": "Address", "city": "City", "date": "Date", "lorem": "Lorem text"
+      },
+      "messages": {
+        "selectField": "Select at least one field type",
+        "generateSuccess": "Generated {count} records",
+        "nothingToCopy": "Nothing to copy"
+      }
+    },
+    "regex": {
+      "title": "Regex Tester",
+      "labels": {
+        "pattern": "Pattern",
+        "presets": "Presets",
+        "flags": "Flags",
+        "testString": "Test String",
+        "matchCount": "Matches ({count})",
+        "noMatches": "No matches",
+        "position": "Position: {start}-{end}",
+        "emptyMatch": "Empty match",
+        "undefined": "undefined",
+        "empty": "Enter a pattern and test string"
+      },
+      "placeholders": {
+        "pattern": "Enter regex pattern...",
+        "presets": "Select preset",
+        "testString": "Enter text to test..."
+      },
+      "presets": {
+        "email": "Email", "url": "URL", "ipv4": "IPv4 Address", "phone": "Phone", "date": "Date YYYY-MM-DD"
+      },
+      "messages": { "invalidPattern": "Invalid pattern: {error}" }
+    },
+    "color": {
+      "title": "Color Tools",
+      "tab": { "converter": "Color Converter", "contrast": "Contrast Checker" },
+      "labels": {
+        "picker": "Picker", "hex": "HEX", "shades": "Shades",
+        "foreground": "Foreground", "background": "Background", "previewText": "Preview Text",
+        "contrastRatio": "Contrast Ratio",
+        "aaNormal": "AA Normal", "aaLarge": "AA Large", "aaaNormal": "AAA Normal", "aaaLarge": "AAA Large",
+        "pass": "Pass", "fail": "Fail"
+      },
+      "messages": { "clickToCopy": "Click to copy" }
+    },
+    "jsonTs": {
+      "title": "JSON to TypeScript",
+      "labels": { "rootName": "Root interface name", "input": "Input JSON", "convert": "Convert", "output": "TypeScript Output" },
+      "placeholders": { "rootName": "RootObject", "input": "Enter JSON..." },
+      "messages": {
+        "inputRequired": "Please enter JSON",
+        "invalidJson": "Invalid JSON: {error}",
+        "convertSuccess": "Converted"
+      }
+    },
+    "cron": {
+      "title": "Cron Parser",
+      "labels": { "expression": "Cron Expression", "presets": "Presets", "description": "Description", "nextRuns": "Next Runs" },
+      "placeholder": { "expression": "e.g. */5 * * * *" },
+      "action": { "parse": "Parse", "copyDescription": "Copy description" },
+      "fields": { "minute": "Minute", "hour": "Hour", "day": "Day", "month": "Month", "weekday": "Weekday" },
+      "presets": {
+        "everyMinute": "Every minute", "hourly": "Hourly", "dailyMidnight": "Daily at midnight",
+        "weekdays": "Weekdays", "weeklySunday": "Weekly on Sunday", "monthlyFirst": "Monthly on 1st"
+      },
+      "messages": {
+        "expressionRequired": "Please enter a cron expression",
+        "invalidExpression": "Invalid cron expression: {error}",
+        "parseSuccess": "Parsed"
+      }
+    },
+    "sql": {
+      "title": "SQL Formatter",
+      "labels": { "dialect": "Dialect", "keywordCase": "Keyword case", "indent": "Indent", "minify": "Minify", "input": "Input SQL", "output": "Formatted Result" },
+      "placeholder": { "input": "Enter SQL..." },
+      "action": { "sample": "Sample", "copy": "Copy" },
+      "options": { "upper": "Upper", "lower": "Lower", "preserve": "Preserve" },
+      "dialects": {
+        "standard": "Standard", "mysql": "MySQL", "postgresql": "PostgreSQL", "sqlite": "SQLite", "tsql": "T-SQL", "mariadb": "MariaDB", "bigquery": "BigQuery"
+      },
+      "stats": { "chars": "chars" },
+      "messages": { "inputRequired": "Please enter SQL", "formatSuccess": "Formatted", "formatFail": "Format failed: {error}" }
+    },
+    "image": {
+      "title": "Image Tools",
+      "labels": {
+        "dropHere": "Drop image here",
+        "dropHint": "or click to select",
+        "quality": "Quality",
+        "outputFormat": "Output format",
+        "targetFormat": "Target format",
+        "width": "Width",
+        "height": "Height",
+        "lockAspect": "Lock aspect ratio",
+        "result": "Result"
+      },
+      "tab": { "compress": "Compress", "resize": "Resize", "convert": "Convert" },
+      "action": { "changeImage": "Change image", "compress": "Compress", "resize": "Resize", "convert": "Convert", "download": "Download" },
+      "messages": {
+        "notAnImage": "Please select an image file",
+        "loadFailed": "Image load failed",
+        "processFailed": "Process failed: {error}",
+        "processSuccess": "Done"
+      }
     }
   }
 }
