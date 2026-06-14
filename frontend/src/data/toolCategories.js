@@ -19,6 +19,13 @@ export const toolCategories = [
     tools: ['textTransfer']
   },
   {
+    id: 'generator',
+    icon: 'auto_awesome',
+    route: '/uuid-tools',
+    color: '#ec4899',
+    tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff', 'dummyGen', 'regexTest']
+  },
+  {
     id: 'data',
     icon: 'database',
     route: '/json-tools',
@@ -52,13 +59,6 @@ export const toolCategories = [
     route: '/timestamp-tools',
     color: '#06b6d4',
     tools: ['timestampConvert', 'dateCalc', 'cronParse']
-  },
-  {
-    id: 'generator',
-    icon: 'auto_awesome',
-    route: '/uuid-tools',
-    color: '#ec4899',
-    tools: ['uuidGen', 'passwordGen', 'apikeyGen', 'jwtDebug', 'textDiff', 'dummyGen', 'regexTest']
   },
   {
     id: 'other',
