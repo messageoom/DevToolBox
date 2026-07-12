@@ -5,6 +5,7 @@ frontend/package-lock.json
 
 # Python virtual environments
 venv/
+.venv/
 env/
 
 # Python cache
