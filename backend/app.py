@@ -5,7 +5,7 @@ import os
 import logging
 from pathlib import Path
 
-__version__ = '2.3.0'
+__version__ = '2.3.1'
 
 frontend_logger = logging.getLogger('frontend')
 
