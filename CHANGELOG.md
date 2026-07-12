@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.1] - 2026-07-12
+
+### Fixed
+
+- CI 发版失败:3 平台 job 并发 Create GitHub Release 冲突(`already_exists`),分离 `build-binary`(并行构建)与 `release`(单 job 发布)
+- CI 产物污染:Release 误传 frontend-dist 等非构建产物,改用 `pattern` 过滤 + 产物完整性校验 + 显式文件列表
+
+### Changed
+
+- 后端页面(lock_page/gui_window)加 `prefers-reduced-motion`,禁用 particles/bgShift/pulse 等持续动画(无障碍,apple-design §14)
+- 前端字体:字号 px→rem(响应浏览器文字大小)、显式 system font、h1-h3 negative tracking(§15)
+- 前端材质:header/sidebar 半透明 + `backdrop-filter` + `prefers-reduced-transparency` 兜底(§12)
+
+## [2.3.0] - 2026-07-12
+
+### Added
+
+- 首页重构为搜索为中心布局:桌面端补回搜索框 + 最近使用(原被 `v-if="deviceStore.isMobile"` 误伤只在移动端),按分类分组,去掉重复 banner/分类按钮
+- 测试基建:pytest 17 个用例(路径安全/SSRF/文件完整性/配置)+ CI `backend-test` job
+
+### Fixed
+
+- 中文文件名损坏:重写 `sanitize_filename` 保留中文(原 werkzeug `secure_filename` 会把"中文文档.pdf"存成"pdf");file_upload/im/data_conversion 三处统一
+- SSRF 防护失效:`url_tools` 的 `validate_url` 命名遮蔽致 `/send-request`、`/execute-curl` 必 500 且校验失效;新增 `safe_request` 对每跳重定向重新校验 + 限制响应大小
+- IM/WebRTC 失效:根 `app.py` 改用 `socketio.run`(原 `app.run` 无法挂载 `/socket.io/`)
+- token 不持久化:刷新 token 后重启即失效,现从 config 读回
+- 上传大小不一致:统一 `get_max_upload_bytes`(原 500MB/50MB/配置值打架)
+- 删除死代码 `text_transfer.py`(与 `im.py` SocketIO 事件冲突)
+
+### Changed
+
+- 后端:config mtime 缓存、markdown 统一到 markdown-it-py、`safe_client_error`(4xx)、frontend-log 白名单、subprocess `shell=True` POSIX bug、`scan_file` 超时降级
+- 前端:全局 `errorHandler`、router 404/scrollTo/删 webpack 注释、device resize 防抖、theme 逻辑统一、新建 `utils/request.js` 统一 API 层、`cssCodeSplit`、AlgorithmCardSelector 颜色→CSS 变量、MarkdownPreviewPanel 加 DOMPurify、字体 `display=block`、`switchLang` 同步 `<html lang>`
+
+### Security
+
+- 依赖升级:requests>=2.32(CVE-2024-35195)、lxml>=4.9.4、cryptography>=42.0.6、PyMuPDF>=1.24
+- `gui_window` `os.system`→`subprocess` 列表参数(防命令注入)
+- `upload-pdf` 改用 `safe_join`;Flask-Limiter 接线(300/min);config/secret 文件 `chmod 0o600`
+
 ## [2.2.1] - 2026-06-10
 
 ### Added
