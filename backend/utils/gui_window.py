@@ -1045,6 +1045,11 @@ select.form-input {
 }
 .qr-close-btn:hover { background: var(--card-hover); color: var(--text); }
 .qr-close-btn:active { transform: scale(0.98); }
+
+/* Reduced motion: 停止持续/装饰动画,保留静态状态(apple-design §14) */
+@media (prefers-reduced-motion: reduce) {
+  .bg-layer, .status-dot.running, .page { animation: none !important; }
+}
 </style>
 </head>
 <body>

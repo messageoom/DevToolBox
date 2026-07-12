@@ -432,7 +432,9 @@ watch(currentPath, (path) => {
   justify-content: space-between;
   padding: 0 var(--dt-spacing-lg);
   height: var(--dt-header-height);
-  background-color: var(--dt-bg-card);
+  background-color: color-mix(in srgb, var(--dt-bg-card) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--dt-border-light);
   z-index: 100;
 }
@@ -494,7 +496,9 @@ watch(currentPath, (path) => {
 }
 .app-sidebar {
   grid-area: sidebar;
-  background-color: var(--dt-bg-card);
+  background-color: color-mix(in srgb, var(--dt-bg-card) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid var(--dt-border-light);
   overflow-y: auto;
   overflow-x: hidden;
@@ -527,11 +531,25 @@ watch(currentPath, (path) => {
 
 .sidebar-menu {
   border-right: none;
-  background-color: var(--dt-bg-card);
-  --el-menu-bg-color: var(--dt-bg-card);
+  background-color: transparent;
+  --el-menu-bg-color: transparent;
   --el-menu-text-color: var(--dt-text-regular);
   --el-menu-active-color: var(--dt-primary);
   --el-menu-hover-bg-color: var(--dt-bg-hover);
+}
+
+/* Reduced transparency: chrome 改回不透明(apple-design §14) */
+@media (prefers-reduced-transparency: reduce) {
+  .app-header,
+  .app-sidebar {
+    background-color: var(--dt-bg-card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .sidebar-menu {
+    background-color: var(--dt-bg-card);
+    --el-menu-bg-color: var(--dt-bg-card);
+  }
 }
 
 /* =========================================

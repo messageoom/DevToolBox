@@ -214,6 +214,17 @@ LOCK_PAGE_TEMPLATE = '''<!DOCTYPE html>
     color: rgba(255, 255, 255, 0.15);
     animation: cardFadeIn 1s ease-out 0.3s both;
   }}
+
+  /* Reduced motion: 停止所有持续/装饰动画,保留静态状态(apple-design §14) */
+  @media (prefers-reduced-motion: reduce) {{
+    .bg-layer, .icon-wrap {{ animation: none !important; }}
+    .particles {{ display: none; }}
+    .card, .footer {{
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }}
+  }}
 </style>
 </head>
 <body>
