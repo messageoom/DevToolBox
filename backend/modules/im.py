@@ -13,8 +13,15 @@ import uuid
 import logging
 
 from flask import Blueprint, request, jsonify, send_file
-from utils.path_safety import safe_join, sanitize_filename
 from flask_socketio import emit
+
+try:
+    from ..utils.path_safety import safe_join, sanitize_filename
+except ImportError:
+    try:
+        from backend.utils.path_safety import safe_join, sanitize_filename
+    except ImportError:
+        from utils.path_safety import safe_join, sanitize_filename
 
 logger = logging.getLogger(__name__)
 
