@@ -42,7 +42,8 @@ def start_frontend(port=5173):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    shell=True  # 在 Windows 上可能需要 shell=True
+                    # POSIX 下 list + shell=True 是 bug(只执行 cmd[0]);仅 Windows 需要 shell
+                    shell=(sys.platform == 'win32'),
                 )
 
                 # 等待前端服务启动
@@ -98,7 +99,13 @@ def start_backend(host='0.0.0.0', port=5000, debug=False):
         print("=" * 50)
 
         # 启动服务器
-        app.run(host=host, port=port, debug=debug)
+        # 用 SocketIO 启动,确保 IM/WebRTC/文件快传等实时功能可用
+        # (直接 app.run 无法挂载 /socket.io/ 路由)
+        socketio = app.config.get('SOCKETIO')
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=debug)
 
     except Exception as e:
         print(f"启动后端服务时出错: {e}")

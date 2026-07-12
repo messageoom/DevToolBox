@@ -77,13 +77,13 @@ def scan_file(filepath):
                 if os.path.exists(mp_cmd):
                     result = subprocess.run(
                         [mp_cmd, '-Scan', '-ScanType', '3', '-File', filepath],
-                        capture_output=True, timeout=60,
+                        capture_output=True, timeout=30,  # 30s,避免长时间阻塞请求线程
                         creationflags=subprocess.CREATE_NO_WINDOW,
                     )
                     if result.returncode == 2:
                         return {'safe': False, 'warning': 'Threat detected by Windows Defender'}
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning('scan_file Windows Defender scan failed: %s', e, exc_info=False)
 
     return {'safe': True, 'warning': None}
 

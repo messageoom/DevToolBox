@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, send_file
 import html2text
 import os
 import tempfile
-from werkzeug.utils import secure_filename
 import fitz  # PyMuPDF for PDF processing
 from bs4 import BeautifulSoup
 import re
@@ -432,8 +431,10 @@ def upload_pdf():
             return jsonify({'error': '没有选择文件'}), 400
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(str(file.filename))
-            file_path = os.path.join(_get_upload_folder(), filename)
+            filename = sanitize_filename(str(file.filename))
+            file_path = safe_join(_get_upload_folder(), filename)
+            if file_path is None:
+                return jsonify({'error': '无效的文件名'}), 400
             file.save(file_path)
 
             return jsonify({

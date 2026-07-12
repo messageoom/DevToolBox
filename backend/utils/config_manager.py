@@ -55,27 +55,60 @@ def _deep_merge(default, actual):
     return result
 
 
+# 配置缓存:基于文件 mtime 失效,避免每个 /api 请求都读盘(before_request 高频调用)
+_config_cache = None
+_config_mtime = None
+
+
 def load_config():
-    """Load config from disk, merging with defaults for missing keys."""
+    """Load config from disk, merging with defaults for missing keys.
+
+    使用基于 mtime 的缓存:文件未改动时直接返回缓存副本,避免高频请求读盘。
+    """
+    global _config_cache, _config_mtime
     config_path = get_config_path()
+    try:
+        mtime = config_path.stat().st_mtime
+    except OSError:
+        mtime = None
+
+    # 缓存命中(文件未改动)
+    if _config_cache is not None and mtime is not None and _config_mtime == mtime:
+        return copy.deepcopy(_config_cache)
+
     if config_path.exists():
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 saved = json.load(f)
-            return _deep_merge(DEFAULT_CONFIG, saved)
+            _config_cache = _deep_merge(DEFAULT_CONFIG, saved)
+            _config_mtime = mtime
+            return copy.deepcopy(_config_cache)
         except (json.JSONDecodeError, IOError):
             pass
-    return copy.deepcopy(DEFAULT_CONFIG)
+    _config_cache = copy.deepcopy(DEFAULT_CONFIG)
+    _config_mtime = mtime
+    return copy.deepcopy(_config_cache)
 
 
 def save_config(config):
-    """Save config to disk atomically (temp file + os.replace)."""
+    """Save config to disk atomically (temp file + os.replace) and refresh cache."""
+    global _config_cache, _config_mtime
     config_path = get_config_path()
     tmp_path = config_path.with_suffix(config_path.suffix + '.tmp')
     try:
         with open(tmp_path, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
         os.replace(tmp_path, config_path)
+        try:
+            os.chmod(config_path, 0o600)  # config 含 access_token 等敏感信息,限制仅本用户可读
+        except OSError:
+            pass
+        # 写盘成功后刷新缓存
+        _config_cache = copy.deepcopy(config)
+        try:
+            _config_mtime = config_path.stat().st_mtime
+        except OSError:
+            _config_mtime = None
         return True
     except (IOError, OSError):
         # Clean up temp file on failure
@@ -97,6 +130,22 @@ def get_upload_dir(config):
     else:
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return os.path.join(base, upload_dir)
+
+
+def get_max_upload_bytes(config=None):
+    """返回上传文件大小上限(字节)—— 全项目统一的单一数据源。
+
+    读取 config['storage']['max_file_size_mb'](默认 50MB),钳到 [1, 500]MB。
+    im.py / file_upload / Flask MAX_CONTENT_LENGTH / settings 校验均应引用本函数,
+    避免多处魔术数字不一致。
+    """
+    if config is None:
+        config = load_config()
+    try:
+        mb = int(config.get('storage', {}).get('max_file_size_mb', 50))
+    except (TypeError, ValueError):
+        mb = 50
+    return max(1, min(mb, 500)) * 1024 * 1024
 
 
 def cleanup_expired_tokens(config):
