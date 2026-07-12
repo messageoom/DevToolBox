@@ -73,7 +73,8 @@ def update_config():
         if 'auto_cleanup_days' in storage:
             config['storage']['auto_cleanup_days'] = max(0, int(storage['auto_cleanup_days']))
         if 'max_file_size_mb' in storage:
-            config['storage']['max_file_size_mb'] = max(1, min(100, int(storage['max_file_size_mb'])))
+            # 上限 500MB,与 get_max_upload_bytes() / Flask MAX_CONTENT_LENGTH 保持一致
+            config['storage']['max_file_size_mb'] = max(1, min(500, int(storage['max_file_size_mb'])))
 
     if 'security' in data:
         security = data['security']

@@ -13,13 +13,11 @@ import uuid
 import logging
 
 from flask import Blueprint, request, jsonify, send_file
-from werkzeug.utils import secure_filename
-from utils.path_safety import safe_join
+from utils.path_safety import safe_join, sanitize_filename
 from flask_socketio import emit
 
 logger = logging.getLogger(__name__)
 
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 THUMB_MAX_SIZE = (200, 200)
 
 # ---------------------------------------------------------------------------
@@ -47,6 +45,18 @@ def _get_upload_dir():
     im_dir = os.path.join(upload_base, 'im')
     os.makedirs(im_dir, exist_ok=True)
     return im_dir
+
+
+def _get_max_upload_bytes():
+    """上传大小上限(字节),统一从 config 读取,与全局 MAX_CONTENT_LENGTH 一致。"""
+    try:
+        from utils.config_manager import get_max_upload_bytes
+    except ImportError:
+        try:
+            from backend.utils.config_manager import get_max_upload_bytes
+        except ImportError:
+            from ..utils.config_manager import get_max_upload_bytes
+    return get_max_upload_bytes()
 
 
 # ---------------------------------------------------------------------------
@@ -117,10 +127,11 @@ def upload_file():
     f.seek(0, os.SEEK_END)
     size = f.tell()
     f.seek(0)
-    if size > MAX_FILE_SIZE:
-        return jsonify({'success': False, 'error': 'File too large (max 50 MB)'}), 400
+    max_size = _get_max_upload_bytes()
+    if size > max_size:
+        return jsonify({'success': False, 'error': f'File too large (max {max_size // 1024 // 1024} MB)'}), 400
 
-    basename = secure_filename(f.filename) or 'file'
+    basename = sanitize_filename(f.filename) or 'file'
     ext = os.path.splitext(basename)[1]
     unique_name = f"{uuid.uuid4().hex}{ext}"
 
@@ -180,7 +191,7 @@ def serve_file(filename):
 @im_bp.route('/thumbs/<path:filename>')
 def serve_thumb(filename):
     upload_dir = _get_upload_dir()
-    thumb_name = f"thumb_{secure_filename(filename)}.webp"
+    thumb_name = f"thumb_{sanitize_filename(filename)}.webp"
     safe_path = safe_join(upload_dir, thumb_name)
 
     # Thumbnail exists — serve directly

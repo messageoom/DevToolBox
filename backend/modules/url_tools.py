@@ -5,10 +5,10 @@ import logging
 import re
 
 try:
-    from ..utils.ssrf_protection import validate_url
+    from ..utils.ssrf_protection import safe_request
     from ..utils.error_handler import safe_error
 except ImportError:
-    from backend.utils.ssrf_protection import validate_url
+    from backend.utils.ssrf_protection import safe_request
     from backend.utils.error_handler import safe_error
 
 logger = logging.getLogger(__name__)
@@ -331,34 +331,16 @@ def send_request():
         headers = data.get('headers', {})
         body = data.get('body', '')
 
-        is_valid, msg = validate_url(url)
-        if not is_valid:
-            return jsonify({'error': msg, 'success': False}), 400
-
         try:
-            import requests
-            import time
+            import requests  # 供下方 except 子句引用
 
-            # 构建请求
-            request_data = {
-                'method': method,
-                'url': url,
-                'headers': headers,
-                'timeout': 30  # 30秒超时
-            }
-
-            # 添加请求体（如果有的话）
-            if body and method in ['POST', 'PUT', 'PATCH']:
-                request_data['data'] = body
-
-            # 记录请求开始时间
-            start_time = time.time()
-
-            # 发送请求
-            response = requests.request(**request_data)
-
-            # 计算响应时间
-            response_time = time.time() - start_time
+            # 安全请求:校验 URL + 手动跟随重定向(每跳过 SSRF 校验)+ 限制响应大小
+            response, response_time, err = safe_request(
+                url, method=method, headers=headers,
+                data=body if body else None, timeout=30,
+            )
+            if err:
+                return jsonify({'error': err, 'success': False}), 400
 
             # 构建响应数据
             result = {
@@ -506,23 +488,15 @@ def execute_curl():
             if not parsed['url']:
                 return jsonify({'error': '无法从curl命令中提取URL'}), 400
 
-            is_valid, msg = validate_url(parsed['url'])
-            if not is_valid:
-                return jsonify({'error': msg, 'success': False}), 400
-
-            request_data = {
-                'method': parsed['method'],
-                'url': parsed['url'],
-                'headers': parsed['headers'],
-                'timeout': 30
-            }
-
-            if parsed['data'] and parsed['method'] in ['POST', 'PUT', 'PATCH']:
-                request_data['data'] = parsed['data']
-
-            start_time = time.time()
-            response = http_requests.request(**request_data)
-            response_time = time.time() - start_time
+            # 安全请求:校验 URL + 手动跟随重定向(每跳过 SSRF 校验)+ 限制响应大小
+            response, response_time, err = safe_request(
+                parsed['url'], method=parsed['method'],
+                headers=parsed['headers'],
+                data=parsed['data'] if parsed['data'] else None,
+                timeout=30,
+            )
+            if err:
+                return jsonify({'error': err, 'success': False}), 400
 
             result = {
                 'success': True,

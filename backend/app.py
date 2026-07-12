@@ -98,12 +98,25 @@ def create_app(access_token=None):
                 return secret_file.read_text(encoding='utf-8').strip()
             new_key = os.urandom(24).hex()
             secret_file.write_text(new_key, encoding='utf-8')
+            try:
+                os.chmod(secret_file, 0o600)  # 仅本用户可读,防止同机其他用户窃取签名密钥
+            except OSError:
+                pass
             return new_key
         except (IOError, OSError):
             return os.urandom(24).hex()
 
     app.config['SECRET_KEY'] = _load_or_create_secret_key()
-    app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB — bounds memory use per request
+
+    # 上传大小上限:统一从 config 读取(默认 50MB),与 im/file_upload 校验保持一致
+    try:
+        from utils.config_manager import get_max_upload_bytes as _gmb
+    except ImportError:
+        try:
+            from backend.utils.config_manager import get_max_upload_bytes as _gmb
+        except ImportError:
+            from .utils.config_manager import get_max_upload_bytes as _gmb
+    app.config['MAX_CONTENT_LENGTH'] = _gmb()
     app.config['ACCESS_TOKEN'] = access_token
 
     # CORS 配置
@@ -129,6 +142,14 @@ def create_app(access_token=None):
             "max_age": 3600
         }
     })
+
+    # 速率限制:宽松 per-IP 上限,挡扫描器噪声/暴力探测(token 本身已是 128-bit)
+    try:
+        from flask_limiter import Limiter
+        from flask_limiter.util import get_remote_address
+        Limiter(get_remote_address, app=app, default_limits=['300 per minute'])
+    except ImportError:
+        logging.warning('Flask-Limiter 未安装,跳过速率限制')
 
     # SocketIO initialization
     socketio = None
@@ -320,6 +341,10 @@ def create_app(access_token=None):
         msg = data.get('message', '')
         if not msg:
             return jsonify({'success': False}), 400
+        # level 白名单 + 消息截断:防止触发任意 logger 方法名或灌爆日志文件
+        if level not in ('info', 'warning', 'warn', 'error', 'debug', 'critical'):
+            level = 'info'
+        msg = msg[:4000]
         log_fn = getattr(frontend_logger, level, frontend_logger.info)
         log_fn('[Frontend] %s', msg)
         return jsonify({'success': True})
@@ -343,7 +368,31 @@ if __name__ == '__main__':
     no_token = os.environ.get('DEVTOOLBOX_NO_TOKEN', '').lower() == '1'
     no_tray = os.environ.get('DEVTOOLBOX_NO_TRAY', '').lower() == '1'
 
-    access_token = None if no_token else uuid.uuid4().hex
+    # Token:优先复用 config 中持久化的 access_token,使设置页"刷新 token"在重启后仍生效
+    if no_token:
+        access_token = None
+    else:
+        access_token = uuid.uuid4().hex
+        try:
+            from utils.config_manager import load_config as _lc, save_config as _sc
+        except ImportError:
+            try:
+                from backend.utils.config_manager import load_config as _lc, save_config as _sc
+            except ImportError:
+                _lc = _sc = None
+        if _lc:
+            try:
+                _cfg = _lc()
+                _existing = _cfg.get('security', {}).get('access_token')
+                if _existing:
+                    access_token = _existing
+                else:
+                    _cfg.setdefault('security', {})['access_token'] = access_token
+                    if _sc:
+                        _sc(_cfg)
+            except Exception:
+                pass
+
     app = create_app(access_token=access_token)
 
     no_gui = os.environ.get('DEVTOOLBOX_NO_GUI', '').lower() == '1'
