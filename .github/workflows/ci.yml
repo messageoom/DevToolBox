@@ -199,11 +199,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all build artifacts
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: DevToolBox-*
           merge-multiple: true
+
+      - name: Verify all platform binaries present
+        shell: bash
+        run: |
+          set -e
+          missing=0
+          for pat in \
+            'artifacts/DevToolBox-*-windows-x64.exe' \
+            'artifacts/DevToolBox-*-windows-x64.exe.sha256' \
+            'artifacts/DevToolBox-*-macos-arm64' \
+            'artifacts/DevToolBox-*-macos-arm64.sha256' \
+            'artifacts/DevToolBox-*-linux-x64' \
+            'artifacts/DevToolBox-*-linux-x64.sha256'; do
+            if ! ls $pat 1>/dev/null 2>&1; then
+              echo "ERROR: missing $pat"; missing=1
+            fi
+          done
+          [ "$missing" = "0" ] || exit 1
+          echo "All platform binaries present:"; ls -la artifacts/
 
       - name: Extract latest changelog
         id: changelog
@@ -228,7 +248,13 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*
+          files: |
+            artifacts/DevToolBox-*-windows-x64.exe
+            artifacts/DevToolBox-*-windows-x64.exe.sha256
+            artifacts/DevToolBox-*-macos-arm64
+            artifacts/DevToolBox-*-macos-arm64.sha256
+            artifacts/DevToolBox-*-linux-x64
+            artifacts/DevToolBox-*-linux-x64.sha256
           body_path: ${{ steps.changelog.outputs.body_file }}
           draft: false
           prerelease: false
