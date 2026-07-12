@@ -241,6 +241,8 @@ const mobileNavTabs = computed(() => [
 function switchLang(lang) {
   locale.value = lang
   localStorage.setItem('dt-lang', lang)
+  // 同步 <html lang>,影响屏幕阅读器发音与 a11y
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'
 }
 
 function isTabActive(tab) {

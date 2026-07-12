@@ -1,43 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 
-const JsonTools = () => import(/* webpackChunkName: "data-tools" */ '../views/JsonTools.vue')
-const YamlTools = () => import(/* webpackChunkName: "data-tools" */ '../views/YamlTools.vue')
-const MarkdownTools = () => import(/* webpackChunkName: "data-tools" */ '../views/MarkdownTools.vue')
-const MarkdownEditor = () => import(/* webpackChunkName: "data-tools" */ '../views/MarkdownEditor.vue')
-const JsonToTs = () => import(/* webpackChunkName: "data-tools" */ '../views/JsonToTs.vue')
+// 注:原 webpackChunkName 魔法注释在 Vite/Rollup 下不生效(只在 webpack 下有效),
+// 已移除以避免误导。如需控制 chunk 分组,在 vite.config.js 配置
+// build.rollupOptions.output.manualChunks。
+const JsonTools = () => import('../views/JsonTools.vue')
+const YamlTools = () => import('../views/YamlTools.vue')
+const MarkdownTools = () => import('../views/MarkdownTools.vue')
+const MarkdownEditor = () => import('../views/MarkdownEditor.vue')
+const JsonToTs = () => import('../views/JsonToTs.vue')
 
-const HashTools = () => import(/* webpackChunkName: "crypto-tools" */ '../views/HashTools.vue')
-const CryptoTools = () => import(/* webpackChunkName: "crypto-tools" */ '../views/CryptoTools.vue')
+const HashTools = () => import('../views/HashTools.vue')
+const CryptoTools = () => import('../views/CryptoTools.vue')
 
-const Base64Tools = () => import(/* webpackChunkName: "encoding-tools" */ '../views/Base64Tools.vue')
-const UrlTools = () => import(/* webpackChunkName: "encoding-tools" */ '../views/UrlTools.vue')
-const BaseConverter = () => import(/* webpackChunkName: "encoding-tools" */ '../views/BaseConverter.vue')
+const Base64Tools = () => import('../views/Base64Tools.vue')
+const UrlTools = () => import('../views/UrlTools.vue')
+const BaseConverter = () => import('../views/BaseConverter.vue')
 
-const TimestampTools = () => import(/* webpackChunkName: "time-tools" */ '../views/TimestampTools.vue')
-const TimeCalculator = () => import(/* webpackChunkName: "time-tools" */ '../views/TimeCalculator.vue')
-const CronParser = () => import(/* webpackChunkName: "time-tools" */ '../views/CronParser.vue')
+const TimestampTools = () => import('../views/TimestampTools.vue')
+const TimeCalculator = () => import('../views/TimeCalculator.vue')
+const CronParser = () => import('../views/CronParser.vue')
 
-const FileUpload = () => import(/* webpackChunkName: "file-tools" */ '../views/FileUpload.vue')
-const FileCategory = () => import(/* webpackChunkName: "file-tools" */ '../views/FileCategory.vue')
-const ImageTools = () => import(/* webpackChunkName: "file-tools" */ '../views/ImageTools.vue')
+const FileUpload = () => import('../views/FileUpload.vue')
+const FileCategory = () => import('../views/FileCategory.vue')
+const ImageTools = () => import('../views/ImageTools.vue')
 
-const DataConversion = () => import(/* webpackChunkName: "misc-tools" */ '../views/DataConversion.vue')
-const QrTools = () => import(/* webpackChunkName: "misc-tools" */ '../views/QrTools.vue')
-const ColorTools = () => import(/* webpackChunkName: "misc-tools" */ '../views/ColorTools.vue')
-const CaseConverter = () => import(/* webpackChunkName: "misc-tools" */ '../views/CaseConverter.vue')
-const SqlFormatter = () => import(/* webpackChunkName: "misc-tools" */ '../views/SqlFormatter.vue')
+const DataConversion = () => import('../views/DataConversion.vue')
+const QrTools = () => import('../views/QrTools.vue')
+const ColorTools = () => import('../views/ColorTools.vue')
+const CaseConverter = () => import('../views/CaseConverter.vue')
+const SqlFormatter = () => import('../views/SqlFormatter.vue')
 
-const UuidTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/UuidTools.vue')
-const PasswordTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/PasswordTools.vue')
-const ApiKeyTools = () => import(/* webpackChunkName: "generator-tools" */ '../views/ApiKeyTools.vue')
-const DummyDataGenerator = () => import(/* webpackChunkName: "generator-tools" */ '../views/DummyDataGenerator.vue')
-const RegexTester = () => import(/* webpackChunkName: "generator-tools" */ '../views/RegexTester.vue')
+const UuidTools = () => import('../views/UuidTools.vue')
+const PasswordTools = () => import('../views/PasswordTools.vue')
+const ApiKeyTools = () => import('../views/ApiKeyTools.vue')
+const DummyDataGenerator = () => import('../views/DummyDataGenerator.vue')
+const RegexTester = () => import('../views/RegexTester.vue')
 
-const JwtDebugger = () => import(/* webpackChunkName: "dev-tools" */ '../views/JwtDebugger.vue')
-const DiffTool = () => import(/* webpackChunkName: "dev-tools" */ '../views/DiffTool.vue')
+const JwtDebugger = () => import('../views/JwtDebugger.vue')
+const DiffTool = () => import('../views/DiffTool.vue')
 
-const TextTransfer = () => import(/* webpackChunkName: "transfer-tools" */ '../views/TextTransfer.vue')
+const TextTransfer = () => import('../views/TextTransfer.vue')
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -70,11 +73,17 @@ const routes = [
   { path: '/json-to-ts', name: 'JsonToTs', component: JsonToTs },
   { path: '/image-tools', name: 'ImageTools', component: ImageTools },
   { path: '/color-tools', name: 'ColorTools', component: ColorTools },
+  // 404 兜底:未匹配的路由回到首页
+  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/' },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
+  // 切换路由后回到顶部(原来会停留在上次滚动位置)
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 export default router

@@ -19,7 +19,7 @@
         ref="previewContent"
         class="preview-content"
         :class="`theme-${previewTheme}`"
-        v-html="renderedHtml"
+        v-html="sanitizedHtml"
       ></div>
     </div>
   </div>
@@ -27,6 +27,7 @@
 
 <script>
 import { View } from '@element-plus/icons-vue'
+import DOMPurify from 'dompurify'
 import { typographyThemes, codeThemes, getTypographyTheme, getCodeTheme } from './themes.js'
 
 export default {
@@ -63,6 +64,10 @@ export default {
     this.$emit('preview-ready', this.$refs.previewContent)
   },
   computed: {
+    // 防 XSS:markdown 渲染出的 HTML 经 DOMPurify 净化后再注入(与 DataConversion/ImMessage 一致)
+    sanitizedHtml() {
+      return DOMPurify.sanitize(this.renderedHtml, { USE_PROFILES: { html: true } })
+    },
     currentTypographyThemeName() {
       const key = `tools.markdownEditor.typographyThemes.${this.currentTypographyTheme}`
       return this.$t(key)
