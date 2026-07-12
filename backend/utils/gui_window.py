@@ -4,6 +4,7 @@ macOS-inspired dark UI with glassmorphism design.
 """
 
 import os
+import subprocess
 import sys
 import json
 import time
@@ -397,9 +398,9 @@ class Api:
             if sys.platform == 'win32':
                 os.startfile(upload_dir)
             elif sys.platform == 'darwin':
-                os.system(f'open "{upload_dir}"')
+                subprocess.run(['open', upload_dir], check=False)
             else:
-                os.system(f'xdg-open "{upload_dir}"')
+                subprocess.run(['xdg-open', upload_dir], check=False)
             return {'success': True}
         except Exception as e:
             return {'success': False, 'error': str(e)}
@@ -416,17 +417,6 @@ class Api:
         except Exception:
             pass
         return {'success': False}
-        try:
-            os.makedirs(upload_dir, exist_ok=True)
-            if sys.platform == 'win32':
-                os.startfile(upload_dir)
-            elif sys.platform == 'darwin':
-                os.system(f'open "{upload_dir}"')
-            else:
-                os.system(f'xdg-open "{upload_dir}"')
-            return {'success': True}
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
 
     # --- Language ---
 
