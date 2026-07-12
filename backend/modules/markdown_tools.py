@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-import markdown
 from markdown_it import MarkdownIt
 import html
 from bs4 import BeautifulSoup
@@ -558,8 +557,9 @@ def markdown_to_plain():
         if not markdown_text.strip():
             return jsonify({'error': 'Markdown文本不能为空'}), 400
 
-        # 转换Markdown为HTML，然后提取纯文本
-        html_content = markdown.markdown(markdown_text)
+        # 转换Markdown为HTML(markdown_it 引擎,与 to-html 一致),再提取纯文本
+        md = MarkdownIt("commonmark", {"breaks": True, "html": False, "linkify": True}).enable(['table', 'strikethrough', 'code', 'fence', 'emphasis', 'list'])
+        html_content = md.render(markdown_text)
         soup = BeautifulSoup(html_content, 'html.parser')
 
         # 提取纯文本
@@ -778,10 +778,7 @@ def validate_markdown():
         markdown_text = data['markdown_text']
 
         try:
-            # 尝试转换Markdown为HTML来验证语法
-            html_content = markdown.markdown(markdown_text)
-
-            # 基本语法检查
+            # 基本语法检查(正则;统一使用 markdown_it 引擎,不再依赖 Python-Markdown)
             issues = []
 
             # 检查未闭合的链接
