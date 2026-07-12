@@ -80,7 +80,7 @@ jobs:
       - name: Run tests
         run: python -m pytest -v
 
-  build-release:
+  build-binary:
     name: Build (${{ matrix.config.label }})
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [backend-check, backend-test, frontend-build]
@@ -101,8 +101,6 @@ jobs:
             artifact: DevToolBox-linux
             ext: ''
     runs-on: ${{ matrix.config.os }}
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -140,7 +138,6 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           # pywebview uses system WebKit — no extra brew needed on macOS 14+
-          # Ensure Xcode command line tools are available
           xcode-select -p || xcode-select --install 2>/dev/null || true
 
       - name: Install frontend dependencies
@@ -158,7 +155,6 @@ jobs:
           PYTHONUTF8: 1
 
       - name: Generate SHA256 checksum
-        id: checksum
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -169,7 +165,6 @@ jobs:
             exit 1
           fi
           cd "$DIST_DIR"
-          # Find the main executable
           if [ "${{ matrix.config.ext }}" = ".exe" ]; then
             EXE_FILE=$(ls DevToolBox-*.exe 2>/dev/null | head -1)
           else
@@ -180,7 +175,6 @@ jobs:
             ls -la
             exit 1
           fi
-          echo "exe_file=$EXE_FILE" >> "$GITHUB_OUTPUT"
           if [ "${{ runner.os }}" = "Windows" ]; then
             certutil -hashfile "$EXE_FILE" SHA256 | grep -v ":" | tr -d ' \r\n' > "${EXE_FILE}.sha256"
           else
@@ -189,11 +183,27 @@ jobs:
           echo "Checksum generated:"
           cat "${EXE_FILE}.sha256"
 
-      - name: Upload release artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.artifact }}
           path: dist/GUI_${{ steps.version.outputs.version }}/
+
+  release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-binary]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
 
       - name: Extract latest changelog
         id: changelog
@@ -218,9 +228,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}
-            dist/GUI_${{ steps.version.outputs.version }}/${{ steps.checksum.outputs.exe_file }}.sha256
+          files: artifacts/*
           body_path: ${{ steps.changelog.outputs.body_file }}
           draft: false
           prerelease: false
+          overwrite_files: true
