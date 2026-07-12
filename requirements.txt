@@ -1,23 +1,23 @@
 Flask==2.3.2
 Werkzeug==2.3.6
 pycryptodome==3.23.0
-cryptography==42.0.5
+cryptography>=42.0.6  # 42.0.6+ 修复若干安全问题
 flask-cors==4.0.0
 PyYAML==6.0.1
 bcrypt==4.1.2
 pytz==2023.3
 tzlocal==5.0.1
-markdown==3.7
+# markdown 已移除:后端统一使用 markdown-it-py
 markdown-it-py==3.0.0
 beautifulsoup4==4.12.2
-requests==2.31.0
+requests>=2.32.0  # CVE-2024-35195: 代理 Authorization 下证书校验绕过
 qrcode==7.4.2
 Pillow==10.3.0
 html2text==2020.1.16
-PyMuPDF==1.23.8
+PyMuPDF>=1.24.0  # 修复 1.23.x 解析类 CVE(不可信 PDF)
 weasyprint==66.0
 pdfkit==1.0.0
-lxml==4.9.3
+lxml>=4.9.4  # XXE/解析类修复
 gmssl==3.2.2
 blake3==1.0.5
 Flask-Limiter>=3.5.0
