@@ -22,3 +22,13 @@ def safe_error(e: Exception, user_message: str = None, status_code: int = 500):
 
     display_message = user_message or ERROR_MESSAGES.get('default')
     return jsonify({'error': display_message, 'success': False}), status_code
+
+
+def safe_client_error(message: str, status_code: int = 400):
+    """用于客户端输入错误(4xx:参数缺失/格式错误等)。
+
+    与 safe_error 的区别:不打印完整 traceback(校验失败不是服务器异常,
+    避免日志噪声),语义也更准确。新增的校验失败请优先用本函数。
+    """
+    logger.info(f"[client_error {status_code}] {message}")
+    return jsonify({'error': message, 'success': False}), status_code
