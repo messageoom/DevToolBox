@@ -1,145 +1,105 @@
 <template>
   <div class="home">
-    <!-- Hero section (desktop) -->
-    <div class="hero">
-      <div class="hero-content">
-        <div class="hero-badge">v2.0</div>
-        <h1 class="hero-title">DevToolBox</h1>
-        <p class="hero-desc">{{ t('tools.home.desc1') }}</p>
-      </div>
-      <div class="hero-bg-icon">
-        <span class="material-symbols-rounded">developer_board</span>
-      </div>
-    </div>
-
-    <!-- Quick tools (desktop: single-item categories) -->
-    <div v-if="quickTools.length" class="quick-section">
-      <div class="section-header">
-        <span class="material-symbols-rounded section-icon">bolt</span>
-        <h2>{{ t('tools.home.quickAccess') || 'Quick Access' }}</h2>
-      </div>
-      <div class="quick-grid">
-        <div
-          v-for="tool in quickTools"
-          :key="tool.id"
-          class="quick-card"
-          role="button"
-          tabindex="0"
-          :aria-label="t('categories.' + tool.id + '.name')"
-          @click="$router.push(tool.route)"
-          @keydown="onCardKeydown($event, tool.route)"
-        >
-          <div class="quick-icon" :style="{ background: tool.color + '15', color: tool.color }">
-            <span class="material-symbols-rounded">{{ tool.icon }}</span>
-          </div>
-          <div class="quick-info">
-            <span class="quick-name">{{ t('categories.' + tool.id + '.name') }}</span>
-            <span class="quick-desc">{{ t('categories.' + tool.id + '.description') }}</span>
-          </div>
-          <span class="material-symbols-rounded quick-arrow">arrow_forward</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- All tool categories (desktop) -->
-    <div class="section-header">
-      <span class="material-symbols-rounded section-icon">grid_view</span>
-      <h2>{{ t('tools.home.allTools') || 'All Tools' }}</h2>
-    </div>
-    <div class="categories-grid">
-      <div
-        v-for="category in multiToolCategories"
-        :key="category.id"
-        class="category-card"
+    <!-- 搜索框(桌面 + 移动统一) -->
+    <div class="home-search" :class="{ 'is-focused': searchFocused }">
+      <span class="material-symbols-rounded home-search-icon">search</span>
+      <input
+        v-model="searchQuery"
+        type="text"
+        :placeholder="t('tools.home.searchPlaceholder') || '搜索工具...'"
+        class="home-search-input"
+        @focus="searchFocused = true"
+        @blur="searchFocused = false"
+      />
+      <span
+        v-if="searchQuery"
+        class="material-symbols-rounded home-search-clear"
         role="button"
-        tabindex="0"
-        :aria-label="t('categories.' + category.id + '.name')"
-        @click="$router.push(category.route)"
-        @keydown="onCardKeydown($event, category.route)"
-      >
-        <div class="card-icon" :style="{ color: category.color }">
-          <span class="material-symbols-rounded">{{ category.icon }}</span>
-        </div>
-        <div class="card-body">
-          <h3 class="card-title">{{ t('categories.' + category.id + '.name') }}</h3>
-          <p class="card-desc">{{ t('categories.' + category.id + '.description') }}</p>
-          <div class="card-tags">
-            <span
-              v-for="tool in category.tools.slice(0, 4)"
-              :key="tool"
-              class="tag"
-            >{{ t('categories.' + category.id + '.tools.' + tool) }}</span>
-            <span v-if="category.tools.length > 4" class="tag tag-more">+{{ category.tools.length - 4 }}</span>
-          </div>
-        </div>
-        <span class="material-symbols-rounded card-arrow">chevron_right</span>
-      </div>
+        :aria-label="t('tools.home.clear') || '清除'"
+        @click="searchQuery = ''"
+      >close</span>
     </div>
 
-    <!-- Mobile: Function Matrix -->
-    <template v-if="deviceStore.isMobile">
-      <!-- Search -->
-      <div class="mobile-search">
-        <span class="material-symbols-rounded mobile-search-icon">search</span>
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="t('tools.home.searchPlaceholder') || '搜索工具...'"
-          class="mobile-search-input"
-        />
-        <span v-if="searchQuery" class="material-symbols-rounded mobile-search-clear" @click="searchQuery = ''">close</span>
+    <!-- 最近使用(无搜索时显示) -->
+    <div v-if="!searchQuery && recentTools.length" class="recent-section">
+      <div class="recent-header">
+        <span class="material-symbols-rounded recent-header-icon">history</span>
+        <span class="recent-header-title">{{ t('tools.home.recentlyUsed') || '最近使用' }}</span>
       </div>
-
-      <!-- Recently used tools -->
-      <div v-if="!searchQuery && recentTools.length" class="recent-section">
-        <div class="recent-header">
-          <span class="material-symbols-rounded" style="font-size:16px; color: var(--dt-text-secondary);">history</span>
-          <span class="recent-title">{{ t('tools.home.recentlyUsed') || '最近使用' }}</span>
-        </div>
-        <div class="recent-scroll">
-          <div
-            v-for="tool in recentTools"
-            :key="'recent-' + tool.route"
-            class="recent-chip"
-            role="button"
-            tabindex="0"
-            :aria-label="tool.label"
-            @click="$router.push(tool.route)"
-            @keydown="onCardKeydown($event, tool.route)"
-          >
-            <div class="recent-chip-icon" :style="{ background: tool.color + '15', color: tool.color }">
-              <span class="material-symbols-rounded">{{ tool.icon }}</span>
-            </div>
-            <span class="recent-chip-label">{{ tool.label }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tool matrix grid -->
-      <div class="mobile-matrix">
+      <div class="recent-scroll">
         <div
-          v-for="(tool, index) in visibleTools"
-          :key="tool.route"
-          class="matrix-item"
-          :style="{ '--item-color': tool.color }"
+          v-for="tool in recentTools"
+          :key="'recent-' + tool.route"
+          class="recent-chip"
           role="button"
           tabindex="0"
           :aria-label="tool.label"
           @click="$router.push(tool.route)"
           @keydown="onCardKeydown($event, tool.route)"
         >
-          <div class="matrix-icon" :style="{ background: tool.color + '15', color: tool.color }">
+          <div class="recent-chip-icon" :style="{ background: tool.color + '15', color: tool.color }">
             <span class="material-symbols-rounded">{{ tool.icon }}</span>
           </div>
-          <span class="matrix-label">{{ tool.label }}</span>
+          <span class="recent-chip-label">{{ tool.label }}</span>
         </div>
       </div>
+    </div>
 
-      <!-- No results -->
-      <div v-if="searchQuery && filteredTools.length === 0" class="matrix-empty">
-        <span class="material-symbols-rounded" style="font-size: 32px; color: var(--dt-text-placeholder);">search_off</span>
-        <span style="font-size: 13px; color: var(--dt-text-secondary);">{{ t('tools.home.noResults') || '没有找到匹配的工具' }}</span>
+    <!-- 搜索结果(有搜索词时) -->
+    <template v-if="searchQuery">
+      <div v-if="filteredTools.length === 0" class="search-empty">
+        <span class="material-symbols-rounded search-empty-icon">search_off</span>
+        <span class="search-empty-text">{{ t('tools.home.noResults') || '没有找到匹配的工具' }}</span>
       </div>
+      <div v-else class="tools-grid">
+        <div
+          v-for="tool in filteredTools"
+          :key="tool.route"
+          class="tool-card"
+          role="button"
+          tabindex="0"
+          :aria-label="tool.label"
+          @click="$router.push(tool.route)"
+          @keydown="onCardKeydown($event, tool.route)"
+        >
+          <div class="tool-card-icon" :style="{ background: tool.color + '15', color: tool.color }">
+            <span class="material-symbols-rounded">{{ tool.icon }}</span>
+          </div>
+          <span class="tool-card-label">{{ tool.label }}</span>
+        </div>
+      </div>
+    </template>
+
+    <!-- 全部工具:按分类分组(无搜索时) -->
+    <template v-else>
+      <section
+        v-for="group in groupedTools"
+        :key="group.id"
+        class="tool-group"
+      >
+        <div class="tool-group-header">
+          <span class="material-symbols-rounded tool-group-icon" :style="{ color: group.color }">{{ group.icon }}</span>
+          <span class="tool-group-title">{{ group.name }}</span>
+          <span class="tool-group-count">{{ group.tools.length }}</span>
+        </div>
+        <div class="tools-grid">
+          <div
+            v-for="tool in group.tools"
+            :key="tool.route"
+            class="tool-card"
+            role="button"
+            tabindex="0"
+            :aria-label="tool.label"
+            @click="$router.push(tool.route)"
+            @keydown="onCardKeydown($event, tool.route)"
+          >
+            <div class="tool-card-icon" :style="{ background: tool.color + '15', color: tool.color }">
+              <span class="material-symbols-rounded">{{ tool.icon }}</span>
+            </div>
+            <span class="tool-card-label">{{ tool.label }}</span>
+          </div>
+        </div>
+      </section>
     </template>
   </div>
 </template>
@@ -148,15 +108,13 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { useDeviceStore } from '@/stores/device.js'
 import { toolCategories } from '../data/toolCategories'
 import { getRecentTools } from '@/composables/useRecentTools'
 
 const { t } = useI18n()
-const deviceStore = useDeviceStore()
 const router = useRouter()
 
-// Keyboard navigation for cards: Enter / Space activate, like a native button
+// 卡片键盘导航:Enter / Space 触发,如同原生 button
 function onCardKeydown(event, route) {
   if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
     event.preventDefault()
@@ -165,16 +123,9 @@ function onCardKeydown(event, route) {
 }
 
 const searchQuery = ref('')
+const searchFocused = ref(false)
 
-const quickTools = computed(() =>
-  toolCategories.filter(cat => cat.tools.length === 1)
-)
-
-const multiToolCategories = computed(() =>
-  toolCategories.filter(cat => cat.tools.length > 1)
-)
-
-// Per-tool unique icons (shared by allTools and recentTools)
+// 每个 route 对应的图标(工具卡片用)
 const routeIconMap = {
   '/file-upload': 'upload_file',
   '/text-transfer': 'chat',
@@ -206,551 +157,336 @@ const routeIconMap = {
   '/color-tools': 'palette',
 }
 
-// Flat list of all tool entries for the mobile matrix
-const allTools = computed(() => {
-  const routeMap = {
-    file: [
-      { route: '/file-upload', labelKey: 'sidebar.fileUpload' },
-      { route: '/image-tools', labelKey: 'sidebar.imageTools' },
-    ],
-    transfer: [{ route: '/text-transfer', labelKey: 'sidebar.textTransfer' }],
-    data: [
-      { route: '/json-tools', labelKey: 'sidebar.jsonTools' },
-      { route: '/yaml-tools', labelKey: 'sidebar.yamlTools' },
-      { route: '/markdown-tools', labelKey: 'sidebar.markdownTools' },
-      { route: '/data-conversion', labelKey: 'sidebar.dataConversion' },
-      { route: '/markdown-editor', labelKey: 'sidebar.markdownEditor' },
-      { route: '/json-to-ts', labelKey: 'sidebar.jsonToTs' },
-    ],
-    text: [
-      { route: '/case-converter', labelKey: 'sidebar.caseConverter' },
-      { route: '/sql-formatter', labelKey: 'sidebar.sqlFormatter' },
-    ],
-    encoding: [
-      { route: '/base64-tools', labelKey: 'sidebar.base64Tools' },
-      { route: '/url-tools', labelKey: 'sidebar.urlTools' },
-      { route: '/base-converter', labelKey: 'sidebar.baseConverter' },
-    ],
-    crypto: [
-      { route: '/hash-tools', labelKey: 'sidebar.hashTools' },
-      { route: '/crypto-tools', labelKey: 'sidebar.cryptoTools' },
-    ],
-    time: [
-      { route: '/timestamp-tools', labelKey: 'sidebar.timestampTools' },
-      { route: '/time-calculator', labelKey: 'sidebar.timeCalculator' },
-      { route: '/cron-parser', labelKey: 'sidebar.cronParser' },
-    ],
-    generator: [
-      { route: '/uuid-tools', labelKey: 'sidebar.uuidTools' },
-      { route: '/password-tools', labelKey: 'sidebar.passwordTools' },
-      { route: '/apikey-tools', labelKey: 'sidebar.apikeyTools' },
-      { route: '/jwt-debugger', labelKey: 'sidebar.jwtDebugger' },
-      { route: '/diff-tool', labelKey: 'sidebar.diffTool' },
-      { route: '/dummy-data', labelKey: 'sidebar.dummyData' },
-      { route: '/regex-tester', labelKey: 'sidebar.regexTester' },
-    ],
-    other: [
-      { route: '/qr-tools', labelKey: 'sidebar.qrTools' },
-      { route: '/color-tools', labelKey: 'sidebar.colorTools' },
-    ],
-  }
+// 每个分类下的工具(route + i18n labelKey),用于展开成扁平工具列表
+const categoryToolsMap = {
+  file: [
+    { route: '/file-upload', labelKey: 'sidebar.fileUpload' },
+    { route: '/image-tools', labelKey: 'sidebar.imageTools' },
+  ],
+  transfer: [{ route: '/text-transfer', labelKey: 'sidebar.textTransfer' }],
+  data: [
+    { route: '/json-tools', labelKey: 'sidebar.jsonTools' },
+    { route: '/yaml-tools', labelKey: 'sidebar.yamlTools' },
+    { route: '/markdown-tools', labelKey: 'sidebar.markdownTools' },
+    { route: '/data-conversion', labelKey: 'sidebar.dataConversion' },
+    { route: '/markdown-editor', labelKey: 'sidebar.markdownEditor' },
+    { route: '/json-to-ts', labelKey: 'sidebar.jsonToTs' },
+  ],
+  text: [
+    { route: '/case-converter', labelKey: 'sidebar.caseConverter' },
+    { route: '/sql-formatter', labelKey: 'sidebar.sqlFormatter' },
+  ],
+  encoding: [
+    { route: '/base64-tools', labelKey: 'sidebar.base64Tools' },
+    { route: '/url-tools', labelKey: 'sidebar.urlTools' },
+    { route: '/base-converter', labelKey: 'sidebar.baseConverter' },
+  ],
+  crypto: [
+    { route: '/hash-tools', labelKey: 'sidebar.hashTools' },
+    { route: '/crypto-tools', labelKey: 'sidebar.cryptoTools' },
+  ],
+  time: [
+    { route: '/timestamp-tools', labelKey: 'sidebar.timestampTools' },
+    { route: '/time-calculator', labelKey: 'sidebar.timeCalculator' },
+    { route: '/cron-parser', labelKey: 'sidebar.cronParser' },
+  ],
+  generator: [
+    { route: '/uuid-tools', labelKey: 'sidebar.uuidTools' },
+    { route: '/password-tools', labelKey: 'sidebar.passwordTools' },
+    { route: '/apikey-tools', labelKey: 'sidebar.apikeyTools' },
+    { route: '/jwt-debugger', labelKey: 'sidebar.jwtDebugger' },
+    { route: '/diff-tool', labelKey: 'sidebar.diffTool' },
+    { route: '/dummy-data', labelKey: 'sidebar.dummyData' },
+    { route: '/regex-tester', labelKey: 'sidebar.regexTester' },
+  ],
+  other: [
+    { route: '/qr-tools', labelKey: 'sidebar.qrTools' },
+    { route: '/color-tools', labelKey: 'sidebar.colorTools' },
+  ],
+}
 
+// 扁平工具列表(带 categoryId,用于分组与搜索)
+const allTools = computed(() => {
   const result = []
   toolCategories.forEach(cat => {
-    const routes = routeMap[cat.id] || []
-    routes.forEach(r => {
+    const tools = categoryToolsMap[cat.id] || []
+    tools.forEach(r => {
       result.push({
         route: r.route,
         label: t(r.labelKey),
         icon: routeIconMap[r.route] || cat.icon,
         color: cat.color,
+        categoryId: cat.id,
       })
     })
   })
   return result
 })
 
-const recentTools = computed(() => {
-  return getRecentTools().map(t => ({ ...t, icon: routeIconMap[t.route] || t.icon }))
-})
+// 按分类分组(无搜索时展示)
+const groupedTools = computed(() =>
+  toolCategories
+    .map(cat => ({
+      id: cat.id,
+      icon: cat.icon,
+      color: cat.color,
+      name: t('categories.' + cat.id + '.name'),
+      tools: allTools.value.filter(tool => tool.categoryId === cat.id),
+    }))
+    .filter(g => g.tools.length > 0)
+)
 
+// 搜索过滤结果
 const filteredTools = computed(() => {
-  if (!searchQuery.value) return allTools.value
+  if (!searchQuery.value) return []
   const q = searchQuery.value.toLowerCase()
-  return allTools.value.filter(t =>
-    t.label.toLowerCase().includes(q) ||
-    t.route.toLowerCase().includes(q)
+  return allTools.value.filter(tool =>
+    tool.label.toLowerCase().includes(q) || tool.route.toLowerCase().includes(q)
   )
 })
 
-const visibleTools = computed(() => {
-  if (searchQuery.value) return filteredTools.value
-  return allTools.value
-})
+// 最近使用(补图标)
+const recentTools = computed(() =>
+  getRecentTools().map(tool => ({ ...tool, icon: routeIconMap[tool.route] || tool.icon }))
+)
 </script>
 
 <style scoped>
 .home {
-  padding: var(--dt-spacing-lg);
-  max-width: var(--dt-content-max-width);
+  padding: var(--dt-spacing-lg, 24px);
+  max-width: var(--dt-content-max-width, 1100px);
   margin: 0 auto;
 }
 
-/* =========================================
-   Hero
-   ========================================= */
-.hero {
+/* ============ 搜索框 ============ */
+.home-search {
   position: relative;
-  padding: 40px 32px;
-  border-radius: var(--dt-radius-xl);
-  background: linear-gradient(135deg, var(--dt-primary) 0%, #6366f1 100%);
-  color: #fff;
-  margin-bottom: 32px;
-  overflow: hidden;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(4px);
-}
-
-.hero-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 8px;
-  letter-spacing: -0.5px;
-}
-
-.hero-desc {
-  font-size: 15px;
-  opacity: 0.85;
-  margin: 0;
-  max-width: 480px;
-  line-height: 1.5;
-}
-
-.hero-bg-icon {
-  position: absolute;
-  right: -10px;
-  bottom: -20px;
-  opacity: 0.08;
-  pointer-events: none;
-}
-
-.hero-bg-icon .material-symbols-rounded {
-  font-size: 180px;
-}
-
-/* =========================================
-   Section headers
-   ========================================= */
-.section-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.section-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--dt-text-primary);
-}
-
-.section-icon {
-  font-size: 20px;
-  color: var(--dt-text-secondary);
-}
-
-/* =========================================
-   Quick Access (single-item categories)
-   ========================================= */
-.quick-section {
-  margin-bottom: 32px;
-}
-
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.quick-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
+  max-width: 560px;
+  margin: 0 auto 28px;
   background: var(--dt-bg-card);
-  border: 1px solid var(--dt-border-lighter);
-  border-radius: var(--dt-radius-lg);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border: 2px solid var(--dt-border-lighter);
+  border-radius: 999px;
+  padding: 4px 8px 4px 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-.quick-card:hover {
+.home-search.is-focused {
   border-color: var(--dt-primary);
-  box-shadow: var(--dt-shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--dt-primary) 15%, transparent);
 }
-
-.quick-card:focus-visible {
-  outline: 2px solid var(--dt-primary);
-  outline-offset: 2px;
-}
-
-.quick-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--dt-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.quick-icon .material-symbols-rounded {
+.home-search-icon {
   font-size: 22px;
-}
-
-.quick-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.quick-name {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--dt-text-primary);
-}
-
-.quick-desc {
-  display: block;
-  font-size: 12px;
   color: var(--dt-text-secondary);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.quick-arrow {
-  font-size: 18px;
-  color: var(--dt-text-placeholder);
+  margin-right: 10px;
   flex-shrink: 0;
 }
-
-/* =========================================
-   Categories Grid (multi-item)
-   ========================================= */
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.category-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 20px;
-  background: var(--dt-bg-card);
-  border: 1px solid var(--dt-border-lighter);
-  border-radius: var(--dt-radius-lg);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.category-card:hover {
-  border-color: var(--dt-primary);
-  box-shadow: var(--dt-shadow-md);
-  transform: translateY(-2px);
-}
-
-.category-card:focus-visible {
-  outline: 2px solid var(--dt-primary);
-  outline-offset: 2px;
-}
-
-.card-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: var(--dt-radius-md);
-  background: var(--dt-bg-section);
-}
-
-.card-icon .material-symbols-rounded {
-  font-size: 22px;
-}
-
-.card-body {
+.home-search-input {
   flex: 1;
-  min-width: 0;
-}
-
-.card-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 4px;
-  color: var(--dt-text-primary);
-}
-
-.card-desc {
-  font-size: 13px;
-  color: var(--dt-text-secondary);
-  margin: 0 0 10px;
-  line-height: 1.4;
-}
-
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  display: inline-block;
-  padding: 2px 8px;
-  background: var(--dt-bg-section);
-  border-radius: 4px;
-  font-size: 11px;
-  color: var(--dt-text-secondary);
-  white-space: nowrap;
-}
-
-.tag-more {
-  color: var(--dt-primary);
-  font-weight: 600;
-}
-
-.card-arrow {
-  font-size: 20px;
-  color: var(--dt-text-placeholder);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* =========================================
-   Mobile: Search
-   ========================================= */
-.mobile-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 2px 14px;
-  position: relative;
-}
-
-.mobile-search-icon {
-  font-size: 20px;
-  color: var(--dt-text-placeholder);
-  flex-shrink: 0;
-}
-
-.mobile-search-input {
-  flex: 1;
-  height: 38px;
-  border: 1px solid var(--dt-border-light);
-  border-radius: var(--dt-radius-md);
-  padding: 0 32px 0 12px;
-  font-size: 14px;
-  color: var(--dt-text-primary);
-  background: var(--dt-bg-card);
+  border: none;
   outline: none;
-  transition: border-color 0.2s;
+  background: transparent;
+  font-size: 15px;
+  color: var(--dt-text-primary);
+  padding: 10px 0;
+  min-width: 0;
 }
-
-.mobile-search-input::placeholder {
+.home-search-input::placeholder {
   color: var(--dt-text-placeholder);
 }
-
-.mobile-search-input:focus {
-  border-color: var(--dt-primary);
-}
-
-.mobile-search-clear {
-  position: absolute;
-  right: 10px;
-  font-size: 18px;
+.home-search-clear {
+  font-size: 20px;
   color: var(--dt-text-secondary);
   cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+}
+.home-search-clear:hover {
+  background: var(--dt-bg-hover);
+  color: var(--dt-text-primary);
 }
 
-/* =========================================
-   Mobile: Recently Used
-   ========================================= */
+/* ============ 最近使用 ============ */
 .recent-section {
-  margin-bottom: 16px;
+  margin-bottom: 28px;
 }
-
 .recent-header {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 8px;
-  padding: 0 2px;
-}
-
-.recent-title {
-  font-size: 12px;
-  font-weight: 500;
+  gap: 8px;
+  margin-bottom: 12px;
   color: var(--dt-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
 }
-
+.recent-header-icon {
+  font-size: 18px;
+}
 .recent-scroll {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
 }
-
-.recent-scroll::-webkit-scrollbar {
-  display: none;
-}
-
 .recent-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
   background: var(--dt-bg-card);
   border: 1px solid var(--dt-border-lighter);
-  border-radius: 99px;
+  border-radius: 999px;
   cursor: pointer;
   flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition: background 0.15s;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
 }
-
-.recent-chip:active {
+.recent-chip:hover {
+  border-color: var(--dt-primary);
+  transform: translateY(-1px);
   background: var(--dt-bg-hover);
 }
-
 .recent-chip-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .recent-chip-icon .material-symbols-rounded {
-  font-size: 14px;
+  font-size: 18px;
 }
-
 .recent-chip-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
   color: var(--dt-text-primary);
   white-space: nowrap;
 }
 
-/* =========================================
-   Mobile: Empty state
-   ========================================= */
-.matrix-empty {
+/* ============ 分类分组 ============ */
+.tool-group {
+  margin-bottom: 28px;
+}
+.tool-group-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 32px 16px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--dt-border-lighter);
+}
+.tool-group-icon {
+  font-size: 20px;
+}
+.tool-group-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dt-text-primary);
+}
+.tool-group-count {
+  font-size: 12px;
+  color: var(--dt-text-secondary);
+  background: var(--dt-bg-section);
+  padding: 1px 8px;
+  border-radius: 99px;
 }
 
-/* =========================================
-   Mobile: Function Matrix
-   ========================================= */
-.mobile-matrix {
+/* ============ 工具卡片网格 ============ */
+.tools-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
 }
-
-.matrix-item {
+.tool-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 14px 6px 12px;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 10px;
   background: var(--dt-bg-card);
   border: 1px solid var(--dt-border-lighter);
-  border-radius: var(--dt-radius-lg);
+  border-radius: var(--dt-radius-md, 10px);
   cursor: pointer;
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  text-align: center;
 }
-
-.matrix-item:active {
-  background: var(--dt-bg-hover);
-  transform: scale(0.97);
+.tool-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--dt-primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
-
-.matrix-item:focus-visible,
-.recent-chip:focus-visible {
+.tool-card:focus-visible {
   outline: 2px solid var(--dt-primary);
   outline-offset: 2px;
 }
-
-.matrix-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.tool-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
-.matrix-icon .material-symbols-rounded {
-  font-size: 20px;
+.tool-card-icon .material-symbols-rounded {
+  font-size: 24px;
 }
-
-.matrix-label {
-  font-size: 11px;
+.tool-card-label {
+  font-size: 13px;
   font-weight: 500;
   color: var(--dt-text-primary);
-  text-align: center;
-  line-height: 1.2;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
-/* =========================================
-   Responsive
-   ========================================= */
+/* ============ 搜索无结果 ============ */
+.search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: var(--dt-text-secondary);
+}
+.search-empty-icon {
+  font-size: 40px;
+  color: var(--dt-text-placeholder);
+}
+.search-empty-text {
+  font-size: 14px;
+}
+
+/* ============ 响应式 ============ */
 @media (max-width: 768px) {
   .home {
-    padding: var(--dt-spacing-sm);
+    padding: 16px;
   }
-
-  .hero,
-  .quick-section,
-  .section-header,
-  .quick-grid,
-  .categories-grid {
-    display: none;
+  .home-search {
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+  .tools-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+  }
+  .tool-card {
+    padding: 14px 6px;
+    gap: 8px;
+  }
+  .tool-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+  .tool-card-icon .material-symbols-rounded {
+    font-size: 21px;
+  }
+  .tool-card-label {
+    font-size: 12px;
+  }
+  .tool-group {
+    margin-bottom: 22px;
   }
 }
 </style>
