@@ -28,7 +28,11 @@
         if (dark) document.documentElement.classList.add('dark');
       })();
     </script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+    <!--
+      Material Symbols 图标字体。display=block:字体到达前隐藏图标(避免渲染成 ligature 文字如 "home")。
+      注:这是外网依赖,理想做法是自托管到 public/fonts/ 去除外网;当前保留 CDN + display=block 作为折中。
+    -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" />
     <title>DevToolBox - 开发工具箱</title>
   </head>
   <body>

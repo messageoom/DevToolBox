@@ -1,26 +1,30 @@
 import { defineStore } from 'pinia'
 
+// 共享的偏好读取逻辑(原来在 state 初始化器和 initTheme 里各写一遍)
+function readThemePref() {
+  const saved = localStorage.getItem('devtoolbox-theme')
+  if (saved) return saved === 'dark'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
 export const useThemeStore = defineStore('theme', {
-  state: () => {
-    const saved = localStorage.getItem('devtoolbox-theme')
-    return {
-      isDark: saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-  },
+  state: () => ({
+    // 创建时即读取正确值——子组件可能在 App.vue onMounted(initTheme) 之前就用 isDark,
+    // 因此不能延迟到 initTheme 才设值,否则会短暂为 false。
+    isDark: readThemePref(),
+  }),
   actions: {
+    _apply() {
+      document.documentElement.classList.toggle('dark', this.isDark)
+      localStorage.setItem('devtoolbox-theme', this.isDark ? 'dark' : 'light')
+    },
     toggleTheme() {
       this.isDark = !this.isDark
-      localStorage.setItem('devtoolbox-theme', this.isDark ? 'dark' : 'light')
-      document.documentElement.classList.toggle('dark', this.isDark)
+      this._apply()
     },
     initTheme() {
-      const saved = localStorage.getItem('devtoolbox-theme')
-      if (saved) {
-        this.isDark = saved === 'dark'
-      } else {
-        this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      }
-      document.documentElement.classList.toggle('dark', this.isDark)
+      this.isDark = readThemePref()
+      this._apply()
     }
   }
 })

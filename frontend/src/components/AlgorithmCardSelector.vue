@@ -237,11 +237,8 @@ export default {
   },
   computed: {
     filteredAlgorithms() {
-      console.log('AlgorithmCardSelector - algorithms prop:', this.algorithms)
-      console.log('AlgorithmCardSelector - activeCategory:', this.activeCategory)
       const algorithmsInCategory = this.algorithms[this.activeCategory] || []
-      console.log('AlgorithmCardSelector - algorithmsInCategory:', algorithmsInCategory)
-      
+
       const filtered = algorithmsInCategory
         .filter(algo => this.algorithmDetails[algo])
         .filter(algo => {
@@ -271,8 +268,7 @@ export default {
           value: algo,
           ...this.algorithmDetails[algo]
         }))
-      
-      console.log('AlgorithmCardSelector - filtered algorithms:', filtered)
+
       return filtered
     },
     selectedAlgorithm: {
@@ -312,7 +308,7 @@ export default {
 .filter-section {
   margin-bottom: 20px;
   padding: 15px;
-  background-color: #f8f9fa;
+  background-color: var(--dt-bg-section);
   border-radius: 8px;
 }
 
@@ -330,7 +326,7 @@ export default {
 
 .filter-label {
   font-weight: bold;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .filter-group {
@@ -362,7 +358,7 @@ export default {
 }
 
 .algorithm-card.active {
-  border-color: #409eff;
+  border-color: var(--dt-primary);
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
@@ -379,14 +375,14 @@ export default {
 }
 
 .algorithm-icon {
-  color: #409eff;
+  color: var(--dt-primary);
 }
 
 .algorithm-name {
   margin: 0 0 10px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--dt-text-primary);
 }
 
 .algorithm-tags {
@@ -399,7 +395,7 @@ export default {
 .algorithm-description {
   margin: 0;
   font-size: 12px;
-  color: #666;
+  color: var(--dt-text-secondary);
   line-height: 1.4;
 }
 

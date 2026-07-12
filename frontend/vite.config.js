@@ -22,7 +22,9 @@ export default defineConfig({
     }
   },
   build: {
-    cssCodeSplit: false,
+    // cssCodeSplit 默认 true:按路由拆分 CSS,避免 ~30 个工具页的样式全部首屏加载。
+    // 全局主题(variables/dark-theme)在 main.js 顶部同步 import,仍早于组件渲染。
+    cssCodeSplit: true,
   },
   server: {
     proxy: {
